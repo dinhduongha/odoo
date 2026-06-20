@@ -8,6 +8,7 @@ from odoo import api, fields, models
 from odoo.exceptions import AccessError, MissingError
 from odoo.fields import Domain
 from odoo.http import request
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class IrUiView(models.Model):
             # Make sure views which are written in a website context receive
             # a value for their 'key' field
             if not view.key and not vals.get('key'):
-                view.with_context(no_cow=True).key = 'website.key_%s' % str(uuid.uuid4())[:6]
+                view.with_context(no_cow=True).key = 'website.key_%s' % str(uuid7())[:6]
 
             pages = view.page_ids
 

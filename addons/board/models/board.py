@@ -13,7 +13,7 @@ class BoardBoard(models.AbstractModel):
     # speaking, the dashboard is a form view, and opening it makes the client
     # initialize a dummy record by invoking onchange(). And the latter requires
     # an 'id' field to work properly...
-    id = fields.Id()
+    # id = fields.Id()
 
     @api.model_create_multi
     def create(self, vals_list):

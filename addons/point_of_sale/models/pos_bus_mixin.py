@@ -2,7 +2,7 @@
 
 import uuid
 from odoo import fields, models, api
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class PosBusMixin(models.AbstractModel):
     _name = 'pos.bus.mixin'
@@ -20,7 +20,7 @@ class PosBusMixin(models.AbstractModel):
     def _ensure_access_token(self):
         if self.access_token:
             return self.access_token
-        token = self.access_token = str(uuid.uuid4())
+        token = self.access_token = str(uuid7())
         return token
 
     def _notify(self, *notifications, private=True) -> None:

@@ -9,6 +9,7 @@ from odoo import api, models, _
 from odoo.exceptions import ValidationError, MissingError
 from odoo.fields import Domain
 from odoo.addons.base.models.ir_ui_view import MOVABLE_BRANDING
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -474,7 +475,7 @@ class IrUiView(models.Model):
             the snippet to save
         """
         app_name = template_key.split('.')[0]
-        snippet_key = '%s_%s' % (snippet_key, uuid.uuid4().hex)
+        snippet_key = '%s_%s' % (snippet_key, uuid7().hex)
         full_snippet_key = '%s.%s' % (app_name, snippet_key)
 
         # find available name

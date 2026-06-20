@@ -12,6 +12,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.modules import module
 from odoo.tools import get_lang
 from odoo.tools.urls import urljoin as url_join
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class IapAccount(models.Model):
     service_locked = fields.Boolean(default=False)  # If True, the service can't be edited anymore
     description = fields.Char(related='service_id.description')
     account_token = fields.Char(
-        default=lambda s: uuid.uuid4().hex,
+        default=lambda s: uuid7().hex,
         help="Account token is your authentication key for this service. Do not share it.",
         size=43,
         copy=False,

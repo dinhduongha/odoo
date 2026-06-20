@@ -5,13 +5,13 @@ import uuid
 from odoo import fields, models, api
 from odoo.fields import Domain
 from odoo.tools.urls import urljoin as url_join
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
     def _default_company_token(self):
-        return str(uuid.uuid4())
+        return str(uuid7())
 
     # TODO: Remove in master
     overtime_company_threshold = fields.Integer(string="Tolerance Time In Favor Of Company", default=0)
@@ -29,7 +29,7 @@ class ResCompany(models.Model):
         ('back', 'Back Camera'),
     ], string='Barcode Source', default='front')
     attendance_kiosk_delay = fields.Integer(default=10)
-    attendance_kiosk_key = fields.Char(default=lambda s: uuid.uuid4().hex, copy=False, groups='hr_attendance.group_hr_attendance_user')
+    attendance_kiosk_key = fields.Char(default=lambda s: uuid7().hex, copy=False, groups='hr_attendance.group_hr_attendance_user')
     attendance_kiosk_url = fields.Char(compute="_compute_attendance_kiosk_url")
     attendance_kiosk_use_pin = fields.Boolean(string='Employee PIN Identification')
     attendance_from_systray = fields.Boolean(string='Attendance From Systray', default=False)
@@ -91,7 +91,7 @@ class ResCompany(models.Model):
     def _regenerate_attendance_kiosk_key(self):
         self.ensure_one()
         self.write({
-            'attendance_kiosk_key': uuid.uuid4().hex
+            'attendance_kiosk_key': uuid7().hex
         })
 
     def _check_hr_presence_control(self, at_install):

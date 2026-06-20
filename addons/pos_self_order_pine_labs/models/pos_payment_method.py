@@ -4,7 +4,7 @@ import uuid
 
 from odoo import api, models
 from odoo.fields import Domain
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class PosPaymentMethod(models.Model):
     _inherit = 'pos.payment.method'
@@ -17,7 +17,7 @@ class PosPaymentMethod(models.Model):
         # The conversion rate between INR and paisa is set as 1 INR = 100 paisa.
         data = {
             'amount': order.amount_total * 100,
-            'transactionNumber': f'{reference_prefix}/Order/{order.id}/{uuid.uuid4().hex}',
+            'transactionNumber': f'{reference_prefix}/Order/{order.id}/{uuid7().hex}',
             'sequenceNumber': '1'
         }
         payment_response = self.pine_labs_make_payment_request(data)

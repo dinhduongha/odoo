@@ -12,6 +12,7 @@ from odoo.addons.pos_online_payment.tests.online_payment_common import OnlinePay
 from odoo.addons.account.models.account_payment_method import AccountPaymentMethod
 from odoo.addons.point_of_sale.tests.common import archive_products
 from odoo.exceptions import UserError
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 import odoo.tests
 
@@ -187,7 +188,7 @@ class TestUi(TestPointOfSaleHttpCommon, OnlinePaymentCommon):
             'session_id': current_session.id,
             'user_id': self.pos_user.id,
             'partner_id': False,
-            'access_token': str(uuid.uuid4()),
+            'access_token': str(uuid7()),
             'amount_paid': 0,
             'amount_return': 0,
             'state': 'draft',

@@ -5,7 +5,7 @@ def migrate(cr, version):
     # Select relevant ids to generate the list of x_plan_id column names, removing the id of the project plan
     cr.execute(
         """
-        SELECT value::int
+        SELECT value::uuid
           FROM ir_config_parameter
          WHERE key = 'analytic.project_plan'
         """

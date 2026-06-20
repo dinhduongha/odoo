@@ -4,7 +4,7 @@ from werkzeug.exceptions import Forbidden
 
 from odoo import models, fields, api, _
 from odoo.tools import consteq
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class SpreadsheetDashboardShare(models.Model):
     _name = 'spreadsheet.dashboard.share'
@@ -13,7 +13,7 @@ class SpreadsheetDashboardShare(models.Model):
 
     dashboard_id = fields.Many2one('spreadsheet.dashboard', required=True, ondelete='cascade')
     excel_export = fields.Binary()
-    access_token = fields.Char(required=True, default=lambda _x: str(uuid.uuid4()))
+    access_token = fields.Char(required=True, default=lambda _x: str(uuid7()))
     full_url = fields.Char(string="URL", compute='_compute_full_url')
     name = fields.Char(related='dashboard_id.name')
 

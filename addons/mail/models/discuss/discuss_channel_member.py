@@ -12,6 +12,7 @@ from odoo.addons.mail.tools.web_push import PUSH_NOTIFICATION_ACTION, PUSH_NOTIF
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import SQL
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 from ...tools import jwt, discuss
 
@@ -455,7 +456,7 @@ class DiscussChannelMember(models.Model):
             return
         sfu_local_key = self.env["ir.config_parameter"].sudo().get_param("mail.sfu_local_key")
         if not sfu_local_key:
-            sfu_local_key = str(uuid.uuid4())
+            sfu_local_key = str(uuid7())
             self.env["ir.config_parameter"].sudo().set_param("mail.sfu_local_key", sfu_local_key)
         json_web_token = jwt.sign(
             {"iss": f"{self.get_base_url()}:channel:{self.channel_id.id}", "key": sfu_local_key},

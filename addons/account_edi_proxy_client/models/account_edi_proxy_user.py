@@ -8,6 +8,7 @@ import requests
 from odoo import _, fields, models
 from odoo.exceptions import LockError, UserError
 from .account_edi_proxy_auth import OdooEdiProxyAuth
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class Account_Edi_Proxy_ClientUser(models.Model):
             'jsonrpc': '2.0',
             'method': 'call',
             'params': params or {},
-            'id': uuid.uuid4().hex,
+            'id': uuid7().hex,
         }
 
         # Last barrier : in case the demo mode is not handled by the caller, we block access.

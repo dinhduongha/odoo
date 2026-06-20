@@ -6,7 +6,7 @@ from . import utils
 from . import wizard
 
 import uuid
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 def init_initiating_microsoft_uuid(env):
     """ Sets the company name as the default value for the initiating
@@ -14,4 +14,4 @@ def init_initiating_microsoft_uuid(env):
     config_parameter = env['ir.config_parameter'].sudo()
     microsoft_guid = config_parameter.get_param('microsoft_calendar.microsoft_guid', False)
     if not microsoft_guid:
-        config_parameter.set_param('microsoft_calendar.microsoft_guid', str(uuid.uuid4()))
+        config_parameter.set_param('microsoft_calendar.microsoft_guid', str(uuid7()))

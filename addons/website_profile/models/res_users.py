@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime
 from werkzeug import urls
 from odoo import api, models
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 VALIDATION_KARMA_GAIN = 3
 
@@ -31,7 +32,7 @@ class ResUsers(models.Model):
         the user_id, the email and currently the day (to be updated if necessary). """
         profile_uuid = self.env['ir.config_parameter'].sudo().get_param('website_profile.uuid')
         if not profile_uuid:
-            profile_uuid = str(uuid.uuid4())
+            profile_uuid = str(uuid7())
             self.env['ir.config_parameter'].sudo().set_param('website_profile.uuid', profile_uuid)
         return hashlib.sha256((u'%s-%s-%s-%s' % (
             datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),

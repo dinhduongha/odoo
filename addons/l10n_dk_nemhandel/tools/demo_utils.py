@@ -2,6 +2,7 @@ import uuid
 
 from odoo.tools import _
 from odoo.exceptions import ValidationError
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 # -------------------------------------------------------------------------
 # HELPERS

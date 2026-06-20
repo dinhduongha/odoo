@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools import float_is_zero
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class SurveyUser_Input(models.Model):
     attempts_number = fields.Integer("Attempt n°", compute='_compute_attempts_info')
     survey_time_limit_reached = fields.Boolean("Survey Time Limit Reached", compute='_compute_survey_time_limit_reached')
     # identification / access
-    access_token = fields.Char('Identification token', default=lambda self: str(uuid.uuid4()), readonly=True, required=True, copy=False)
+    access_token = fields.Char('Identification token', default=lambda self: str(uuid7()), readonly=True, required=True, copy=False)
     invite_token = fields.Char('Invite token', readonly=True, copy=False)  # no unique constraint, as it identifies a pool of attempts
     partner_id = fields.Many2one('res.partner', string='Contact', readonly=True, index='btree_not_null')
     email = fields.Char('Email', readonly=True)
@@ -224,7 +225,7 @@ class SurveyUser_Input(models.Model):
 
     @api.model
     def _generate_invite_token(self):
-        return str(uuid.uuid4())
+        return str(uuid7())
 
     def _mark_in_progress(self):
         """ marks the state as 'in_progress' and updates the start_datetime accordingly. """

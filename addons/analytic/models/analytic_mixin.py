@@ -128,7 +128,7 @@ class AnalyticMixin(models.AbstractModel):
         if groupby_spec == 'analytic_distribution':
             query._tables = {
                 'distribution': SQL(
-                    r"""(SELECT DISTINCT %s, (regexp_matches(jsonb_object_keys(%s), '\d+', 'g'))[1]::int AS account_id FROM %s WHERE %s)""",
+                    r"""(SELECT DISTINCT %s, (regexp_matches(jsonb_object_keys(%s), '\d+', 'g'))[1]::uuid AS account_id FROM %s WHERE %s)""",
                     self._get_count_id(query),
                     self._field_to_sql(self._table, 'analytic_distribution', query),
                     query.from_clause,

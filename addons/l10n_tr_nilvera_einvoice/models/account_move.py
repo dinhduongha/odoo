@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 from odoo.tools import SQL
 from odoo.addons.l10n_tr_nilvera.const import NILVERA_ERROR_CODE_MESSAGES
 from odoo.addons.l10n_tr_nilvera.lib.nilvera_client import _get_nilvera_client
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 MOVE_TYPE_CATEGORY_MAP = {
     "out_invoice": {
@@ -34,6 +35,7 @@ class AccountMove(models.Model):
         string="Nilvera Document UUID",
         copy=False,
         readonly=True,
+        default=lambda self: str(uuid7()),
         help="Universally unique identifier of the Invoice",
     )
 

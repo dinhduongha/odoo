@@ -4,6 +4,7 @@ import requests
 
 from odoo import _, api, fields, models
 from requests.exceptions import Timeout, ConnectionError, HTTPError
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 DEMO_EFAKTURA_URL = 'https://demoefaktura.mfin.gov.rs/api/publicApi/sales-invoice/ubl'
 EFAKTURA_URL = 'https://efaktura.mfin.gov.rs/api/publicApi/sales-invoice/ubl'
@@ -104,7 +105,7 @@ class AccountMove(models.Model):
     def _compute_l10n_rs_edi_uuid(self):
         for move in self:
             if move.l10n_rs_edi_is_eligible and not move.l10n_rs_edi_uuid:
-                move.l10n_rs_edi_uuid = uuid.uuid4()
+                move.l10n_rs_edi_uuid = uuid7()
 
     def button_draft(self):
         # EXTENDS 'account'

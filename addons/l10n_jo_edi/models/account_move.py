@@ -5,6 +5,7 @@ from werkzeug.urls import url_encode
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.sql import column_exists, create_column
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 
 class AccountMove(models.Model):
@@ -89,7 +90,7 @@ class AccountMove(models.Model):
     def _compute_l10n_jo_edi_uuid(self):
         for invoice in self:
             if invoice.l10n_jo_edi_is_needed and not invoice.l10n_jo_edi_uuid:
-                invoice.l10n_jo_edi_uuid = uuid.uuid4()
+                invoice.l10n_jo_edi_uuid = uuid7()
 
     @api.depends("state", "l10n_jo_edi_is_needed")
     def _compute_l10n_jo_edi_computed_xml(self):

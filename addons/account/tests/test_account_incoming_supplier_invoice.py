@@ -14,7 +14,7 @@ from odoo.tools.misc import mute_logger
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.mail.tests.common import MailCommon
 from odoo.addons.test_mimetypes.tests.test_guess_mimetypes import contents
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class TestAccountInvoiceImportMixin:
     """ Helpers for uploading attachments on invoices by various means and asserting how they are decoded. """
@@ -272,7 +272,7 @@ class TestAccountInvoiceImportMixin:
             Formatted email string.
         """
         if not message_id:
-            message_id = str(uuid.uuid4())
+            message_id = str(uuid7())
 
         attachment_parts = []
         for attachment in attachments_vals:

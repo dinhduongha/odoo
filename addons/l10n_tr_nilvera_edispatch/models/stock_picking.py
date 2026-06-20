@@ -7,6 +7,7 @@ from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import cleanup_xml_node
 from odoo.tools.xml_utils import find_xml_value
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 from odoo.addons.account_edi_ubl_cii.models.account_edi_xml_ubl_20 import UBL_NAMESPACES
 
@@ -204,7 +205,7 @@ class StockPicking(models.Model):
             return self._l10n_tr_validate_edispatch_on_done()
 
     def _l10n_tr_generate_edispatch_xml(self):
-        dispatch_uuid = str(uuid.uuid4())
+        dispatch_uuid = str(uuid7())
         drivers = []
         for driver in self.l10n_tr_nilvera_driver_ids:
             driver_name = driver.name.split(' ', 1)

@@ -60,7 +60,7 @@ class MailingTrace(models.Model):
     is_test_trace = fields.Boolean('Generated for testing')
     # mail data
     mail_mail_id = fields.Many2one('mail.mail', string='Mail', index='btree_not_null')
-    mail_mail_id_int = fields.Integer(
+    mail_mail_id_int = fields.Uuid(
         string='Mail ID (tech)',
         help='ID of the related mail_mail. This field is an integer field because '
              'the related mail_mail can be deleted separately from its statistics. '

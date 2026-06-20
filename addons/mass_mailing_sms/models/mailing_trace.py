@@ -17,7 +17,7 @@ class MailingTrace(models.Model):
         ('sms', 'SMS')
     ], ondelete={'sms': 'set default'})
     sms_id = fields.Many2one('sms.sms', string='SMS', store=False, compute='_compute_sms_id')
-    sms_id_int = fields.Integer(
+    sms_id_int = fields.Uuid(
         string='SMS ID',
         index='btree_not_null'
         # Integer because the related sms.sms can be deleted separately from its statistics.

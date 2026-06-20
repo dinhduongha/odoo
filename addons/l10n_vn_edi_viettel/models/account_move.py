@@ -15,6 +15,7 @@ from requests import RequestException
 from odoo import _, api, fields, models, SUPERUSER_ID
 from odoo.exceptions import UserError
 from odoo.tools import float_round, float_repr
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 SINVOICE_API_URL = 'https://api-vinvoice.viettel.vn/services/einvoiceapplication/api/'
 SINVOICE_TIMEOUT = 60  # They recommend between 60 and 90 seconds, but 60s is already quite long.
@@ -622,7 +623,7 @@ class AccountMove(models.Model):
         """ General invoice information, such as the model number, invoice symbol, type, date of issues, ... """
         self.ensure_one()
         invoice_data = {
-            'transactionUuid': str(uuid.uuid4()),
+            'transactionUuid': str(uuid7()),
             'invoiceType': self.l10n_vn_edi_invoice_symbol.invoice_template_id.template_invoice_type,
             'templateCode': self.l10n_vn_edi_invoice_symbol.invoice_template_id.name,
             'invoiceSeries': self.l10n_vn_edi_invoice_symbol.name,

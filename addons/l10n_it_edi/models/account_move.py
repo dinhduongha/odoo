@@ -21,6 +21,7 @@ from odoo.addons.account_edi_proxy_client.models.account_edi_proxy_user import A
 from odoo.addons.l10n_it_edi.models.account_payment_method_line import L10N_IT_PAYMENT_METHOD_SELECTION
 from odoo.addons.l10n_it_edi.tools.remove_signature import remove_signature
 from odoo.tools.mimetypes import guess_mimetype
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -2330,7 +2331,7 @@ class AccountMove(models.Model):
                 self._l10n_it_edi_write_send_state(
                     transformed_notification={
                         'l10n_it_edi_state': 'forwarded',
-                        'l10n_it_edi_transaction': f'demo_{uuid.uuid4()}',
+                        'l10n_it_edi_transaction': f'demo_{uuid7()}',
                         'send_ack_to_edi_proxy': False,
                         'date': fields.Date.today(),
                         'filename': filename},

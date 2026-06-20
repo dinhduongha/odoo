@@ -1459,7 +1459,7 @@ class AccountAccount(models.Model):
                 SET res_id = (
                         %(account_id_by_company_id_json)s::jsonb->>
                         substring(name, %(xmlid_regex)s)
-                    )::int
+                    )::uuid
               WHERE module = 'account'
                 AND model = 'account.account'
                 AND res_id = %(account_id)s

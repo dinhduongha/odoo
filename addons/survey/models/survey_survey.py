@@ -11,7 +11,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import is_html_empty
 from odoo.tools.urls import urljoin as url_join
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class SurveySurvey(models.Model):
     """ Settings for a multi-page/multi-question survey. Each survey can have one or more attached pages
@@ -24,7 +24,7 @@ class SurveySurvey(models.Model):
 
     @api.model
     def _get_default_access_token(self):
-        return str(uuid.uuid4())
+        return str(uuid7())
 
     @api.model
     def default_get(self, fields):

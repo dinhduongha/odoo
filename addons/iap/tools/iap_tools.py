@@ -7,6 +7,7 @@ import uuid
 
 from odoo import exceptions, modules, _
 from odoo.tools import email_normalize, exception_to_unicode
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ def iap_jsonrpc(url, method='call', params=None, timeout=15):
         'jsonrpc': '2.0',
         'method': method,
         'params': params,
-        'id': uuid.uuid4().hex,
+        'id': uuid7().hex,
     }
 
     _logger.info('iap jsonrpc %s', url)

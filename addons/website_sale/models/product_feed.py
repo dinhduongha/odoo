@@ -14,7 +14,7 @@ from odoo.http import request
 from odoo.tools import float_is_zero, float_round, urls
 
 from odoo.addons.website_sale import const, utils
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class ProductFeed(models.Model):
     _name = 'product.feed'
@@ -54,7 +54,7 @@ class ProductFeed(models.Model):
     access_token = fields.Char(
         readonly=True,
         required=True,
-        default=lambda _: uuid.uuid4().hex,
+        default=lambda _: uuid7().hex,
         copy=False,
     )
     url = fields.Char(compute='_compute_url')

@@ -1,6 +1,7 @@
 import uuid
 from psycopg2.extras import Json
 from odoo.tools import split_every
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 def migrate(cr, version):
     """
@@ -33,7 +34,7 @@ def migrate(cr, version):
             ids = tuple(r[0] for r in cr.fetchmany(10000))
             cr.execute(
                 f"UPDATE {table} SET uuid = (%s::json)->>(id::text) WHERE id IN %s",
-                [Json({id_: str(uuid.uuid4()) for id_ in ids}), ids]
+                [Json({id_: str(uuid7()) for id_ in ids}), ids]
             )
 
     deduplicate_uuids("pos_order")

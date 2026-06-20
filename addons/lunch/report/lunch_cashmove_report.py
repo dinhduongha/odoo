@@ -10,7 +10,7 @@ class LunchCashmoveReport(models.Model):
     _auto = False
     _order = "date desc"
 
-    id = fields.Id(string='ID')
+    # id = fields.Id(string='ID')
     amount = fields.Float('Amount')
     date = fields.Date('Date')
     currency_id = fields.Many2one('res.currency', string='Currency')

@@ -13,7 +13,7 @@ from odoo.http import request
 from odoo.addons.payment.logging import get_payment_logger
 from odoo.addons.payment_razorpay import const
 from odoo.addons.payment_razorpay.controllers.onboarding import RazorpayController
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = get_payment_logger(__name__)
 
@@ -174,7 +174,7 @@ class PaymentProvider(models.Model):
         """
         self.ensure_one()
 
-        webhook_secret = uuid.uuid4().hex  # Generate a random webhook secret.
+        webhook_secret = uuid7().hex  # Generate a random webhook secret.
         payload = {
             'url': tools.urls.urljoin(self.get_base_url(), '/payment/razorpay/webhook'),
             'alert_email': self.env.user.partner_id.email,

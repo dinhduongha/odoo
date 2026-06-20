@@ -5,7 +5,7 @@ import uuid
 from typing import Dict, Callable, List, Optional
 
 from odoo import api, fields, models
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class RestaurantTable(models.Model):
     _inherit = "restaurant.table"
@@ -19,7 +19,7 @@ class RestaurantTable(models.Model):
 
     @staticmethod
     def _get_identifier():
-        return uuid.uuid4().hex[:8]
+        return uuid7().hex[:8]
 
     @api.model
     def _update_identifier(self):

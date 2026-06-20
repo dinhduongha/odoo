@@ -222,7 +222,7 @@ class PrivacyLookupWizardLine(models.TransientModel):
         return [(model.model, model.name) for model in self.env['ir.model'].sudo().search([])]
 
     wizard_id = fields.Many2one('privacy.lookup.wizard')
-    res_id = fields.Integer(
+    res_id = fields.Uuid(
         string="Resource ID",
         required=True)
     res_name = fields.Char(

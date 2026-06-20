@@ -11,7 +11,7 @@ from odoo.addons.base.models.res_partner import _tz_get
 from odoo.exceptions import UserError
 from odoo.tools.misc import limited_field_access_token
 from odoo.addons.mail.tools.discuss import Store
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class MailGuest(models.Model):
     _name = 'mail.guest'
@@ -26,7 +26,7 @@ class MailGuest(models.Model):
         return self.env['res.lang'].get_installed()
 
     name = fields.Char(string="Name", required=True)
-    access_token = fields.Char(string="Access Token", default=lambda self: str(uuid.uuid4()), groups='base.group_system', required=True, readonly=True, copy=False)
+    access_token = fields.Char(string="Access Token", default=lambda self: str(uuid7()), groups='base.group_system', required=True, readonly=True, copy=False)
     country_id = fields.Many2one(string="Country", comodel_name='res.country')
     email = fields.Char()
     lang = fields.Selection(string="Language", selection=_lang_get)

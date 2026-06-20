@@ -4,6 +4,7 @@ from base64 import b64encode
 import uuid
 
 from odoo.tools.misc import file_open
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 DEMO_BILL_PATH = 'account_peppol/tools/demo_bill'
 DEMO_ENC_KEY = 'account_peppol/tools/enc_key'
@@ -60,7 +61,7 @@ def _mock_call_peppol_proxy(func, self, endpoint, params=None):
             get_messages_cron._trigger()
         return {
             'messages': [{
-                'message_uuid': 'demo_%s' % uuid.uuid4(),
+                'message_uuid': 'demo_%s' % uuid7(),
             } for i in params['documents']],
         }
 

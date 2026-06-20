@@ -12,7 +12,7 @@ from odoo.tools.mail import is_html_empty
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment.const import REPORT_REASONS_MAPPING, SENSITIVE_KEYS
 from odoo.addons.payment.logging import get_payment_logger
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 # Pass the possibly empty set of sensitive keys to the logger in case a provider module extends it.
 _logger = get_payment_logger(__name__, sensitive_keys=SENSITIVE_KEYS)
@@ -942,7 +942,7 @@ class PaymentProvider(models.Model):
         """
         return {
             'jsonrpc': '2.0',
-            'id': uuid.uuid4().hex,
+            'id': uuid7().hex,
             'method': 'call',
             'params': data,
         }

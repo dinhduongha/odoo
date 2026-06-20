@@ -7,6 +7,7 @@ import uuid
 from odoo import models, fields, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.http import Stream
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class IrAttachment(models.Model):
 
         :return: A unique blob name str
         """
-        return f'{self.id}/{uuid.uuid4()}/{self.name}'
+        return f'{self.id}/{uuid7()}/{self.name}'
 
     # Implement the following methods for each cloud storage provider.
     def _generate_cloud_storage_url(self):

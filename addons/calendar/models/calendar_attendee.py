@@ -9,6 +9,7 @@ from odoo.addons.base.models.res_partner import _tz_get
 from odoo.exceptions import UserError
 from odoo.tools.misc import clean_context
 from odoo.tools import split_every
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class CalendarAttendee(models.Model):
     _order = 'create_date ASC'
 
     def _default_access_token(self):
-        return uuid.uuid4().hex
+        return uuid7().hex
 
     STATE_SELECTION = [
         ('accepted', 'Yes'),

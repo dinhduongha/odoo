@@ -12,6 +12,7 @@ from odoo import api, fields, models, tools, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import is_html_empty
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class SlideChannel(models.Model):
         return res
 
     def _default_access_token(self):
-        return str(uuid.uuid4())
+        return str(uuid7())
 
     def _get_default_enroll_msg(self):
         return _('Contact Responsible')

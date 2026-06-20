@@ -10,7 +10,7 @@ from odoo import api, fields, models
 from odoo.addons.l10n_tw_edi_ecpay.utils import call_ecpay_api, transfer_time, convert_utc_time_to_tw_time
 from odoo.exceptions import UserError
 from odoo.tools import float_round
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -568,7 +568,7 @@ class AccountMove(models.Model):
         self.ensure_one()
         self._l10n_tw_edi_check_before_generate_invoice_json()
         tax_type, special_tax_type, is_zero_tax_rate = self._l10n_tw_edi_determine_tax_types()
-        self.l10n_tw_edi_related_number = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:20]
+        self.l10n_tw_edi_related_number = base64.urlsafe_b64encode(uuid7().bytes)[:20]
         formatted_phone = self._reformat_phone_number(self.partner_id.phone) if self.partner_id.phone else ""
         product_lines = self.invoice_line_ids.filtered(lambda line: line.display_type == "product")
         vat = "1" if product_lines[0].tax_ids and product_lines[0].tax_ids[0].price_include else "0"

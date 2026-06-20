@@ -7,6 +7,7 @@ from odoo.tools import float_repr
 from datetime import datetime
 from base64 import b64decode, b64encode
 from lxml import etree
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 
 class AccountMove(models.Model):
@@ -199,7 +200,7 @@ class AccountMove(models.Model):
         edi_format = self.env.ref('l10n_sa_edi.edi_sa_zatca')
         # Build the dict of values to be used for generating the Invoice XML content
         # Set Invoice field values required for generating the XML content, hash and signature
-        self.l10n_sa_uuid = uuid.uuid4()
+        self.l10n_sa_uuid = uuid7()
         # We generate the XML content
         xml_content = edi_format._l10n_sa_generate_zatca_template(self)
         # Once the required values are generated, we hash the invoice, then use it to generate a Signature

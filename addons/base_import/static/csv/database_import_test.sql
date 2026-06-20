@@ -38,7 +38,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE companies (
-    id integer NOT NULL,
+    id uuid NOT NULL DEFAULT uuidv7(),
     company_name character varying
 );
 
@@ -67,8 +67,8 @@ ALTER SEQUENCE companies_id_seq OWNED BY companies.id;
 --
 
 CREATE TABLE persons (
-    id integer NOT NULL,
-    company_id integer,
+    id uuid NOT NULL DEFAULT uuidv7(),
+    company_id uuid,
     person_name character varying
 );
 

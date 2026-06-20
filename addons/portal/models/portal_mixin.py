@@ -4,7 +4,7 @@ import uuid
 from ast import literal_eval
 from werkzeug.urls import url_encode
 from odoo import api, exceptions, fields, models, _
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class PortalMixin(models.AbstractModel):
     _name = 'portal.mixin'
@@ -30,7 +30,7 @@ class PortalMixin(models.AbstractModel):
         """ Get the current record access token """
         if not self.access_token:
             # we use a `write` to force the cache clearing otherwise `return self.access_token` will return False
-            self.sudo().write({'access_token': str(uuid.uuid4())})
+            self.sudo().write({'access_token': str(uuid7())})
         return self.access_token
 
     def _get_share_url(self, redirect=False, signup_partner=False, pid=None, share_token=True):

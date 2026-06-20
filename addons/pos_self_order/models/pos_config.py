@@ -12,6 +12,7 @@ from odoo.exceptions import UserError, ValidationError, AccessError
 from odoo import api, fields, models, _, service
 from odoo.tools import file_open, split_every
 from odoo.service.common import exp_version
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 
 class PosConfig(models.Model):
@@ -115,7 +116,7 @@ class PosConfig(models.Model):
         ]
 
     def _update_access_token(self):
-        self.access_token = uuid.uuid4().hex[:16]
+        self.access_token = uuid7().hex[:16]
         self.floor_ids.table_ids._update_identifier()
 
     @api.model_create_multi

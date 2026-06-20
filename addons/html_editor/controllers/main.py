@@ -20,6 +20,7 @@ from odoo.tools.misc import file_open
 from odoo.addons.iap.tools import iap_tools
 from odoo.addons.mail.tools import link_preview
 from lxml import html, etree
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 from ..models.ir_attachment import SUPPORTED_IMAGE_MIMETYPES
 
@@ -384,7 +385,7 @@ class HTML_Editor(http.Controller):
                 if not name:
                     name = '%s-%s%s' % (
                         datetime.now().strftime('%Y%m%d%H%M%S'),
-                        str(uuid.uuid4())[:6],
+                        str(uuid7())[:6],
                         SUPPORTED_IMAGE_MIMETYPES[mimetype],
                     )
                 data = image_process(data, size=(width, height), quality=quality, verify_resolution=True)

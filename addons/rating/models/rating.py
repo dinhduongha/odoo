@@ -7,7 +7,7 @@ from odoo import api, fields, models
 from odoo.addons.mail.tools.discuss import Store
 from odoo.addons.rating.models import rating_data
 from odoo.tools.misc import file_open
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class RatingRating(models.Model):
     _name = 'rating.rating'
@@ -17,7 +17,7 @@ class RatingRating(models.Model):
 
     @api.model
     def _default_access_token(self):
-        return uuid.uuid4().hex
+        return uuid7().hex
 
     @api.model
     def _selection_target_model(self):
@@ -34,7 +34,7 @@ class RatingRating(models.Model):
     parent_res_name = fields.Char('Parent Document Name', compute='_compute_parent_res_name', store=True)
     parent_res_model_id = fields.Many2one('ir.model', 'Parent Related Document Model', index=True, ondelete='cascade')
     parent_res_model = fields.Char('Parent Document Model', store=True, related='parent_res_model_id.model', index=True, readonly=False)
-    parent_res_id = fields.Integer('Parent Document', index=True)
+    parent_res_id = fields.Uuid('Parent Document', index=True)
     parent_ref = fields.Reference(
         string='Parent Ref', selection='_selection_target_model',
         compute='_compute_parent_ref', readonly=True)

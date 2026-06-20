@@ -1,7 +1,7 @@
 import uuid
 from odoo import models, api
 from odoo.fields import Domain
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class PosPaymentMethod(models.Model):
     _inherit = 'pos.payment.method'
@@ -12,7 +12,7 @@ class PosPaymentMethod(models.Model):
         reference_prefix = order.config_id.name.replace(' ', '')
         data = {
             'amount': order.amount_total,
-            'referenceId': f'{reference_prefix}/Order/{order.id}/{uuid.uuid4().hex}',
+            'referenceId': f'{reference_prefix}/Order/{order.id}/{uuid7().hex}',
         }
         return self.razorpay_make_payment_request(data)
 

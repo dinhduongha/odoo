@@ -29,6 +29,7 @@ from odoo.tools.translate import _
 from odoo.tools.misc import get_lang
 from odoo.tools import html2plaintext, html_sanitize, is_html_empty, single_email_re
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -568,12 +569,12 @@ class CalendarEvent(models.Model):
         This is done by design to prevent users not being able to join a discuss meeting because the base event of the recurrency was deleted.
         """
         if not self.access_token:
-            self.access_token = uuid.uuid4().hex
+            self.access_token = uuid7().hex
         self.videocall_location = f"{self.get_base_url()}/{self.DISCUSS_ROUTE}/{self.access_token}"
 
     @api.model
     def get_discuss_videocall_location(self):
-        access_token = uuid.uuid4().hex
+        access_token = uuid7().hex
         return f"{self.get_base_url()}/{self.DISCUSS_ROUTE}/{access_token}"
 
     # ------------------------------------------------------------

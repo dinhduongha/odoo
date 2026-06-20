@@ -1,7 +1,7 @@
 import uuid
 
 from odoo import models
-
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -11,7 +11,8 @@ class AccountMove(models.Model):
         we derive it from the dbuuid and the move id. """
         self.ensure_one()
         dbuuid = self.env['ir.config_parameter'].sudo().get_param('database.uuid')
-        guid = uuid.uuid5(namespace=uuid.UUID(dbuuid), name=str(self.id))
+        #guid = uuid.uuid5(namespace=uuid.UUID(dbuuid), name=str(self.id))
+        guid = uuid7()
         return str(guid)
 
     def _get_import_file_type(self, file_data):

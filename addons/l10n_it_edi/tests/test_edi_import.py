@@ -11,6 +11,7 @@ from odoo import fields, sql_db, tools, Command
 from odoo.exceptions import ValidationError
 from odoo.tests import new_test_user, tagged
 from odoo.addons.l10n_it_edi.tests.common import TestItEdi
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -281,7 +282,7 @@ class TestItEdiImport(TestItEdi):
                 '999999999': {
                     'filename': filename,
                     'file': self.fake_test_content,
-                    'key': str(uuid.uuid4()),
+                    'key': str(uuid7()),
                 }},
                 self.proxy_user,
             )
@@ -307,7 +308,7 @@ class TestItEdiImport(TestItEdi):
                 '999999999': {
                     'filename': filename,
                     'file': fake_bill_content,
-                    'key': str(uuid.uuid4()),
+                    'key': str(uuid7()),
                 }},
                 self.proxy_user,
             )
@@ -351,7 +352,7 @@ class TestItEdiImport(TestItEdi):
                 {'999999999': {
                     'filename': filename,
                     'file': self.fake_test_content,
-                    'key': str(uuid.uuid4()),
+                    'key': str(uuid7()),
                 }},
                 self.proxy_user,
             )
@@ -373,7 +374,7 @@ class TestItEdiImport(TestItEdi):
         proxy_user = ProxyUser.create({
             'company_id': self.company.id,
             'proxy_type': 'l10n_it_edi',
-            'id_client': str(uuid.uuid4()),
+            'id_client': str(uuid7()),
             'edi_identification': ProxyUser._get_proxy_identification(self.company, 'l10n_it_edi'),
             'private_key_id': self.private_key_id.id,
         })
@@ -391,7 +392,7 @@ class TestItEdiImport(TestItEdi):
                     '999999999': {
                         'filename': filename,
                         'file': self.fake_test_content,
-                        'key': str(uuid.uuid4()),
+                        'key': str(uuid7()),
                     }},
                     proxy_user,
                 )

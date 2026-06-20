@@ -429,7 +429,7 @@ class ResPartner(models.Model):
         RIGHT JOIN account_account acc ON aml.account_id = acc.id
              WHERE acc.account_type = %s
                AND acc.active
-               AND SPLIT_PART(line_company.parent_path, '/', 1)::int = %s
+               AND SPLIT_PART(line_company.parent_path, '/', 1)::uuid = %s
                AND move.state = 'posted'
           GROUP BY aml.partner_id
             HAVING %s * COALESCE(SUM(aml.amount_residual), 0) {operator} %s''',

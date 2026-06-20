@@ -6,6 +6,7 @@ from lxml import etree, html
 
 from odoo import api, models
 from odoo.tools import xml_translate
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -258,7 +259,8 @@ class WebsiteHTMLTextProcessor(models.AbstractModel):
             # and attributes.
             attrib_string = ','.join(f'{key}={value}' for key, value in sorted(element.attrib.items()))
             combined_string = f'{element.text or ""}-{element.tag}-{attrib_string}'
-            unique_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, combined_string)
+            #unique_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, combined_string)
+            unique_uuid = uuid7()
             hash_value = unique_uuid.hex[:12]
 
             hash_updates[hash_value] = {"tag": element.tag, "attr": element.attrib}
