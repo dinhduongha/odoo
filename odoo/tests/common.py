@@ -69,6 +69,7 @@ from odoo.tools.mail import single_email_re
 from odoo.tools.misc import find_in_path
 from odoo.tools.xml_utils import _validate_xml
 from odoo.addons.base.models import ir_actions_report
+from odoo.tools.uuid_utils import uuid7
 
 from . import case, test_cursor
 
@@ -2315,7 +2316,7 @@ class HttpCase(TransactionCase):
         return {
             "jsonrpc": "2.0",
             "method": "call",
-            "id": str(uuid4()),
+            "id": str(uuid7()),
             "params": params or {},
         }
 

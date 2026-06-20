@@ -1,5 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import itertools
+import uuid
 from collections.abc import Iterable, Iterator
 
 from .sql import SQL, make_identifier
@@ -76,7 +77,7 @@ class Query:
         self.offset: int | None = None
 
         # memoized result
-        self._ids: tuple[int, ...] | None = None
+        self._ids: tuple[uuid.UUID, ...] | None = None
 
     @staticmethod
     def make_alias(alias: str, link: str) -> str:
@@ -219,7 +220,7 @@ class Query:
             SQL(" WHERE %s", self.where_clause) if self._where_clauses else SQL(),
         )
 
-    def get_result_ids(self) -> tuple[int, ...]:
+    def get_result_ids(self) -> tuple[uuid.UUID, ...]:
         """ Return the result of ``self.select()`` as a tuple of ids. The result
         is memoized for future use, which avoids making the same query twice.
         """
@@ -227,7 +228,7 @@ class Query:
             self._ids = tuple(id_ for id_, in self._env.execute_query(self.select()))
         return self._ids
 
-    def set_result_ids(self, ids: Iterable[int], ordered: bool = True) -> None:
+    def set_result_ids(self, ids: Iterable[uuid.UUID], ordered: bool = True) -> None:
         """ Set up the query to return the lines given by ``ids``. The parameter
         ``ordered`` tells whether the query must be ordered to match exactly the
         sequence ``ids``.
@@ -272,5 +273,5 @@ class Query:
             return self._env.execute_query(sql)[0][0]
         return len(self.get_result_ids())
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> Iterator[uuid.UUID]:
         return iter(self.get_result_ids())

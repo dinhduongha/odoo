@@ -9,6 +9,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import config, ormcache, mute_logger
+from odoo.tools.uuid_utils import uuid7, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -16,8 +17,9 @@ _logger = logging.getLogger(__name__)
 A dictionary holding some configuration parameters to be initialized when the database is created.
 """
 _default_parameters = {
-    "database.secret": lambda: str(uuid.uuid4()),
-    "database.uuid": lambda: str(uuid.uuid1()),
+    # UUIDv7 Patch
+    "database.secret": lambda: str(uuid7()),
+    "database.uuid": lambda: str(uuid7()),
     "database.create_date": fields.Datetime.now,
     "web.base.url": lambda: "http://localhost:%s" % config.get('http_port'),
     "base.login_cooldown_after": lambda: 10,

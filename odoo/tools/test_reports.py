@@ -10,6 +10,7 @@
 import logging
 import os
 import tempfile
+import uuid
 from lxml import etree
 from subprocess import Popen, PIPE
 
@@ -119,7 +120,7 @@ def try_report_action(cr, uid, action_id, active_model=None, active_ids=None,
         action = env.ref(action_id)
         act_model, act_id = action._name, action.id
     else:
-        assert isinstance(action_id, int)
+        assert isinstance(action_id, uuid.UUID)
         act_model = 'ir.actions.act_window'     # assume that
         act_id = action_id
         act_xmlid = '<%s>' % act_id

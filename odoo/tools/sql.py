@@ -274,7 +274,7 @@ SQL_ORDER_BY_TYPE = defaultdict(lambda: 16, {
 def create_model_table(cr, tablename, comment=None, columns=()):
     """ Create the table for a model. """
     colspecs = [
-        SQL('id SERIAL NOT NULL'),
+        SQL('id UUID NOT NULL DEFAULT uuidv7()'),
         *(SQL("%s %s", SQL.identifier(colname), SQL(coltype)) for colname, coltype, _ in columns),
         SQL('PRIMARY KEY(id)'),
     ]
@@ -294,6 +294,7 @@ def create_model_table(cr, tablename, comment=None, columns=()):
     cr.execute(SQL("; ").join(queries))
 
     _schema.debug("Table %r: created", tablename)
+    #_schema.info("[UUID DEBUG] Table %r: created", tablename)
 
 
 def table_columns(cr, tablename):

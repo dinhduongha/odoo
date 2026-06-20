@@ -62,14 +62,28 @@ class IrAutovacuum(models.AbstractModel):
                 self.env.cr.rollback()
 
     @api.autovacuum
+    # def _gc_orm_signaling(self):
+    #     for signal in ['registry', *_CACHES_BY_KEY]:
+    #         table = f'orm_signaling_{signal}'
+    #         # keep the last 10 entries for each signal, and all entries from the last
+    #         # hour. This keeps the signaling tables small enough for performance, but
+    #         # also gives a useful glimpse into the recent signaling history, including
+    #         # the timestamps of the increments.
+    #         self.env.cr.execute(SQL(
+    #             "DELETE FROM %s WHERE id < (SELECT max(id)-9 FROM %s) AND date < NOW() - interval '1 hours'",
+    #             SQL.identifier(table), SQL.identifier(table)
+    #         ))
+
+    # UUIDv7 Patch
     def _gc_orm_signaling(self):
         for signal in ['registry', *_CACHES_BY_KEY]:
             table = f'orm_signaling_{signal}'
-            # keep the last 10 entries for each signal, and all entries from the last
-            # hour. This keeps the signaling tables small enough for performance, but
-            # also gives a useful glimpse into the recent signaling history, including
-            # the timestamps of the increments.
-            self.env.cr.execute(SQL(
-                "DELETE FROM %s WHERE id < (SELECT max(id)-9 FROM %s) AND date < NOW() - interval '1 hours'",
-                SQL.identifier(table), SQL.identifier(table)
-            ))
+            self.env.cr.execute(SQL(f"""
+                DELETE FROM {table}
+                WHERE id NOT IN (
+                    SELECT id FROM {table}
+                    ORDER BY date DESC
+                    LIMIT 10
+                )
+                AND date < NOW() - interval '1 hour'
+            """))

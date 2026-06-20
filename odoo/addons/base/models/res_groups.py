@@ -1,10 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
+
 from odoo import api, fields, models, tools
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Command, Domain
 from odoo.tools import SetDefinitions
 
+
+_logger = logging.getLogger(__name__)
 
 class ResGroups(models.Model):
     _name = 'res.groups'
@@ -359,12 +363,15 @@ class ResGroups(models.Model):
             ]
         }
 
+    
     @api.model
     @tools.ormcache(cache='groups')
     def _get_group_definitions(self):
         """ Return the definition of all the groups as a :class:`~odoo.tools.SetDefinitions`. """
         groups = self.sudo().search([], order='id')
+        #_logger.info("[UUID DEBUG] _get_group_definitions groups=%s", groups)
         id_to_ref = groups.get_external_id()
+        #_logger.info("[UUID DEBUG] _get_group_definitions id_to_ref=%s", id_to_ref)
         data = {
             group.id: {
                 'ref': id_to_ref[group.id] or str(group.id),
@@ -373,7 +380,42 @@ class ResGroups(models.Model):
             }
             for group in groups
         }
+        #_logger.info("[UUID DEBUG] All Group Definitions Data: %s", data)
         return SetDefinitions(data)
+
+    # def _get_group_definitions(self):
+    #     """ Return the definition of all the groups as a :class:`~odoo.tools.SetDefinitions`. """
+    #     groups = self.sudo().search([], order='id')
+    #     _logger.info("_groups: %s", groups)
+    #     id_to_ref = groups.get_external_id()
+    #     _logger.info("_get_group_definitions (id_to_ref): %s", id_to_ref)
+
+    #     # Khởi tạo dictionary rỗng
+    #     data = {}
+
+    #     # Chuyển comprehension thành vòng lặp 'for'
+    #     for group in groups:
+    #         # 1. Xây dựng data cho group hiện tại
+    #         group_data = {
+    #             'ref': id_to_ref[group.id] or str(group.id),
+    #             'supersets': group.implied_ids.ids,
+    #             'disjoints': group.disjoint_ids.ids,
+    #         }
+
+    #         # 2. Log thông tin của group.id này
+    #         _logger.info(
+    #             "Processing Group ID %s: Data=%s",
+    #             group.id,
+    #             group_data
+    #         )
+
+    #         # 3. Thêm group_data vào dictionary chính
+    #         data[group.id] = group_data
+
+    #     # (Nếu bạn vẫn muốn log toàn bộ data sau khi xong, hãy giữ dòng này)
+    #     # _logger.info("All Group Definitions Data: %s", data)
+
+    #     return SetDefinitions(data) # (Phần return gốc của bạn nếu có)
 
     @api.model
     def _is_feature_enabled(self, group_reference):

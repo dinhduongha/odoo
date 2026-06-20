@@ -20,6 +20,7 @@ from odoo.tools import OrderedSet, misc, profiler
 from odoo.tools.constants import SCRIPT_EXTENSIONS, STYLE_EXTENSIONS
 from odoo.tools.json import scriptsafe as json
 from odoo.tools.misc import file_open, file_path
+from odoo.tools.uuid_utils import uuid7, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -213,17 +214,60 @@ class AssetsBundle(object):
             unique=unique,
             extension=extension,
         )
+	# UUIDv7 Patch
         query = """
-             SELECT max(id)
+             SELECT max(id::text)::uuid
                FROM ir_attachment
               WHERE create_uid = %s
                 AND url like %s
                 AND res_model = 'ir.ui.view'
-                AND res_id = 0
+                AND (res_id is null or res_id = '00000000-0000-0000-0000-000000000000')
                 AND public = true
            GROUP BY name
            ORDER BY name
         """
+
+        # query = """
+        #      SELECT max(id::text)
+        #        FROM ir_attachment
+        #       WHERE create_uid = %s
+        #         AND url like %s
+        #         AND res_model = 'ir.ui.view'
+        #         AND res_id = 0
+        #         AND public = true
+        #    GROUP BY name
+        #    ORDER BY name
+        # """
+        # query = """
+        #     SELECT DISTINCT ON (name) id
+        #     FROM ir_attachment
+        #     WHERE create_uid = %s
+        #     AND url LIKE %s
+        #     AND res_model = 'ir.ui.view'
+        #     AND res_id = 0
+        #     AND public = true
+        #     ORDER BY name, create_date DESC
+        # """
+        # query = """
+        #     SELECT id
+        #     FROM ir_attachment a
+        #     WHERE a.create_uid = %s
+        #     AND a.url LIKE %s
+        #     AND a.res_model = 'ir.ui.view'
+        #     AND (a.res_id is null or a.res_id = '00000000-0000-0000-0000-000000000000')
+        #     AND a.public = true
+        #     AND a.create_date = (
+        #         SELECT MAX(b.create_date)
+        #         FROM ir_attachment b
+        #         WHERE b.name = a.name
+        #             AND b.create_uid = a.create_uid
+        #             AND b.url LIKE %s
+        #             AND b.res_model = 'ir.ui.view'
+        #             AND (a.res_id is null or a.res_id = '00000000-0000-0000-0000-000000000000')
+        #             AND b.public = true
+        #     )
+        #     ORDER BY a.name
+        # """
         self.env.cr.execute(query, [SUPERUSER_ID, url_pattern])
 
         attachment_id = [r[0] for r in self.env.cr.fetchall()]
@@ -730,7 +774,7 @@ class WebAsset(object):
 
     @functools.cached_property
     def id(self):
-        if self._id is None: self._id = str(uuid.uuid4())
+        if self._id is None: self._id = str(uuid7())
         return self._id
 
     @functools.cached_property

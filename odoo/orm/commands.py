@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 import typing
+import uuid
 
 if typing.TYPE_CHECKING:
     from collections.abc import Collection
@@ -56,10 +57,10 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(CREATE, 0, {values})`
         """
-        return (cls.CREATE, 0, values)
+        return (cls.CREATE, uuid.UUID('00000000-0000-0000-0000-000000000000'), values)
 
     @classmethod
-    def update(cls, id: int, values: ValuesType) -> CommandValue:
+    def update(cls, id: uuid.UUID, values: ValuesType) -> CommandValue:
         """
         Write ``values`` on the related record.
 
@@ -68,7 +69,7 @@ class Command(enum.IntEnum):
         return (cls.UPDATE, id, values)
 
     @classmethod
-    def delete(cls, id: int) -> CommandValue:
+    def delete(cls, id: uuid.UUID) -> CommandValue:
         """
         Remove the related record from the database and remove its relation
         with ``self``.
@@ -79,10 +80,10 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(DELETE, {id}, 0)`
         """
-        return (cls.DELETE, id, 0)
+        return (cls.DELETE, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
 
     @classmethod
-    def unlink(cls, id: int) -> CommandValue:
+    def unlink(cls, id: uuid.UUID) -> CommandValue:
         """
         Remove the relation between ``self`` and the related record.
 
@@ -93,16 +94,16 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(UNLINK, {id}, 0)`
         """
-        return (cls.UNLINK, id, 0)
+        return (cls.UNLINK, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
 
     @classmethod
-    def link(cls, id: int) -> CommandValue:
+    def link(cls, id: uuid.UUID) -> CommandValue:
         """
         Add a relation between ``self`` and the related record.
 
         Return the command triple :samp:`(LINK, {id}, 0)`
         """
-        return (cls.LINK, id, 0)
+        return (cls.LINK, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
 
     @classmethod
     def clear(cls) -> CommandValue:
@@ -112,7 +113,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(CLEAR, 0, 0)`
         """
-        return (cls.CLEAR, 0, 0)
+        return (cls.CLEAR, uuid.UUID('00000000-0000-0000-0000-000000000000'), uuid.UUID('00000000-0000-0000-0000-000000000000'))
 
     @classmethod
     def set(cls, ids: Collection[int]) -> CommandValue:
@@ -123,8 +124,8 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(SET, 0, {ids})`
         """
-        return (cls.SET, 0, ids)
+        return (cls.SET, uuid.UUID('00000000-0000-0000-0000-000000000000'), ids)
 
 
 if typing.TYPE_CHECKING:
-    CommandValue = tuple[Command, int, typing.Literal[0] | ValuesType | Collection[int]]
+    CommandValue = tuple[Command, uuid.UUID, typing.Literal[0] | ValuesType | Collection[uuid.UUID]]

@@ -2135,6 +2135,8 @@ class IrModelAccess(models.Model):
         assert mode in ('read', 'write', 'create', 'unlink'), 'Invalid access mode'
 
         group_ids = self.env.user._get_group_ids()
+        _logger.info("[DEBUG] user=%s belongs to groups=%s", 
+             self.env.user.login, [(g.id, g.name) for g in groups])
         self.flush_model()
         rows = self.env.execute_query(SQL("""
             SELECT m.model

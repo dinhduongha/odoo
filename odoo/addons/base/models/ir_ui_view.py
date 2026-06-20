@@ -27,6 +27,7 @@ from odoo.tools.misc import file_path, get_diff, ConstantMapping
 from odoo.tools.template_inheritance import apply_inheritance_specs, locate_node
 from odoo.tools.translate import xml_translate, TRANSLATED_ATTRS
 from odoo.tools.view_validation import valid_view, get_domain_value_names, get_expression_field_names, get_dict_asts
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -619,7 +620,8 @@ actual arch.
                         # do the job properly.
                         pass
             if not values.get('key') and values.get('type') == 'qweb':
-                values['key'] = "gen_key.%s" % str(uuid.uuid4())[:6]
+                # UUIDv7 Patched
+                values['key'] = "gen_key.%s" % str(uuid7())[:6]
             if not values.get('name'):
                 values['name'] = "%s %s" % (values.get('model'), values['type'])
             # Create might be called with either `arch` (xml files), `arch_base` (form view) or `arch_db`.
@@ -681,7 +683,8 @@ actual arch.
         vals_list = super().copy_data(default=default)
         for view, vals in zip(self, vals_list):
             if view.key and has_default_without_key:
-                vals['key'] = default.get('key', view.key + '_%s' % str(uuid.uuid4())[:6])
+                # UUIDv7 Patched
+                vals['key'] = default.get('key', view.key + '_%s' % str(uuid7())[:6])
         return vals_list
 
     # default view selection
@@ -693,7 +696,7 @@ actual arch.
         :param str model:
         :param int view_type:
         :return: id of the default view of False if none found
-        :rtype: int
+        :rtype: uuid
         """
         return self.search(self._get_default_view_domain(model, view_type), limit=1).id
 
@@ -1134,7 +1137,7 @@ actual arch.
         error = False
         if _view is not None:
             view = _view
-        elif isinstance(id_or_xmlid, int):
+        elif isinstance(id_or_xmlid, uuid.UUID):
             view = self.env['ir.ui.view'].sudo().browse(id_or_xmlid)
             try:
                 view.key
@@ -1159,7 +1162,7 @@ actual arch.
         return info
 
     @api.model
-    def _get_template_view(self, id_or_xmlid: int | str, raise_if_not_found=True) -> models.BaseModel:
+    def _get_template_view(self, id_or_xmlid: uuid.UUID | str, raise_if_not_found=True) -> models.BaseModel:
         info = self._get_cached_template_info(id_or_xmlid)
         if info['error'] and raise_if_not_found:
             raise info['error']
@@ -1174,14 +1177,14 @@ actual arch.
         return "priority, id"
 
     @api.model
-    def _fetch_template_views(self, ids_or_xmlids: Sequence[int | str]) -> dict[int | str, models.BaseModel | Exception]:
+    def _fetch_template_views(self, ids_or_xmlids: Sequence[uuid.UUID | str]) -> dict[uuid.UUID | str, models.BaseModel | Exception]:
         """ Return the view corresponding to ``template``, which may be a
             view ID or an XML ID. Note that this method may be overridden for other
             kinds of template values.
         """
         IrUiView = self.env['ir.ui.view'].sudo().with_context(load_all_views=True, raise_if_not_found=True)
 
-        ids, xmlids = partition(lambda v: isinstance(v, int), ids_or_xmlids)
+        ids, xmlids = partition(lambda v: isinstance(v, uuid.UUID), ids_or_xmlids)
 
         # search view in ir.ui.view
         view_by_id = {}
@@ -1244,7 +1247,7 @@ actual arch.
         """
         self.env.cr.cache.pop('_compile_batch_', None)
 
-    def _preload_views(self, refs: Sequence[int | str]) -> dict[int | str, dict]:
+    def _preload_views(self, refs: Sequence[uuid.UUID | str]) -> dict[uuid.UUID | str, dict]:
         """
         Return self's arch combined with its inherited views archs.
 
@@ -1258,7 +1261,7 @@ actual arch.
 
         compile_batch = self.env.cr.cache.setdefault('_compile_batch_', {}).setdefault(cache_key, {})
 
-        refs = [int(ref) if isinstance(ref, int) or ref.isdigit() else ref for ref in refs]
+        refs = [uuid.UUID(ref) if isinstance(ref, str) and is_uuid(ref) else ref for ref in refs]
         missing_refs = [ref for ref in refs if ref and ref not in compile_batch]
         if not missing_refs:
             return compile_batch
@@ -2554,8 +2557,9 @@ actual arch.
         """Validate architecture of custom views (= without xml id) for a given model.
             This method is called at the end of registry update.
         """
+	# UUIDv7 Patched
         rec = self.browse(id_ for id_, in self.env.execute_query(SQL("""
-                   SELECT max(v.id)
+                   SELECT max(v.id::text)::uuid
                      FROM ir_ui_view v
                 LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
                     WHERE md.module IN (SELECT name FROM ir_module_module) IS NOT TRUE
@@ -2564,6 +2568,198 @@ actual arch.
                  GROUP BY coalesce(v.inherit_id, v.id)
                  """, model)))
         return rec.with_context({'load_all_views': True})._check_xml()
+
+    # def _validate_custom_views(self, model):
+    #     """Validate architecture of custom views (= without xml id) for a given model.
+    #     This method is called at the end of registry update.
+    #     """
+
+    #     # PostgreSQL không hỗ trợ max(uuid), nên ta chọn bản có create_date mới nhất
+    #     query = SQL("""
+    #         SELECT v.id
+    #         FROM ir_ui_view v
+    #     LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #         WHERE (md.module IN (SELECT name FROM ir_module_module)) IS NOT TRUE
+    #         AND v.model = %s
+    #         AND v.active = true
+    #     QUALIFY ROW_NUMBER() OVER (PARTITION BY coalesce(v.inherit_id, v.id) ORDER BY v.create_date DESC) = 1
+    #     """)
+
+    #     # Nếu PostgreSQL không có QUALIFY (tùy version), dùng subquery ROW_NUMBER
+    #     if not hasattr(self.env.cr, "qualify_supported"):  # fallback for old PG
+    #         query = SQL("""
+    #             SELECT id FROM (
+    #                 SELECT v.id,
+    #                     ROW_NUMBER() OVER (PARTITION BY coalesce(v.inherit_id, v.id)
+    #                                         ORDER BY v.create_date DESC) AS rn
+    #                 FROM ir_ui_view v
+    #             LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #                 WHERE (md.module IN (SELECT name FROM ir_module_module)) IS NOT TRUE
+    #                 AND v.model = %s
+    #                 AND v.active = true
+    #             ) t
+    #             WHERE rn = 1
+    #         """)
+
+    #     # Execute query
+    #     self.env.cr.execute(query, [model])
+    #     ids = [row[0] for row in self.env.cr.fetchall()]
+
+    #     # Debug log (useful for tracking)
+    #     #print(f"[validate_custom_views] Model={model}, validated views={len(ids)}")
+
+    #     if not ids:
+    #         return self.browse([])
+
+    #     rec = self.browse(ids)
+    #     return rec.with_context({'load_all_views': True})._check_xml()
+
+    # def _validate_custom_views(self, model):
+    #     """Validate architecture of custom views (= without xml id) for a given model.
+    #     This method is called at the end of registry update.
+    #     """
+    #     query = """
+    #         SELECT v.id
+    #         FROM ir_ui_view v
+    #     LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #         WHERE md.module IN (SELECT name FROM ir_module_module) IS NOT TRUE
+    #         AND v.model = %s
+    #         AND v.active = true
+    #     ORDER BY v.id DESC
+    #     LIMIT 1
+    #     """
+    #     rec_id = self.env.cr.execute(query, [model])
+    #     row = self.env.cr.fetchone()
+    #     if not row:
+    #         return True  # không có view nào => coi như hợp lệ
+    #     rec = self.browse(row[0])
+    #     return rec.with_context({'load_all_views': True})._check_xml()
+
+
+    # def _validate_custom_views(self, model):
+    #     """Validate architecture of custom views (= without xml id) for a given model.
+    #     This method is called at the end of registry update.
+    #     Lấy top 1 mới nhất cho mỗi nhóm inherit.
+    #     """
+    #     query = """
+    #         SELECT DISTINCT ON (COALESCE(v.inherit_id, v.id)) v.id
+    #         FROM ir_ui_view v
+    #     LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #         WHERE md.module IN (SELECT name FROM ir_module_module) IS NOT TRUE
+    #         AND v.model = %s
+    #         AND v.active = true
+    #     ORDER BY COALESCE(v.inherit_id, v.id), v.id DESC
+    #     """
+    #     self.env.cr.execute(query, [model])
+    #     ids = [row[0] for row in self.env.cr.fetchall()]
+    #     if not ids:
+    #         return True
+    #     recs = self.browse(ids)
+    #     return recs.with_context({'load_all_views': True})._check_xml()
+
+    # def _validate_custom_views(self, model):
+    #     """
+    #     Validate architecture of custom views (without xml id) for a given model.
+    #     Optimized for uuidv7: latest id = max(id).
+    #     """
+    #     # DISTINCT ON (group) + ORDER BY v.id DESC => lấy id mới nhất của mỗi nhóm inherit
+    #     query = """
+    #         SELECT DISTINCT ON (coalesce(v.inherit_id, v.id)) v.id
+    #         FROM ir_ui_view v
+    #     LEFT JOIN ir_model_data md ON md.model = 'ir.ui.view' AND md.res_id = v.id
+    #     LEFT JOIN ir_module_module m ON m.name = md.module
+    #         WHERE (m.imported IS NULL OR m.imported = false)
+    #         AND v.model = %s
+    #         AND v.active = true
+    #     ORDER BY coalesce(v.inherit_id, v.id), v.id DESC
+    #     """
+
+    #     self.env.cr.execute(query, [model])
+    #     ids = [row[0] for row in self.env.cr.fetchall()]
+
+    #     views = self.with_context(load_all_views=True).browse(ids)
+    #     return views._check_xml()
+
+
+    # def _validate_custom_views(self, model):
+    #     """Validate architecture of custom views (= without xml id) for a given model.
+    #         This method is called at the end of registry update.
+    #     """
+    #     # Sử dụng uuid thay vì id integer → không dùng max(id), mà dùng ROW_NUMBER() + ORDER BY id
+    #     # để lấy view "mới nhất" theo inherit chain (giống logic cũ)
+    #     query = SQL("""
+    #         WITH ranked_views AS (
+    #             SELECT 
+    #                 v.id,
+    #                 ROW_NUMBER() OVER (
+    #                     PARTITION BY COALESCE(v.inherit_id, v.id) 
+    #                     ORDER BY v.priority DESC, v.create_date DESC, v.id DESC
+    #                 ) AS rn
+    #             FROM ir_ui_view v
+    #             LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #             WHERE md.module IS NULL  -- Không có module → custom view
+    #             AND v.model = %s
+    #             AND v.active = TRUE
+    #         )
+    #         SELECT id FROM ranked_views WHERE rn = 1
+    #     """, model)
+
+    #     view_ids = [row[0] for row in self.env.execute_query(query)]
+    #     if not view_ids:
+    #         return self.browse()
+
+    #     return self.browse(view_ids).with_context({'load_all_views': True})._check_xml()
+    # def _validate_custom_views(self, model):
+    #     """Validate architecture of custom views (= without xml id) for a given model.
+    #         This method is called at the end of registry update.
+    #         UUIDv7-compatible + FULL LOGGING.
+    #     """
+    #     _logger = logging.getLogger(__name__)
+
+    #     _logger.debug("UUIDv7: Starting _validate_custom_views for model: %s", model)
+
+    #     query = SQL("""
+    #         WITH ranked_views AS (
+    #             SELECT 
+    #                 v.id,
+    #                 v.name,
+    #                 v.priority,
+    #                 v.create_date,
+    #                 ROW_NUMBER() OVER (
+    #                     PARTITION BY COALESCE(v.inherit_id, v.id) 
+    #                     ORDER BY v.priority DESC, v.create_date DESC, v.id DESC
+    #                 ) AS rn
+    #             FROM ir_ui_view v
+    #             LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
+    #             WHERE md.module IS NULL
+    #             AND v.model = %s
+    #             AND v.active = TRUE
+    #         )
+    #         SELECT id, name FROM ranked_views WHERE rn = 1
+    #     """, model)
+
+    #     try:
+    #         results = self.env.execute_query(query)
+    #         view_ids = [row[0] for row in results]
+    #         view_names = [row[1] or '<no name>' for row in results]
+
+    #         if not view_ids:
+    #             _logger.debug("UUIDv7: No custom views found for model %s", model)
+    #             return self.browse()
+
+    #         # Log chi tiết từng view được chọn
+    #         _logger.info("UUIDv7: Found %d custom view(s) to validate for model '%s':", len(view_ids), model)
+    #         for vid, vname in zip(view_ids, view_names):
+    #             _logger.info("   → View UUID: %s | Name: %s", vid, vname)
+
+    #         validated_views = self.browse(view_ids).with_context({'load_all_views': True})
+    #         _logger.debug("UUIDv7: Calling _check_xml() on %d views for model %s", len(validated_views), model)
+
+    #         return validated_views._check_xml()
+
+    #     except Exception as e:
+    #         _logger.error("UUIDv7: ERROR in _validate_custom_views for model %s: %s", model, str(e), exc_info=True)
+    #         raise    
 
     @api.model
     def _validate_module_views(self, module):
@@ -3436,7 +3632,7 @@ class NameManager:
             # logic mimics /web/action/load behaviour
             action = False
             try:
-                action_id = int(name)
+                action_id = uuid.UUID(name)
             except ValueError:
                 model, action_id = view.env['ir.model.data']._xmlid_to_res_model_res_id(name, raise_if_not_found=False)
                 if not action_id:

@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 import zipfile
+import uuid
 
 from contextlib import closing
 from datetime import datetime
@@ -79,14 +80,14 @@ def _initialize_db(db_name, demo, lang, user_password, login='admin', country_co
 
             if country_code:
                 country = env['res.country'].search([('code', 'ilike', country_code)])[0]
-                env['res.company'].browse(1).write({'country_id': country_code and country.id, 'currency_id': country_code and country.currency_id.id})
+                env['res.company'].browse(uuid.UUID('00000000-0000-0000-0000-000000000001')).write({'country_id': country_code and country.id, 'currency_id': country_code and country.currency_id.id})
                 if len(country_timezones.get(country_code, [])) == 1:
                     users = env['res.users'].search([])
                     users.write({'tz': country_timezones[country_code][0]})
             if phone:
-                env['res.company'].browse(1).write({'phone': phone})
+                env['res.company'].browse(uuid.UUID('00000000-0000-0000-0000-000000000001')).write({'phone': phone})
             if '@' in login:
-                env['res.company'].browse(1).write({'email': login})
+                env['res.company'].browse(uuid.UUID('00000000-0000-0000-0000-000000000001')).write({'email': login})
 
             # update admin's password and lang and login
             values = {'password': user_password, 'lang': lang}

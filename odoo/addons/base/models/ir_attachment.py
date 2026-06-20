@@ -37,6 +37,7 @@ from odoo.tools.mimetypes import (
     guess_mimetype,
 )
 from odoo.tools.misc import limited_field_access_token
+from odoo.tools.uuid_utils import uuid7, to_uuid
 
 _logger = logging.getLogger(__name__)
 SECURITY_FIELDS = ('res_model', 'res_id', 'create_uid', 'public', 'res_field')
@@ -848,7 +849,8 @@ class IrAttachment(models.Model):
         return ids
 
     def _generate_access_token(self):
-        return str(uuid.uuid4())
+	# UUIDv7 Patch
+        return str(uuid7())
 
     @api.model
     def action_get(self):

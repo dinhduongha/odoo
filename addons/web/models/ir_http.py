@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import odoo
+import logging
 from odoo import api, models, fields
 from odoo.http import request, DEFAULT_MAX_CONTENT_LENGTH
 from odoo.tools import config
@@ -23,6 +24,7 @@ comma (eg: 'tests, assets').
 """
 ALLOWED_DEBUG_MODES = ['', '1', 'assets', 'tests']
 
+_logger = logging.getLogger(__name__)
 
 class IrHttp(models.AbstractModel):
     _inherit = 'ir.http'
@@ -93,6 +95,7 @@ class IrHttp(models.AbstractModel):
             'web.max_file_upload_size',
             default=DEFAULT_MAX_CONTENT_LENGTH,
         ))
+        _logger.info("[UUID IrHttp] session_info: %s ", user.id)
         is_internal_user = user._is_internal()
         session_info = {
             "uid": session_uid,
@@ -164,11 +167,13 @@ class IrHttp(models.AbstractModel):
                 },
                 "show_effect": True,
             })
+        _logger.info("[UUID IrHttp] session_info end: %s ", user.id)
         return session_info
 
     @api.model
     def get_frontend_session_info(self):
         user = self.env.user
+        _logger.info("[UUID DEBUG] IrHttp get_frontend_session_info: %s ", user)
         session_uid = request.session.uid
         session_info = {
             'is_admin': user._is_admin() if session_uid else False,

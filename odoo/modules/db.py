@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import logging
 import typing
+import uuid
+from odoo.tools.uuid_utils import uuid7
+
 from enum import IntEnum
 
+import psycopg2
+import psycopg2.extras
+
 from psycopg2.extras import Json
+
 
 import odoo.modules
 import odoo.tools
@@ -15,6 +22,9 @@ if typing.TYPE_CHECKING:
     from odoo.sql_db import BaseCursor, Cursor
 
 _logger = logging.getLogger(__name__)
+
+
+psycopg2.extras.register_uuid()
 
 
 def is_initialized(cr: Cursor) -> bool:
@@ -124,38 +134,117 @@ def initialize(cr: Cursor) -> None:
         cr.execute("""UPDATE ir_module_module SET state='to install' WHERE name in %s""", (tuple(to_auto_install),))
 
 
-def create_categories(cr: Cursor, categories: list[str]) -> int | None:
-    """ Create the ir_module_category entries for some categories.
+# def create_categories(cr: Cursor, categories: list[str]) -> uuid | None:
+#     """ Create the ir_module_category entries for some categories.
+
+#     categories is a list of strings forming a single category with its
+#     parent categories, like ['Grand Parent', 'Parent', 'Child'].
+
+#     Return the database id of the (last) category.
+
+#     """
+#     p_id = None
+#     category = []
+#     while categories:
+#         category.append(categories[0])
+#         xml_id = 'module_category_' + ('_'.join(x.lower() for x in category)).replace('&', 'and').replace(' ', '_')
+#         # search via xml_id (because some categories are renamed)
+#         cr.execute("SELECT res_id FROM ir_model_data WHERE name=%s AND module=%s AND model=%s",
+#                    (xml_id, "base", "ir.module.category"))
+
+#         row = cr.fetchone()
+#         if not row:
+#             cr.execute('INSERT INTO ir_module_category \
+#                     (name, parent_id) \
+#                     VALUES (%s, %s) RETURNING id', (Json({'en_US': categories[0]}), p_id))
+#             row = cr.fetchone()
+#             assert row is not None  # for typing
+#             p_id = row[0]
+#             cr.execute('INSERT INTO ir_model_data (module, name, res_id, model, noupdate) \
+#                        VALUES (%s, %s, %s, %s, %s)', ('base', xml_id, p_id, 'ir.module.category', True))
+#         else:
+#             p_id = row[0]
+#         assert isinstance(p_id, uuid.UUID)
+#         categories = categories[1:]
+#     return p_id
+
+def create_categories(cr: Cursor, categories: list[str]) -> uuid.UUID | None:
+    """
+    Create the ir_module_category entries for some categories.
 
     categories is a list of strings forming a single category with its
     parent categories, like ['Grand Parent', 'Parent', 'Child'].
 
-    Return the database id of the (last) category.
-
+    Returns the UUID of the last category.
     """
-    p_id = None
+    p_id: uuid.UUID | None = None
     category = []
+
     while categories:
-        category.append(categories[0])
-        xml_id = 'module_category_' + ('_'.join(x.lower() for x in category)).replace('&', 'and').replace(' ', '_')
+        name = categories[0]
+        category.append(name)
+        xml_id = (
+            "module_category_"
+            + ("_".join(x.lower() for x in category))
+            .replace("&", "and")
+            .replace(" ", "_")
+        )
+
+        # --- DEBUG ---
+        #print(f"\n[create_categories] Looking up xml_id={xml_id}, parent={p_id}")
+        #_logger.info(f"\n[create_categories] Looking up xml_id={xml_id}, parent={p_id}")
         # search via xml_id (because some categories are renamed)
-        cr.execute("SELECT res_id FROM ir_model_data WHERE name=%s AND module=%s AND model=%s",
-                   (xml_id, "base", "ir.module.category"))
+        cr.execute(
+            """
+            SELECT res_id
+            FROM ir_model_data
+            WHERE name = %s AND module = %s AND model = %s
+            """,
+            (xml_id, "base", "ir.module.category"),
+        )
 
         row = cr.fetchone()
         if not row:
-            cr.execute('INSERT INTO ir_module_category \
-                    (name, parent_id) \
-                    VALUES (%s, %s) RETURNING id', (Json({'en_US': categories[0]}), p_id))
+            # ✅ res_id và id đều là UUID
+            new_id = str(uuid7())
+            parent_id = str(p_id) if p_id else None
+
+            #print(f"[create_categories] Creating new category '{name}' id={new_id}")
+
+            cr.execute(
+                """
+                INSERT INTO ir_module_category (id, name, parent_id)
+                VALUES (%s, %s, %s)
+                RETURNING id
+                """,
+                (new_id, Json({"en_US": name}), p_id),
+            )
             row = cr.fetchone()
-            assert row is not None  # for typing
+            assert row is not None
             p_id = row[0]
-            cr.execute('INSERT INTO ir_model_data (module, name, res_id, model, noupdate) \
-                       VALUES (%s, %s, %s, %s, %s)', ('base', xml_id, p_id, 'ir.module.category', True))
+
+            cr.execute(
+                """
+                INSERT INTO ir_model_data (id, module, name, res_id, model, noupdate)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (str(uuid7()), "base", xml_id, p_id, "ir.module.category", True),
+            )
+            #print(f"[create_categories] Linked ir_model_data for {xml_id} → {p_id}")
+
         else:
             p_id = row[0]
-        assert isinstance(p_id, int)
+            #print(f"[create_categories] Found existing category {xml_id} → {p_id}")
+
+        if not isinstance(p_id, uuid.UUID):
+            try:
+                p_id = uuid.UUID(str(p_id))
+            except Exception:
+                raise TypeError(f"Invalid UUID type for p_id: {p_id!r}")
+
         categories = categories[1:]
+
+    #print(f"[create_categories] DONE → last={p_id}")
     return p_id
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import collections.abc
 import logging
 import typing
+import uuid
 from collections import defaultdict
 from difflib import get_close_matches, unified_diff
 from hashlib import sha256

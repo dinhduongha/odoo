@@ -27,7 +27,7 @@ except ImportError:
 from .config import config
 from .misc import file_open, file_path, SKIPPED_ELEMENT_TYPES
 from odoo.exceptions import ValidationError
-
+from odoo.models import BaseModel
 from .safe_eval import safe_eval, pytz, time
 
 _logger = logging.getLogger(__name__)
@@ -214,20 +214,60 @@ def nodeattr2bool(node, attr, default=False):
     return str2bool(val)
 
 class xml_import(object):
+    from odoo.models import BaseModel
     def get_env(self, node, eval_context=None):
         uid = node.get('uid')
         context = node.get('context')
         if uid or context:
+            val = uid and self.id_get(uid)
+            if isinstance(val, BaseModel):
+                val = val.id  # ⚡ lấy UUID từ recordset res.users
             return self.env(
-                user=uid and self.id_get(uid),
+                user=val,
                 context=context and {
                     **self.env.context,
-                    **safe_eval(context, {
-                        'ref': self.id_get,
-                        **(eval_context or {})
-                    }),
+                    **safe_eval(context, {'ref': self.id_get, **(eval_context or {})}),
                 }
             )
+            # return self.env(
+            #     user=uid and self.id_get(uid),
+            #     context=context and {
+            #         **self.env.context,
+            #         **safe_eval(context, {
+            #             'ref': self.id_get,
+            #             **(eval_context or {})
+            #         }),
+            #     }
+            # )
+
+            # Ngan gon:
+            # user=uid and getattr(self.id_get(uid), 'id', self.id_get(uid)),
+
+            # Dai hon
+            # user_id = None
+            # if uid:
+            #     user_val = self.id_get(uid)
+            #     # Nếu trả về record thì lấy id, nếu là string thì convert sang UUID
+            #     if hasattr(user_val, "id"):
+            #         user_val = user_val.id
+            #     if isinstance(user_val, str):
+            #         try:
+            #             import uuid
+            #             user_val = uuid.UUID(user_val)
+            #         except Exception:
+            #             pass
+            #     user_id = user_val
+
+            # ctx = self.env.context
+            # if context:
+            #     ctx = {
+            #         **ctx,
+            #         **safe_eval(context, {
+            #             'ref': self.id_get,
+            #             **(eval_context or {})
+            #         }),
+            #     }
+            # return self.env(user=user_id, context=ctx)
         return self.env
 
     def make_xml_id(self, xml_id):
@@ -455,15 +495,41 @@ form: module.record_id""" % (xml_id,)
                 res['sequence'] = sequence
 
         data = dict(xml_id=xid, values=res, noupdate=self.noupdate)
+        # _logger.warning(
+        #     "[XML LOAD] model=%s xid=%s mode=%s\nValues:\n%s",
+        #     rec_model, xid, self.mode,
+        #     pprint.pformat(data["values"], width=120)
+        # )
+
+        # if rec_model == 'res.partner':
+        #     _logger.warning(
+        #         "[XML LOAD] model=%s xid=%s mode=%s\n",
+        #         rec_model, xid, self.mode
+        #     )
+
         if foreign_record_to_create:
             model = model.with_context(foreign_record_to_create=foreign_record_to_create)
-        record = model._load_records([data], self.mode == 'update')
+        try:
+            record = model._load_records([data], self.mode == 'update')
+        except Exception as e:
+            _logger.error(
+                "[XML LOAD ERROR] model=%s xid=%s\nException: %s\nValues:\n%s",
+                rec_model, xid, e, pprint.pformat(data["values"], width=120),
+                exc_info=True,
+            )
+            raise
+
         if xid:
             self.idref[xid] = record.id
         if config.get('import_partial'):
             env.cr.commit()
         for child_rec, inverse_name in sub_records:
             self._tag_record(child_rec, extra_vals={inverse_name: record.id})
+        # if rec_model == 'res.partner':
+        #     _logger.warning(
+        #         "[XML LOAD FINISH] model=%s xid=%s mode=%s record.id=%s\n",
+        #         rec_model, xid, self.mode, record.id
+        #     )
         return rec_model, record.id
 
     def _tag_template(self, el):
@@ -585,8 +651,29 @@ form: module.record_id""" % (xml_id,)
     def id_get(self, id_str, raise_if_not_found=True):
         id_str = self.make_xml_id(id_str)
         if id_str in self.idref:
+            #_logger.warning("id_get: %s found in idref -> %s", id_str, self.idref[id_str])
             return self.idref[id_str]
-        return self.model_id_get(id_str, raise_if_not_found)[1]
+        model, res_id = self.model_id_get(id_str, raise_if_not_found)
+        #_logger.warning("id_get: %s -> %s %s", id_str, model, res_id)
+        return res_id
+        
+    # def id_get(self, id_str, raise_if_not_found=True):
+    #     id_str_orig = id_str
+    #     id_str = self.make_xml_id(id_str)
+
+    #     import logging
+    #     _logger = logging.getLogger(__name__)
+    #     _logger.debug("🟡 [convert] id_get(%s) → normalized: %s", id_str_orig, id_str)
+
+    #     if id_str in self.idref:
+    #         val = self.idref[id_str]
+    #         _logger.debug("🟢 [convert] id_get(%s) found in idref: %s", id_str, val)
+    #         return val
+
+    #     model, res_id = self.model_id_get(id_str, raise_if_not_found=raise_if_not_found)
+    #     _logger.debug("🟢 [convert] id_get(%s) resolved via model_id_get: model=%s, res_id=%s (%s)",
+    #                 id_str, model, res_id, type(res_id))
+    #     return res_id
 
     def model_id_get(self, id_str, raise_if_not_found=True):
         id_str = self.make_xml_id(id_str)
@@ -602,10 +689,17 @@ form: module.record_id""" % (xml_id,)
             self._noupdate.append(nodeattr2bool(el, 'noupdate', self.noupdate))
             self._sequences.append(0 if nodeattr2bool(el, 'auto_sequence', False) else None)
             try:
+                # _logger.info("convert: calling tag handler %s for <%s> at %s:%s",
+                #     getattr(f, "__name__", str(f)),
+                #     rec.tag,
+                #     rec.getroottree().docinfo.URL,
+                #     rec.sourceline)
                 f(rec)
             except ParseError:
                 raise
             except ValidationError as err:
+                import traceback
+                _logger.debug("Call stack:\n%s", "".join(traceback.format_stack(limit=6)))
                 msg = "while parsing {file}:{viewline}\n{err}\n\nView error context:\n{context}\n".format(
                     file=rec.getroottree().docinfo.URL,
                     viewline=rec.sourceline,
@@ -686,15 +780,23 @@ def convert_file(
 
     with file_open(pathname, 'rb', env=env) as fp:
         if ext == '.csv':
+            #_logger.info("==== convert_csv_import %s", pathname)
             convert_csv_import(env, module, pathname, fp.read(), idref, mode, noupdate)
+            #_logger.info("==== convert_csv_import %s finished", pathname)
         elif ext == '.sql':
+            #_logger.info("==== convert_sql_import %s", pathname)
             convert_sql_import(env, fp)
+            #_logger.info("==== convert_sql_import %s finished", pathname)
         elif ext == '.xml':
+            #_logger.info("==== convert_xml_import %s", pathname)
             convert_xml_import(env, module, fp, idref, mode, noupdate)
+            #_logger.info("==== convert_xml_import %s finished", pathname)
         elif ext == '.js':
             pass # .js files are valid but ignored here.
         else:
             raise ValueError("Can't load unknown file type %s.", filename)
+        # UUID-Patch: Do not commit here => SavePoint/ReleasePoint with flush = False will failures
+        #env.cr.commit()
 
 
 def convert_sql_import(env, fp):
@@ -719,7 +821,7 @@ def convert_csv_import(
     model = filename.split('-')[0]
     reader = csv.reader(io.StringIO(csvcontent.decode()), quotechar='"', delimiter=',')
     fields = next(reader)
-
+    #_logger.info("The CVS file '%s' convert_csv_import!", filename)
     if not (mode == 'init' or 'id' in fields):
         _logger.error("Import specification does not contain 'id' and we are in init mode, Cannot continue.")
         return
@@ -772,6 +874,7 @@ def convert_xml_import(
     schema = os.path.join(config.root_path, 'import_xml.rng')
     relaxng = etree.RelaxNG(etree.parse(schema))
     try:
+        #_logger.info("The XML file '%s' convert_xml_import!", xmlfile.name)
         relaxng.assert_(doc)
     except Exception:
         _logger.exception("The XML file '%s' does not fit the required schema!", xmlfile.name)

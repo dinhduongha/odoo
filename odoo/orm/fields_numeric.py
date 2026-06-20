@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
 class Integer(Field[int]):
     """ Encapsulates an :class:`int`. """
     type = 'integer'
-    _column_type = ('int4', 'int4')
+    _column_type = ('int8', 'int8')
     falsy_value = 0
 
     aggregator = 'sum'

@@ -12,6 +12,7 @@ import threading
 import time
 import typing
 import warnings
+import uuid
 from collections import defaultdict, deque
 from collections.abc import Mapping
 from contextlib import closing, contextmanager, nullcontext, ExitStack
@@ -32,6 +33,7 @@ from odoo.tools import (
 from odoo.tools.func import locked, reset_cached_properties
 from odoo.tools.lru import LRU
 from odoo.tools.misc import Collector, format_frame
+from odoo.tools.uuid_utils import uuid7, to_uuid
 
 from .utils import SUPERUSER_ID
 from . import model_classes
@@ -148,7 +150,6 @@ class Registry(Mapping[str, type["BaseModel"]]):
         registry.init(db_name)
         registry.new = registry.init = registry.registries = None  # type: ignore
         first_registry = not cls.registries
-
         # Initializing a registry will call general code which will in
         # turn call Registry() to obtain the registry being initialized.
         # Make it available in the registries dictionary then remove it
@@ -180,6 +181,7 @@ class Registry(Mapping[str, type["BaseModel"]]):
                     new_db_demo = config['with_demo']
                 if first_registry and not update_module:
                     exit_stack.enter_context(gc.disabling_gc())
+                #_logger.info(f"regitry call load_modules() === ")
                 load_modules(
                     registry,
                     update_module=update_module,
@@ -200,7 +202,6 @@ class Registry(Mapping[str, type["BaseModel"]]):
             raise
 
         del registry._reinit_modules
-
         # load_modules() above can replace the registry by calling
         # indirectly new() again (when modules have to be uninstalled).
         # Yeah, crazy.
@@ -275,8 +276,9 @@ class Registry(Mapping[str, type["BaseModel"]]):
         # must be reloaded.
         # The `orm_signaling_... sequence` indicates the corresponding cache must be
         # invalidated (i.e. cleared).
-        self.registry_sequence: int = -1
-        self.cache_sequences: dict[str, int] = {}
+        #self.registry_sequence: int = -1
+        self.registry_sequence: uuid.UUID = uuid.UUID('00000000-0000-0000-0000-000000000000')
+        self.cache_sequences: dict[str, uuid.UUID] = {}
 
         # Flags indicating invalidation of the registry or the cache.
         self._invalidation_flags = threading.local()
@@ -750,7 +752,6 @@ class Registry(Mapping[str, type["BaseModel"]]):
             for model in models:
                 model._auto_init()
                 model.init()
-
             env['ir.model']._reflect_models(model_names)
             env['ir.model.fields']._reflect_fields(model_names)
             env['ir.model.fields.selection']._reflect_selections(model_names)
@@ -775,6 +776,9 @@ class Registry(Mapping[str, type["BaseModel"]]):
             del self._post_init_queue
             del self._foreign_keys
             del self._is_install
+        
+        _logger.info('module %s: finish init_models ', context['module'])
+
 
     def check_null_constraints(self, cr: Cursor) -> None:
         """ Check that all not-null constraints are set. """
@@ -1031,7 +1035,7 @@ class Registry(Mapping[str, type["BaseModel"]]):
             for table_name in signaling_tables:
                 if table_name not in existing_sig_tables:
                     cr.execute(SQL(
-                        "CREATE TABLE %s (id SERIAL PRIMARY KEY, date TIMESTAMP DEFAULT now())",
+                        "CREATE TABLE %s (id uuid NOT NULL DEFAULT uuidv7(), date TIMESTAMP DEFAULT now())",
                         SQL.identifier(table_name),
                     ))
                     cr.execute(SQL("INSERT INTO %s DEFAULT VALUES", SQL.identifier(table_name)))
@@ -1043,9 +1047,10 @@ class Registry(Mapping[str, type["BaseModel"]]):
             _logger.debug("Multiprocess load registry signaling: [Registry: %s] %s",
                           self.registry_sequence, ' '.join('[Cache %s: %s]' % cs for cs in self.cache_sequences.items()))
 
-    def get_sequences(self, cr: BaseCursor) -> tuple[int, dict[str, int]]:
+    def get_sequences(self, cr: BaseCursor) -> tuple[uuid.UUID, dict[str, uuid.UUID]]:
         signaling_tables = tuple(f'orm_signaling_{cache_name}' for cache_name in ['registry', *_CACHES_BY_KEY])
-        signaling_selects = SQL(', ').join([SQL('( SELECT max(id) FROM %s)', SQL.identifier(signaling_table)) for signaling_table in signaling_tables])
+        #signaling_selects = SQL(', ').join([SQL('( SELECT max(id::text) FROM %s)', SQL.identifier(signaling_table)) for signaling_table in signaling_tables])
+        signaling_selects = SQL(', ').join([SQL('( SELECT id FROM %s ORDER BY id DESC limit 1)', SQL.identifier(signaling_table)) for signaling_table in signaling_tables])
         cr.execute(SQL("SELECT %s", signaling_selects))
         row = cr.fetchone()
         assert row is not None, "No result when reading signaling sequences"
@@ -1101,7 +1106,8 @@ class Registry(Mapping[str, type["BaseModel"]]):
                 # self.registry_sequence will actually be out-of-date,
                 # and the next call to check_signaling() will detect that and trigger a registry reload.
                 # otherwise, self.registry_sequence should be equal to cr.fetchone()[0]
-                self.registry_sequence += 1
+                # self.registry_sequence += 1
+                self.registry_sequence = uuid7()
 
         # no need to notify cache invalidation in case of registry invalidation,
         # because reloading the registry implies starting with an empty cache
@@ -1114,7 +1120,8 @@ class Registry(Mapping[str, type["BaseModel"]]):
                     # self.cache_sequences[cache_name] will actually be out-of-date,
                     # and the next call to check_signaling() will detect that and trigger cache invalidation.
                     # otherwise, self.cache_sequences[cache_name] should be equal to cr.fetchone()[0]
-                    self.cache_sequences[cache_name] += 1
+                    # self.cache_sequences[cache_name] += 1
+                    self.cache_sequences[cache_name] = uuid7()
 
         self.registry_invalidated = False
         self.cache_invalidated.clear()

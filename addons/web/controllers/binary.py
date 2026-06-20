@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import unicodedata
+import uuid
 
 from contextlib import nullcontext
 try:
@@ -23,6 +24,7 @@ from odoo.http import request, Response
 from odoo.tools import file_open, file_path, replace_exceptions, str2bool
 from odoo.tools.image import image_guess_size_from_field_name
 from odoo.tools.mimetypes import guess_mimetype
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -63,17 +65,17 @@ class Binary(http.Controller):
         '/web/content',
         '/web/content/<string:xmlid>',
         '/web/content/<string:xmlid>/<string:filename>',
-        '/web/content/<int:id>',
-        '/web/content/<int:id>/<string:filename>',
-        '/web/content/<string:model>/<int:id>/<string:field>',
-        '/web/content/<string:model>/<int:id>/<string:field>/<string:filename>',
+        '/web/content/<uuid:id>',
+        '/web/content/<uuid:id>/<string:filename>',
+        '/web/content/<string:model>/<uuid:id>/<string:field>',
+        '/web/content/<string:model>/<uuid:id>/<string:field>/<string:filename>',
     ], type='http', auth='public', readonly=True)
     # pylint: disable=redefined-builtin,invalid-name
     def content_common(self, xmlid=None, model='ir.attachment', id=None, field='raw',
                        filename=None, filename_field='name', mimetype=None, unique=False,
                        download=False, access_token=None, nocache=False):
         with replace_exceptions(UserError, by=request.not_found()):
-            record = request.env['ir.binary']._find_record(xmlid, model, id and int(id), access_token, field=field)
+            record = request.env['ir.binary']._find_record(xmlid, model, id, access_token, field=field)
             stream = request.env['ir.binary']._get_stream_from(record, field, filename, filename_field, mimetype)
             if request.httprequest.args.get('access_token'):
                 stream.public = True
@@ -86,6 +88,10 @@ class Binary(http.Controller):
             send_file_kwargs['max_age'] = None
 
         return stream.get_response(**send_file_kwargs)
+
+
+    # UUIDv7 Patched
+    ZERO_UUID = uuid.UUID('00000000-0000-0000-0000-000000000000')
 
     @http.route([
         '/web/assets/<string:unique>/<string:filename>'], type='http', auth="public", readonly=True)
@@ -103,11 +109,16 @@ class Binary(http.Controller):
             domain = [
                 ('public', '=', True),
                 ('url', '!=', False),
-                ('url', '=like', url),
+                #('url', '=like', url),
                 ('res_model', '=', 'ir.ui.view'),
-                ('res_id', '=', 0),
+                #('res_id', '=', 0),
+                '|', ('res_id', '=', self.ZERO_UUID), ('res_id', '=', False),
                 ('create_uid', '=', SUPERUSER_ID),
             ]
+            if is_uuid(unique):
+                domain.append(('url', 'ilike', f"%{unique}%"))
+            else:
+                domain.append(('url', '=like', url))
             attachment = env['ir.attachment'].sudo().search(domain, limit=1)
             if attachment:
                 stream = env['ir.binary']._get_stream_from(attachment, 'raw', filename)
@@ -167,18 +178,18 @@ class Binary(http.Controller):
         '/web/image/<string:xmlid>/<string:filename>',
         '/web/image/<string:xmlid>/<int:width>x<int:height>',
         '/web/image/<string:xmlid>/<int:width>x<int:height>/<string:filename>',
-        '/web/image/<string:model>/<int:id>/<string:field>',
-        '/web/image/<string:model>/<int:id>/<string:field>/<string:filename>',
-        '/web/image/<string:model>/<int:id>/<string:field>/<int:width>x<int:height>',
-        '/web/image/<string:model>/<int:id>/<string:field>/<int:width>x<int:height>/<string:filename>',
-        '/web/image/<int:id>',
-        '/web/image/<int:id>/<string:filename>',
-        '/web/image/<int:id>/<int:width>x<int:height>',
-        '/web/image/<int:id>/<int:width>x<int:height>/<string:filename>',
-        '/web/image/<int:id>-<string:unique>',
-        '/web/image/<int:id>-<string:unique>/<string:filename>',
-        '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>',
-        '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>/<string:filename>',
+        '/web/image/<string:model>/<uuid:id>/<string:field>',
+        '/web/image/<string:model>/<uuid:id>/<string:field>/<string:filename>',
+        '/web/image/<string:model>/<uuid:id>/<string:field>/<int:width>x<int:height>',
+        '/web/image/<string:model>/<uuid:id>/<string:field>/<int:width>x<int:height>/<string:filename>',
+        '/web/image/<uuid:id>',
+        '/web/image/<uuid:id>/<string:filename>',
+        '/web/image/<uuid:id>/<int:width>x<int:height>',
+        '/web/image/<uuid:id>/<int:width>x<int:height>/<string:filename>',
+        '/web/image/<uuid:id>-<string:unique>',
+        '/web/image/<uuid:id>-<string:unique>/<string:filename>',
+        '/web/image/<uuid:id>-<string:unique>/<int:width>x<int:height>',
+        '/web/image/<uuid:id>-<string:unique>/<int:width>x<int:height>/<string:filename>',
     ], type='http', auth='public', readonly=True, save_session=False)
     # pylint: disable=redefined-builtin,invalid-name
     def content_image(self, xmlid=None, model='ir.attachment', id=None, field='raw',
@@ -186,7 +197,7 @@ class Binary(http.Controller):
                       download=False, width=0, height=0, crop=False, access_token=None,
                       nocache=False):
         try:
-            record = request.env['ir.binary']._find_record(xmlid, model, id and int(id), access_token, field=field)
+            record = request.env['ir.binary']._find_record(xmlid, model, id, access_token, field=field)
             stream = request.env['ir.binary']._get_image_stream_from(
                 record, field, filename=filename, filename_field=filename_field,
                 mimetype=mimetype, width=int(width), height=int(height), crop=crop,

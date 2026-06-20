@@ -3,6 +3,8 @@ from __future__ import annotations
 import itertools
 import logging
 import typing
+import uuid
+
 from collections import defaultdict
 from collections.abc import Reversible
 from operator import attrgetter
@@ -19,6 +21,7 @@ from .fields_reference import Many2oneReference
 from .identifiers import NewId
 from .models import BaseModel
 from .utils import COLLECTION_TYPES, SQL_OPERATORS, check_pg_name
+from odoo.tools.uuid_utils import uuid7, to_uuid
 
 if typing.TYPE_CHECKING:
     from collections.abc import Sequence
@@ -28,7 +31,7 @@ if typing.TYPE_CHECKING:
     OnDelete = typing.Literal['cascade', 'set null', 'restrict']
 
 _schema = logging.getLogger('odoo.schema')
-
+_logger = logging.getLogger('odoo.fields_relational')
 
 class _Relational(Field[BaseModel]):
     """ Abstract class for relational fields. """
@@ -242,7 +245,7 @@ class Many2one(_Relational):
         company_id(s) are compatible with the currently active company.
     """
     type = 'many2one'
-    _column_type = ('int4', 'int4')
+    _column_type = ('uuid', 'uuid')
 
     ondelete: OnDelete | None = None    # what to do when value is deleted
     delegate: bool = False              # whether self implements delegation
@@ -323,17 +326,31 @@ class Many2one(_Relational):
         for record in records:
             self._update_cache(record, self.convert_to_cache(value, record, validate=False))
 
+    # def convert_to_column(self, value, record, values=None, validate=True):
+    #     return value or None
     def convert_to_column(self, value, record, values=None, validate=True):
-        return value or None
+        """Chuyển Python-side → DB (string)."""
+        if value is None:
+            return None
+        if isinstance(value, BaseModel):
+            value = value.id
+        if isinstance(value, uuid.UUID):
+            return str(value)
+        if isinstance(value, str):
+            return value
+        return None
 
     def convert_to_cache(self, value, record, validate=True):
         # cache format: id or None
-        if type(value) is int or type(value) is NewId:
-            id_ = value
-        elif isinstance(value, BaseModel):
+        # if type(value) is int or type(value) is NewId:
+        #     id_ = value
+        # elif
+        if isinstance(value, BaseModel):
             if validate and (value._name != self.comodel_name or len(value) > 1):
                 raise ValueError("Wrong value for %s: %r" % (self, value))
             id_ = value._ids[0] if value._ids else None
+        elif isinstance(value, uuid.UUID):
+            id_ = value
         elif isinstance(value, tuple):
             # value is either a pair (id, name), or a tuple of ids
             id_ = value[0] if value else None
@@ -342,24 +359,31 @@ class Many2one(_Relational):
             comodel = record.env[self.comodel_name]
             origin = comodel.browse(value.get('id'))
             id_ = comodel.new(value, origin=origin).id
+        elif isinstance(value, str):
+            try:
+                id_ = uuid.UUID(value)
+            except Exception:
+                id_ = None
         else:
             id_ = None
 
-        if self.delegate and record and not any(record._ids):
-            # if all records are new, then so is the parent
-            id_ = id_ and NewId(id_)
+        # if self.delegate and record and not any(record._ids):
+        #     # if all records are new, then so is the parent
+        #     id_ = id_ and NewId(id_)
 
         return id_
 
     def convert_to_record(self, value, record):
         # use registry to avoid creating a recordset for the model
         ids = () if value is None else (value,)
-        prefetch_ids = PrefetchMany2one(record, self)
+        #prefetch_ids = PrefetchMany2one(record, self)
+        prefetch_ids = [to_uuid(x) for x in PrefetchMany2one(record, self)]
         return record.pool[self.comodel_name](record.env, ids, prefetch_ids)
 
     def convert_to_record_multi(self, values, records):
         # return the ids as a recordset without duplicates
-        prefetch_ids = PrefetchMany2one(records, self)
+        #prefetch_ids = PrefetchMany2one(records, self)
+        prefetch_ids = [to_uuid(x) for x in PrefetchMany2one(records, self)]
         ids = tuple(unique(id_ for id_ in values if id_ is not None))
         return records.pool[self.comodel_name](records.env, ids, prefetch_ids)
 
@@ -377,15 +401,33 @@ class Many2one(_Relational):
         else:
             return value.id
 
+    # def convert_to_write(self, value, record):
+    #     if type(value) is int or type(value) is NewId:
+    #         return value
+    #     if not value:
+    #         return False
+    #     if isinstance(value, BaseModel) and value._name == self.comodel_name:
+    #         return value.id
+    #     if isinstance(value, tuple):
+    #         # value is either a pair (id, name), or a tuple of ids
+    #         return value[0] if value else False
+    #     if isinstance(value, dict):
+    #         return record.env[self.comodel_name].new(value).id
+    #     raise ValueError("Wrong value for %s: %r" % (self, value))
     def convert_to_write(self, value, record):
-        if type(value) is int or type(value) is NewId:
+        if isinstance(value, (int, NewId)):
             return value
         if not value:
             return False
+        if isinstance(value, str):
+            # mới: chấp nhận string UUID
+            return value
+        if isinstance(value, uuid.UUID):
+            # nếu bạn muốn dùng object UUID thật
+            return str(value)
         if isinstance(value, BaseModel) and value._name == self.comodel_name:
             return value.id
         if isinstance(value, tuple):
-            # value is either a pair (id, name), or a tuple of ids
             return value[0] if value else False
         if isinstance(value, dict):
             return record.env[self.comodel_name].new(value).id
@@ -642,14 +684,31 @@ class _RelationalMulti(_Relational):
 
     def convert_to_record(self, value, record):
         # use registry to avoid creating a recordset for the model
-        prefetch_ids = PrefetchX2many(record, self)
+        #prefetch_ids = PrefetchX2many(record, self)
+        prefetch_ids = [to_uuid(x) for x in PrefetchX2many(record, self)]
+        if isinstance(value, (list, tuple)):
+            value = tuple(to_uuid(v) for v in value)
+        else:
+            value = to_uuid(value)
+
         Comodel = record.pool[self.comodel_name]
         corecords = Comodel(record.env, value, prefetch_ids)
+
+        # if record._name in ('res.company', 'res.users'):
+        #     _logger.warning("[UUID DEBUG] convert_to_record start: model=%s, field=%s, record_id=%s, value=%r",
+        #                     record._name, self.name, record._ids, value)
+        #     _logger.warning("[UUID DEBUG] prefetch_ids=%s", list(prefetch_ids))
+        #     _logger.warning("[UUID DEBUG] corecords before filter: %s", corecords._ids)
+
         if (
             Comodel._active_name
             and self.context.get('active_test', record.env.context.get('active_test', True))
         ):
             corecords = corecords.filtered(Comodel._active_name).with_prefetch(prefetch_ids)
+        
+        # if record._name in ('res.company', 'res.users'):
+        #     _logger.warning("[UUID DEBUG] corecords after filter: %s", corecords._ids)
+
         return corecords
 
     def convert_to_record_multi(self, values, records):
@@ -668,46 +727,106 @@ class _RelationalMulti(_Relational):
     def convert_to_read(self, value, record, use_display_name=True):
         return value.ids
 
+    # def convert_to_write(self, value, record):
+    #     if isinstance(value, tuple):
+    #         # a tuple of ids, this is the cache format
+    #         value = record.env[self.comodel_name].browse(value)
+
+    #     if isinstance(value, BaseModel) and value._name == self.comodel_name:
+    #         def get_origin(val):
+    #             return val._origin if isinstance(val, BaseModel) else val
+
+    #         # make result with new and existing records
+    #         inv_names = {field.name for field in record.pool.field_inverses[self]}
+    #         result = [Command.set([])]
+    #         for record in value:
+    #             origin = record._origin
+    #             if not origin:
+    #                 values = record._convert_to_write({
+    #                     name: record[name]
+    #                     for name in record._cache
+    #                     if name not in inv_names
+    #                 })
+    #                 result.append(Command.create(values))
+    #             else:
+    #                 result[0][2].append(origin.id)
+    #                 if record != origin:
+    #                     values = record._convert_to_write({
+    #                         name: record[name]
+    #                         for name in record._cache
+    #                         if name not in inv_names and get_origin(record[name]) != origin[name]
+    #                     })
+    #                     if values:
+    #                         result.append(Command.update(origin.id, values))
+    #         return result
+
+    #     if value is False or value is None:
+    #         return [Command.clear()]
+
+    #     if isinstance(value, list):
+    #         return value
+
+    #     raise ValueError("Wrong value for %s: %s" % (self, value))
     def convert_to_write(self, value, record):
+        """Convert One2many / Many2many input to standard Command list.
+
+        Hỗ trợ:
+        - UUID string hoặc uuid.UUID object
+        - BaseModel / recordset
+        - tuple (cache)
+        - list of commands / IDs
+        - None / False → Command.clear()
+        """
+        def _get_id(val):
+            """Convert val to DB-friendly ID."""
+            if val is None or val is False:
+                return None
+            if isinstance(val, uuid.UUID):
+                return str(val)
+            if isinstance(val, BaseModel):
+                return _get_id(val.id)
+            return val
+
         if isinstance(value, tuple):
-            # a tuple of ids, this is the cache format
+            # a tuple of ids, convert to recordset
             value = record.env[self.comodel_name].browse(value)
 
         if isinstance(value, BaseModel) and value._name == self.comodel_name:
             def get_origin(val):
                 return val._origin if isinstance(val, BaseModel) else val
 
-            # make result with new and existing records
             inv_names = {field.name for field in record.pool.field_inverses[self]}
             result = [Command.set([])]
-            for record in value:
-                origin = record._origin
+            for rec in value:
+                origin = rec._origin
                 if not origin:
-                    values = record._convert_to_write({
-                        name: record[name]
-                        for name in record._cache
+                    values = rec._convert_to_write({
+                        name: _get_id(rec[name])
+                        for name in rec._cache
                         if name not in inv_names
                     })
                     result.append(Command.create(values))
                 else:
-                    result[0][2].append(origin.id)
-                    if record != origin:
-                        values = record._convert_to_write({
-                            name: record[name]
-                            for name in record._cache
-                            if name not in inv_names and get_origin(record[name]) != origin[name]
+                    # append origin id, convert UUID to string
+                    result[0][2].append(_get_id(origin.id))
+                    if rec != origin:
+                        values = rec._convert_to_write({
+                            name: _get_id(rec[name])
+                            for name in rec._cache
+                            if name not in inv_names and get_origin(rec[name]) != origin[name]
                         })
                         if values:
-                            result.append(Command.update(origin.id, values))
+                            result.append(Command.update(_get_id(origin.id), values))
             return result
 
         if value is False or value is None:
             return [Command.clear()]
 
         if isinstance(value, list):
-            return value
+            # list of Command or IDs
+            return [_get_id(v) if not isinstance(v, Command) else v for v in value]
 
-        raise ValueError("Wrong value for %s: %s" % (self, value))
+        raise ValueError("Wrong value for %s: %r" % (self, value))
 
     def convert_to_export(self, value, record):
         return ','.join(value.mapped('display_name')) if value else ''
@@ -956,7 +1075,7 @@ class One2many(_RelationalMulti):
             raise AccessError(records.env._("Failed to read field %s", self) + '\n' + str(e)) from e
 
         # group lines by inverse field (without prefetching other fields)
-        get_id = (lambda rec: rec.id) if inverse_field.type == 'many2one' else int
+        get_id = (lambda rec: rec.id) if inverse_field.type == 'many2one' else uuid.UUID
         group = defaultdict(list)
         for line in lines:
             # line[inverse] may be a record or an integer
@@ -1030,7 +1149,7 @@ class One2many(_RelationalMulti):
                             # do not try to delete anything in creation mode if nothing has been created before
                             if line_ids:
                                 # equivalent to Command.LINK
-                                if line_ids.__class__ is int:
+                                if line_ids.__class__ is uuid.UUID:
                                     line_ids = [line_ids]
                                 to_link[recs[-1]].update(line_ids)
                                 allow_full_delete = False
@@ -1337,8 +1456,8 @@ class Many2many(_RelationalMulti):
         comodel = model.env[self.comodel_name]
         if not sql.table_exists(cr, self.relation):
             cr.execute(SQL(
-                """ CREATE TABLE %(rel)s (%(id1)s INTEGER NOT NULL,
-                                          %(id2)s INTEGER NOT NULL,
+                """ CREATE TABLE %(rel)s (%(id1)s UUID NOT NULL,
+                                          %(id2)s UUID NOT NULL,
                                           PRIMARY KEY(%(id1)s, %(id2)s));
                     COMMENT ON TABLE %(rel)s IS %(comment)s;
                     CREATE INDEX ON %(rel)s (%(id2)s, %(id1)s); """,

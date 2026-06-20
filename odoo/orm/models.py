@@ -58,6 +58,7 @@ from odoo.tools.constants import PREFETCH_MAX
 from odoo.tools.lru import LRU
 from odoo.tools.misc import ReversedIterable, exception_to_unicode, unquote
 from odoo.tools.translate import _, LazyTranslate
+from odoo.tools.uuid_utils import uuid7, is_uuid
 
 from . import decorators as api
 from .commands import Command
@@ -156,38 +157,140 @@ def fix_import_export_id_paths(fieldname):
     return fixed_external_id.split('/')
 
 
-def to_record_ids(arg) -> list[int]:
-    """ Return the record ids of ``arg``, which may be a recordset, an integer or a list of integers. """
+# def to_record_ids(arg) -> list:
+#     """Return the record ids of ``arg`` (recordset, UUID, int, or list of them)."""
+#     if isinstance(arg, BaseModel):
+#         return arg.ids
+#     elif isinstance(arg, (uuid.UUID, str, int)):
+#         return [arg] if arg else []
+#     elif isinstance(arg, (list, tuple, set)):
+#         return [id_ for id_ in arg if id_]
+#     else:
+#         raise TypeError(f"Invalid record identifier type: {type(arg)}")
+
+def to_record_ids(arg) -> list:
+    """Return the record ids of ``arg`` (recordset, UUID, int, str, or list of them).
+    - Nếu là recordset -> lấy ids.
+    - Nếu là single UUID / int / str -> trả về [id].
+    - Nếu là iterable -> lọc phần tử rỗng và ép kiểu phù hợp.
+    """
+    if arg is None:
+        return []
+
+    # Nếu là recordset
     if isinstance(arg, BaseModel):
         return arg.ids
-    elif isinstance(arg, int):
-        return [arg] if arg else []
-    else:
-        return [id_ for id_ in arg if id_]
 
+    # Nếu là single giá trị (UUID / str / int)
+    if isinstance(arg, (uuid.UUID, int)):
+        return [arg]
+    if isinstance(arg, str):
+        arg = arg.strip()
+        if not arg:
+            return []
+        # Cố parse sang UUID nếu có thể
+        try:
+            return [uuid.UUID(arg)]
+        except ValueError:
+            return [arg]
+
+    # Nếu là list/tuple/set
+    if isinstance(arg, (list, tuple, set)):
+        ids = []
+        for id_ in arg:
+            if not id_:
+                continue
+            if isinstance(id_, uuid.UUID):
+                ids.append(id_)
+            elif isinstance(id_, int):
+                ids.append(id_)
+            elif isinstance(id_, str):
+                id_ = id_.strip()
+                if not id_:
+                    continue
+                try:
+                    ids.append(uuid.UUID(id_))
+                except ValueError:
+                    ids.append(id_)
+            elif isinstance(id_, BaseModel):
+                ids.extend(id_.ids)
+            else:
+                raise TypeError(f"Unsupported record id type: {type(id_)}")
+        return ids
+
+    raise TypeError(f"Invalid record identifier type: {type(arg)}")
+
+
+# def check_company_domain_parent_of(self, companies):
+#     """ A `_check_company_domain` function that lets a record be used if either:
+#         - record.company_id = False (which implies that it is shared between all companies), or
+#         - record.company_id is a parent of any of the given companies.
+#     """
+#     if isinstance(companies, str):
+#         return ['|', ('company_id', '=', False), ('company_id', 'parent_of', companies)]
+
+#     companies = to_record_ids(companies)
+#     if not companies:
+#         return [('company_id', '=', False)]
+
+#     return [('company_id', 'in', [
+#         int(parent)
+#         for rec in self.env['res.company'].sudo().browse(companies)
+#         for parent in rec.parent_path.split('/')[:-1]
+#     ] + [False])]
 
 def check_company_domain_parent_of(self, companies):
-    """ A `_check_company_domain` function that lets a record be used if either:
-        - record.company_id = False (which implies that it is shared between all companies), or
+    """A `_check_company_domain` function that lets a record be used if either:
+        - record.company_id = False (shared between all companies), or
         - record.company_id is a parent of any of the given companies.
     """
     if isinstance(companies, str):
+        # Giữ nguyên nếu chuỗi domain
         return ['|', ('company_id', '=', False), ('company_id', 'parent_of', companies)]
 
+    # Dùng hàm to_record_ids đã fix cho UUID
     companies = to_record_ids(companies)
     if not companies:
         return [('company_id', '=', False)]
 
-    return [('company_id', 'in', [
-        int(parent)
-        for rec in self.env['res.company'].sudo().browse(companies)
-        for parent in rec.parent_path.split('/')[:-1]
-    ] + [False])]
+    env = self.env['res.company'].sudo()
+    parent_ids = set()
 
+    for rec in env.browse(companies):
+        if rec.parent_path:
+            # parent_path: "uuid1/uuid2/uuid3/"
+            for parent_str in rec.parent_path.split('/')[:-1]:
+                if parent_str:
+                    try:
+                        parent_ids.add(uuid.UUID(parent_str))
+                    except ValueError:
+                        # fallback nếu có chuỗi lỗi format
+                        parent_ids.add(parent_str)
+
+    # Trả domain dạng UUID
+    return [('company_id', 'in', list(parent_ids) + [False])]
+
+
+# def check_companies_domain_parent_of(self, companies):
+#     """ A `_check_company_domain` function that lets a record be used if
+#         any company in record.company_ids is a parent of any of the given companies.
+#     """
+#     if isinstance(companies, str):
+#         return [('company_ids', 'parent_of', companies)]
+
+#     companies = to_record_ids(companies)
+#     if not companies:
+#         return []
+
+#     return [('company_ids', 'in', [
+#         int(parent)
+#         for rec in self.env['res.company'].sudo().browse(companies)
+#         for parent in rec.parent_path.split('/')[:-1]
+#     ])]
 
 def check_companies_domain_parent_of(self, companies):
-    """ A `_check_company_domain` function that lets a record be used if
-        any company in record.company_ids is a parent of any of the given companies.
+    """A `_check_company_domain` function that lets a record be used if
+    any company in record.company_ids is a parent of any of the given companies.
     """
     if isinstance(companies, str):
         return [('company_ids', 'parent_of', companies)]
@@ -196,11 +299,20 @@ def check_companies_domain_parent_of(self, companies):
     if not companies:
         return []
 
-    return [('company_ids', 'in', [
-        int(parent)
-        for rec in self.env['res.company'].sudo().browse(companies)
-        for parent in rec.parent_path.split('/')[:-1]
-    ])]
+    env = self.env['res.company'].sudo()
+    parent_ids = set()
+
+    for rec in env.browse(companies):
+        if rec.parent_path:
+            # parent_path là dạng "uuid1/uuid2/uuid3/"
+            for parent_str in rec.parent_path.split('/')[:-1]:
+                if parent_str:
+                    try:
+                        parent_ids.add(uuid.UUID(parent_str))
+                    except ValueError:
+                        parent_ids.add(parent_str)
+
+    return [('company_ids', 'in', list(parent_ids))]
 
 
 class MetaModel(type):
@@ -277,6 +389,7 @@ class MetaModel(type):
                     field.__set_name__(self, name)
 
             # make sure `id` field is still a `fields.Id`
+            #if not isinstance(self.id, Uuid):
             if not isinstance(self.id, Id):
                 raise TypeError(f"Field {self.id} is not an instance of fields.Id")
 
@@ -470,6 +583,7 @@ class BaseModel(metaclass=MetaModel):
     """
 
     id = Id()
+    #id = Uuid(primary_key=True, default=lambda: uuid7())
     display_name = Char(
         string='Display Name',
         compute='_compute_display_name',
@@ -642,7 +756,7 @@ class BaseModel(metaclass=MetaModel):
             (r.id, (modname, '%s_%s_%s' % (
                 r._table,
                 r.id,
-                uuid.uuid4().hex[:8],
+                uuid7().hex[:8],
             )))
             for r in missing
         )
@@ -1234,7 +1348,7 @@ class BaseModel(metaclass=MetaModel):
             dbid = False
             if record.get('.id'):
                 try:
-                    dbid = int(record['.id'])
+                    dbid = uuid.UUID(record['.id'])
                 except ValueError:
                     # in case of overridden id column
                     dbid = record['.id']
@@ -1414,8 +1528,10 @@ class BaseModel(metaclass=MetaModel):
             return self.browse()
 
         fields_to_fetch = self._determine_fields_to_fetch(field_names)
-
-        return self._fetch_query(query, fields_to_fetch)
+        result = self._fetch_query(query, fields_to_fetch)
+        #if self._name == 'ir.model.data':
+        #    _logger.info("[UUID DEBUG] search_fetch result: %s", result)        
+        return result
 
     #
     # display_name, name_create, name_search
@@ -1490,7 +1606,7 @@ class BaseModel(metaclass=MetaModel):
         return aggregator(domains)
 
     @api.model
-    def name_create(self, name: str) -> tuple[int, str] | typing.Literal[False]:
+    def name_create(self, name: str) -> tuple[uuid.UUID, str] | typing.Literal[False]:
         """Create a new record by calling :meth:`~.create` with only one value
         provided: the display name of the new record.
 
@@ -1517,7 +1633,7 @@ class BaseModel(metaclass=MetaModel):
         domain: DomainType | None = None,
         operator: str = 'ilike',
         limit: int = 100,
-    ) -> list[tuple[int, str]]:
+    ) -> list[tuple[uuid.UUID, str]]:
         """Search for records that have a display name matching the given
         ``name`` pattern when compared with the given ``operator``, while also
         matching the optional search domain (``domain``).
@@ -1578,7 +1694,7 @@ class BaseModel(metaclass=MetaModel):
             # override defaults with the provided values, never allow the other way around
             defaults = self.default_get(missing_defaults)
             for name, value in defaults.items():
-                if self._fields[name].type == 'many2many' and value and isinstance(value[0], int):
+                if self._fields[name].type == 'many2many' and value and isinstance(value[0], uuid.UUID):
                     # convert a list of ids into a list of commands
                     defaults[name] = [Command.set(value)]
                 elif self._fields[name].type == 'one2many' and value and isinstance(value[0], dict):
@@ -2967,7 +3083,7 @@ class BaseModel(metaclass=MetaModel):
 
                 # check the existences of the many2many
                 condition = SQL(
-                    "%s::int IN (SELECT id FROM %s)",
+                    "%s::uuid IN (SELECT id FROM %s)",
                     SQL.identifier(property_alias), SQL.identifier(comodel._table),
                 )
 
@@ -3005,7 +3121,7 @@ class BaseModel(metaclass=MetaModel):
             return SQL(
                 """ CASE
                         WHEN jsonb_typeof(%(property)s) = 'number'
-                         AND (%(property)s)::int IN (SELECT id FROM %(table)s)
+                         AND (%(property)s)::uuid IN (SELECT id FROM %(table)s)
                         THEN %(property)s
                         ELSE NULL
                      END """,
@@ -3720,13 +3836,19 @@ class BaseModel(metaclass=MetaModel):
         values from the cache without doing a query when it is avoidable.
         """
         data = [(record, {'id': record.id}) for record in self]
+        # if self._name == 'ir.model.data':
+        #     data2 = [(record, {'id': record.id, 'res_id':record.res_id}) for record in self]
+        #     _logger.info("[UUDI DEBUG] _read_format data: %s", data2);
         use_display_name = (load == '_classic_read')
         for name in fnames:
             field = self._fields[name]
+            
             if field.type == 'properties':
                 values_list = []
                 records = []
                 for record, vals in data:
+                    # if self._name == 'ir.model.data':
+                    #     _logger.info("[UUDI DEBUG] _read_format field data %s: %s", record, vals);
                     try:
                         values_list.append(record[name])
                         records.append(record.id)
@@ -3734,6 +3856,8 @@ class BaseModel(metaclass=MetaModel):
                         vals.clear()
 
                 results = field.convert_to_read_multi(values_list, self.browse(records))
+                # if self._name == 'ir.model.data':
+                #   _logger.info("[UUDI DEBUG] _read_format values_list %s, result: %s", values_list, results);
                 for record_read_vals, convert_result in zip(data, results):
                     record_read_vals[1][name] = convert_result
                 continue
@@ -3744,17 +3868,31 @@ class BaseModel(metaclass=MetaModel):
                 if not vals:
                     continue
                 try:
+                    #if self._name == 'ir.model.data':
+                    #    _logger.info("[UUDI DEBUG] _read_format field field: %s: record:%s value:%s", name, record, record[name]);
                     vals[name] = convert(record[name], record, use_display_name)
+                    #if self._name == 'ir.model.data':
+                    #    _logger.info("[UUDI DEBUG] _read_format field field: %s: record:%s value:%s, converted:%s", name, record, record[name], vals[name]);
                 except MissingError:
                     vals.clear()
-        result = [vals for record, vals in data if vals]
+        #if self._name == 'ir.model.data':
+        #    _logger.info("[UUDI DEBUG] _read_format result vals %s", vals);
 
+        result = [vals for record, vals in data if vals]
+        
+        #if self._name == 'ir.model.data':
+        #    _logger.info("[UUDI DEBUG] _read_format result %s", result);
         return result
 
     def _fetch_field(self, field: Field) -> None:
         """ Read from the database in order to fetch ``field`` (:class:`Field`
             instance) for ``self`` in cache.
         """
+        #if self._name == 'res.company' and field.name == 'active':
+        #if self._name == 'ir.model.data':
+        #    _logger.warning("[UUID DEBUG] _fetch_field: model=%s, field=%s",
+        #            self._name, field.name)
+        
         # determine which fields can be prefetched
         if self.env.context.get('prefetch_fields', True) and field.prefetch:
             fnames = [
@@ -3769,7 +3907,31 @@ class BaseModel(metaclass=MetaModel):
                 fnames.append(field.name)
         else:
             fnames = [field.name]
-        self.fetch(fnames)
+        #self.fetch(fnames)
+        try:
+            self.fetch(fnames)
+            #if self._name == "res.company" and field.name == 'active':
+            #if self._name == 'ir.model.data': #and field.name == 'res_id':
+            #    field_cache = field._get_cache(self.env)
+            #    cache_dump = {str(k): field_cache.get(k) for k in self._ids}
+                # _logger.warning(
+                #     "[UUID DEBUG] After fetch() model=%s field=%s cache_dump=%s",
+                #     self._name, field.name, cache_dump
+                # )
+            #_logger.warning("[UUID DEBUG] After fetch(): model=%s field=%s cache=%r",
+            #    self._name, field.name, list(self.env.cache[field].items()))
+        except Exception as e:
+            #if self._name == 'ir.model.data':
+            #    _logger.exception("[UUID DEBUG] Exception during fetch: %s", e)
+            raise
+        else:
+            try:
+                cache_keys = list(self.env.cache.get_records_dangling(self._name, field.name))
+            except Exception:
+                cache_keys = "N/A"
+            # if self._name == 'res.company'  and field.name == 'active':
+            #     _logger.warning("[UUID DEBUG] After fetch OK: model=%s field=%s cache_keys=%s",
+            #                 self._name, field.name, cache_keys)
 
     @api.private
     def fetch(self, field_names: Collection[str] | None = None) -> None:
@@ -3894,6 +4056,8 @@ class BaseModel(metaclass=MetaModel):
             (column_fields if field.column_type else other_fields).add(field)
 
         context = self.env.context
+        #if self._name == 'ir.model.data':
+        #    _logger.info("[UUID DEBUG] _fetch_query: %s\ncolumn_fields:%s", fields, column_fields)
 
         if column_fields:
             # the query may involve several tables: we need fully-qualified names
@@ -3925,14 +4089,43 @@ class BaseModel(metaclass=MetaModel):
             ids = next(column_values)
             fetched = self.browse(ids)
 
+            str_ids = [str(rid) if isinstance(rid, uuid.UUID) else rid for rid in ids]
             # If we assume that the value of a pending update is in cache, we
             # can avoid flushing pending updates if the fetched values do not
             # overwrite values in cache.
             for field, values in zip(column_fields, column_values, strict=True):
+                # if self._name == 'res.company' and field.name == 'active':
+                #if self._name == 'ir.model.data' and field.name == 'res_id':            
+                #    _logger.warning(f"[UUID DEBUG][_fetch_query] model={self._name} field={field.name}")
+                #    _logger.warning(f"  ids{len(fetched._ids)}    = {list(fetched._ids)}")
+                #    _logger.warning(f"  values = {list(values)}")
                 # store values in cache, but without overwriting
                 field._insert_cache(fetched, values)
+                # if fetched._name == "res.company" and field.name == 'active':
+                # if self._name == 'ir.model.data' and field.name == 'res_id':
+                #     fcache = field._get_cache(fetched.env)
+                #     if fcache:
+                #         # Lọc cache chỉ lấy các record_id trong fetched._ids
+                #         filtered_cache = {str(k): str(fcache[k]) for k in fetched._ids if k in fcache}
+                #     else:
+                #         filtered_cache = 'EMPTY'
+                #     _logger.warning(
+                #         f"[UUID DEBUG] After fetch OK, insert then read back from cache: "
+                #         f"model={self._name} field={field.name}\n"
+                #         f"cache_keys={list(filtered_cache.keys()) if filtered_cache != 'EMPTY' else 'EMPTY'} \n"
+                #         f"cache_values={filtered_cache}"
+                #     )
+                    #log_cache = {str(k): v for k, v in fcache.items()} if fcache else {}
+                    # _logger.warning(
+                    #     f"[UUID DEBUG] After fetch OK, insert then read back from cache: model={self._name} field={field.name} "
+                    #     f"cache_keys={list(fcache.keys()) if fcache else 'EMPTY'} "
+                    #     #f"cache_dump={log_cache}"
+                    # )
         else:
             fetched = self.browse(query)
+            #if self._name == 'ir.model.data':
+            #    _logger.info("[UUID DEBUG] _fetch_query: no column_fields:%d", len(fetched))
+
 
         # process non-column fields
         if fetched:
@@ -4300,8 +4493,8 @@ class BaseModel(metaclass=MetaModel):
                             SELECT jsonb_object_agg(
                                 key,
                                 CASE
-                                    WHEN value::int4 in %(ids)s THEN NULL
-                                    ELSE value::int4
+                                    WHEN value::uuid in %(ids)s THEN NULL
+                                    ELSE value::uuid
                                 END)
                             FROM jsonb_each_text(%(field)s)
                         )
@@ -4708,8 +4901,11 @@ class BaseModel(metaclass=MetaModel):
                     data['stored'][parent_name] = parent.id
 
         # create records with stored fields
+        #if self._name == "ir.model.data":
+        #    _logger.info("[UUID DEBUG] ====  BASE IrModelData create start")
         records = self._create(data_list)
-
+        #if self._name == "ir.model.data":
+        #    _logger.info("[UUID DEBUG] ====  BASE IrModelData create end: %s\nrecords: %s", data_list, records)
         # protect fields being written against recomputation
         protected_fields = [(data['protected'], data['record']) for data in data_list]
         with self.env.protecting(protected_fields):
@@ -4852,8 +5048,13 @@ class BaseModel(metaclass=MetaModel):
         cr = self.env.cr
 
         # insert rows in batches of maximum INSERT_BATCH_SIZE
-        ids: list[int] = []                     # ids of created records
+        ids: list[uuid.UUID] = []                     # ids of created records
         other_fields: OrderedSet[Field] = OrderedSet()  # non-column fields
+
+        for vals in data_list:
+            # nếu chưa có id, tự sinh UUID
+            if "id" not in vals or not vals["id"]:
+                vals["id"] = uuid7()
 
         for data_sublist in split_every(INSERT_BATCH_SIZE, data_list):
             stored_list = [data['stored'] for data in data_sublist]
@@ -4895,6 +5096,17 @@ class BaseModel(metaclass=MetaModel):
         # put the new records in cache, and update inverse fields, for many2one
         # (using bin_size=False to put binary values in the right place)
         records = self.browse(ids)
+        # if self._name == "ir.model.data":
+        #     _logger.info("[UUID DEBUG] IrModelData browse(): ids=%s (count=%d)", ids, len(records))
+        #     for rec in records:
+        #         # đọc một bản ghi với tất cả field chính
+        #         _logger.info("[UUID DEBUG] IrModelData start read fields record=%s\n", rec.id)
+        #         vals = rec.read(['id', 'module', 'name', 'model', 'res_id'])[0]
+        #         _logger.info("[UUID DEBUG] IrModelData end read fields record=%s\n%s", rec.id, vals)
+        #         # in thêm kiểu dữ liệu (debug UUID)
+        #         for k, v in vals.items():
+        #             _logger.info("   %s = %r (%s)", k, v, type(v))
+
         inverses_update = defaultdict(list)     # {(field, value): ids}
         common_set_vals = set(LOG_ACCESS_COLUMNS + ['id', 'parent_path'])
         for data, record in zip(data_list, records.with_context(bin_size=False)):
@@ -4915,7 +5127,11 @@ class BaseModel(metaclass=MetaModel):
             for fname, value in vals.items():
                 field = self._fields[fname]
                 if field.type not in ('one2many', 'many2many', 'html'):
+                    #if record and record._name == "ir.model.data":
+                    #    _logger.info("[UUID DEBUG] IrModelData convert_to_cache: %s\nrecord: %s, value:%s", fname, record, value)
                     cache_value = field.convert_to_cache(value, record)
+                    #if record and record._name == "ir.model.data":
+                    #    _logger.info("[UUID DEBUG] IrModelData update cache_value: %s\nrecord: %s, value:%s", fname, record, cache_value)
                     field._update_cache(record, cache_value)
                     if field.type in ('many2one', 'many2one_reference') and self.pool.field_inverses[field]:
                         inverses_update[(field, cache_value)].append(record.id)
@@ -5025,7 +5241,7 @@ class BaseModel(metaclass=MetaModel):
 
             # check for recursion
             if prefix:
-                parent_ids = {int(label) for label in prefix.split('/')[:-1]}
+                parent_ids = {uuid.UUID(label) for label in prefix.split('/')[:-1]}
                 if not parent_ids.isdisjoint(records._ids):
                     raise UserError(_("Recursion Detected."))
 
@@ -5706,12 +5922,92 @@ class BaseModel(metaclass=MetaModel):
         """
         result = defaultdict(list)
         domain: DomainType = [('model', '=', self._name), ('res_id', 'in', self.ids)]
-        for data in self.env['ir.model.data'].sudo().search_read(domain, ['module', 'name', 'res_id'], order='id'):
+        #_logger.info("_get_external_ids: model:%s len(%d) self.ids=%s", self._name, len(self.ids), self.ids)
+        #_logger.info("_get_external_ids: domain=%s", domain)
+        records = self.env['ir.model.data'].sudo().search_read(domain, ['id', 'module', 'name', 'res_id'], order='id')
+        #_logger.info("_get_external_ids: model:%s %d\ndata records=%s", self._name, len(records), records)
+        for data in records:
+            #_logger.info("[UUID DEBUG] _get_external_id data: %s", data)
             result[data['res_id']].append('%(module)s.%(name)s' % data)
+            #_logger.info("[UUID DEBUG] _get_external_id: %s", result)
+        #_logger.info("[UUID DEBUG] _get_external_id ids: %s", self.ids)
+        #_logger.info("[UUID DEBUG] _get_external_id result: %s", result)
         return {
             record.id: result[record._origin.id]
             for record in self
         }
+
+    # def _get_external_ids(self) -> dict:
+    #     result = defaultdict(list)
+    #     domain = [('model', '=', self._name), ('res_id', 'in', self.ids)]
+
+    #     for data in self.env['ir.model.data'].sudo().search_read(domain, ['module', 'name', 'res_id'], order='id'):
+    #         # ép kiểu res_id về UUID để nhất quán với record.id
+    #         res_id = data['res_id']
+    #         if isinstance(res_id, str):
+    #             try:
+    #                 res_id = uuid.UUID(res_id)
+    #             except Exception:
+    #                 pass
+    #         result[res_id].append('%(module)s.%(name)s' % data)
+
+    #     _logger.info("_get_external_id result: %s", result)
+
+    #     # ép key record.id về UUID string tương ứng
+    #     mapping = {
+    #         record.id: result.get(record.id, [])
+    #         for record in self
+    #     }
+    #     _logger.info("_get_external_id final mapping: %s", mapping)
+    #     return mapping
+
+    # def _get_external_ids(self):
+    #     result = defaultdict(list)
+    #     domain = [('model', '=', self._name), ('res_id', 'in', self.ids)]
+    #     _logger.info("_get_external_ids: self.ids=%s", self.ids)
+    #     _logger.info("_get_external_ids: domain=%s", domain)
+    #     for data in self.env['ir.model.data'].sudo().search_read(domain, ['id', 'module', 'name', 'res_id']):
+    #         _logger.info("ir.model.data record: model=%s id=%s res_id=%s type=%s, data: %s", data['module'], data['id'], data['res_id'], type(data['res_id']), data)
+    #         # normalize res_id sang str để khớp với UUID
+    #         result[str(data['res_id'])].append(f"{data['module']}.{data['name']}")
+    #     _logger.info("_get_external_ids: raw=%s", result)
+
+    #     #id_to_ref = {record.id: result.get(str(record.id), []) for record in self if str(record.id) in result}
+    #     #id_to_ref = {record.id: result.get(str(record.id), []) for record in self}
+    #     #id_to_ref = {record.id: result[str(record.id)] for record in self}
+        
+    #     id_to_ref = {}
+    #     for record in self:
+    #         sid1 = str(record.id)
+    #         sid2 = str(record._origin.id)
+    #         val = result.get(sid1, [])
+    #         val2 = result.get(sid2, [])
+    #         if not val:
+    #             _logger.info("[UUID DEBUG] Missing external_id for %s (sid=%s) %s", record, sid1, result)
+    #         _logger.info("[UUID DEBUG] external_id for %s (sid=%s, sid2=%s ) val1:%s  val2:%s", record, sid1, sid2, val, val2)
+    #         id_to_ref[record.id] = val        
+    #     _logger.info("_get_group_definitions (id_to_ref): %s", id_to_ref)
+    #     return id_to_ref
+
+    # def _get_external_ids(self) -> dict[IdType, list[str]]:
+    #     """Retrieve External IDs for records, supporting UUIDs correctly."""
+    #     result = defaultdict(list)
+    #     # Lấy trực tiếp các ir.model.data liên quan, tránh search_read
+    #     # records = self.env['ir.model.data'].sudo().search([
+    #     #     ('model', '=', self._name),
+    #     #     ('res_id', 'in', self.ids),
+    #     # ])
+    #     domain = [('model', '=', self._name), ('res_id', 'in', self.ids)]
+    #     records = self.env['ir.model.data'].sudo().search(domain)
+    #     fields_to_fetch = ['id', 'module', 'name', 'res_id']
+    #     for data in records.read(fields_to_fetch):
+    #         # data['res_id'] là đúng UUID từ DB
+    #         _logger.info("_get_external_ids: record=%s", data)
+    #         result[data['res_id']].append(f"{data['module']}.{data['name']}")
+
+    #     # Trả dict theo record.id (UUID) → list of xmlid
+    #     return {record.id: result.get(record.id, []) for record in self}
+
 
     def get_external_id(self) -> dict[IdType, str]:
         """Retrieve the External ID of any database record, if there
@@ -5731,6 +6027,7 @@ class BaseModel(metaclass=MetaModel):
                        'id2': '' }
         """
         results = self._get_external_ids()
+        #_logger.info("[UUID DEBUG] get_external_id: %s", results)
         return {key: val[0] if val else ''
                 for key, val in results.items()}
 
@@ -5773,8 +6070,14 @@ class BaseModel(metaclass=MetaModel):
         """
         if not fields:
             fields = list(self.fields_get(attributes=()))
+        #if self._name=='ir.model.data':
+        #    _logger.info("[UUID DEBUG] search_read fields: %s", fields)
         records = self.search_fetch(domain or [], fields, offset=offset, limit=limit, order=order)
-
+        #if self._name=='ir.model.data':
+        #    _logger.info("[UUID DEBUG] search_read %d records: %s\n", len(records), records)
+        #    all_vals = records.read(fields)
+        #    _logger.info("[UUID DEBUG] search_read full data:\n%s", json.dumps(all_vals, indent=4, default=str))
+        
         # Method _read_format() ignores 'active_test', but it would forward it
         # to any downstream search call(e.g. for x2m or computed fields), and
         # this is not the desired behavior. The flag was presumably only meant
@@ -5784,7 +6087,10 @@ class BaseModel(metaclass=MetaModel):
             del context['active_test']
             records = records.with_context(context)
 
-        return records._read_format(fnames=fields, **read_kwargs)
+        result = records._read_format(fnames=fields, **read_kwargs)
+        #if self._name=='ir.model.data':
+        #    _logger.info("[UUID DEBUG] search_read _read_format result: %s\n", result)
+        return result
 
     @api.deprecated("Deprecated since 19.0, use action_archive or action_unarchive")
     def toggle_active(self):
@@ -5880,29 +6186,63 @@ class BaseModel(metaclass=MetaModel):
         self._prefetch_ids = prefetch_ids
 
     @api.private
-    def browse(self, ids: int | typing.Iterable[IdType] = ()) -> Self:
-        """Return a recordset for the ids provided as parameter in the current
-        environment.
-
-        .. code-block:: python
-
-            self.browse([7, 18, 12])
-            res.partner(7, 18, 12)
+    def browse(self, ids: uuid.UUID | typing.Iterable[IdType] = ()) -> "BaseModel":
+        """Return a recordset for the ids provided as parameter in the current environment.
+        Compatible with UUID primary keys.
         """
-        if not ids:
+        # if self._name == 'res.company' or self._name == 'res.users':
+        #     _logger.warning("[UUID DEBUG] browse called: model=%s, input_ids=%s", self._name, ids)
+
+        raw_ids = ids  # lưu lại ids gốc
+        if ids is None:
             ids = ()
-        elif ids.__class__ is int:
+        elif isinstance(ids, (uuid.UUID)):  # single id
             ids = (ids,)
+        elif isinstance(ids, str):
+            # cố gắng parse UUID từ chuỗi
+            try:
+                ids = (uuid.UUID(ids),)
+            except ValueError:
+                # không phải UUID → fallback về chuỗi hoặc int
+                try:
+                    ids = (int(ids),)
+                except ValueError:
+                    ids = (ids,)
         else:
-            ids = tuple(ids)
+            ids = tuple(
+                uuid.UUID(str(x)) if isinstance(x, str) and is_uuid(x)
+                else x for x in ids
+            )
+
+        # if self._name == "res.company":
+        #         _logger.warning(
+        #             "[UUID DEBUG] browse: model=%s, raw_ids=%s, normalized_ids=%s, types=%s",
+        #             self._name,
+        #             raw_ids,
+        #             ids,
+        #             [type(i) for i in ids]
+        #         )
+
+        #         # log cache keys cho một số field quan trọng
+        #         for fname in ["active", "write_date"]:
+        #             if fname in self._fields:
+        #                 fcache = self._fields[fname]._get_cache(self.env)
+        #                 _logger.warning(
+        #                     "[UUID DEBUG] model=%s, field=%s cache keys=%s",
+        #                     self._name,
+        #                     fname,
+        #                     list(fcache.keys()) if fcache else "EMPTY"
+        #                 )
         return self.__class__(self.env, ids, ids)
+
+
 
     #
     # Internal properties, for manipulating the instance's implementation
     #
 
     @property
-    def ids(self) -> list[int]:
+    def ids(self) -> list[uuid.UUID]:
         """ Return the list of actual record ids corresponding to ``self``. """
         if all(self._ids):
             return list(self._ids)  # already real records
@@ -5987,8 +6327,29 @@ class BaseModel(metaclass=MetaModel):
             return self
         return self.with_env(self.env(user=user, su=False))
 
+    # def with_user(self, user: models.BaseModel | int | str | UUID) -> "Self":
+    #     """ Return a new version of this recordset attached to the given user, in
+    #     non-superuser mode, unless `user` is the superuser (by convention, the
+    #     superuser is always in superuser mode.)
+    #     """
+    #     if not user:
+    #         return self
+
+    #     # Nếu user là UUID, convert sang string
+    #     # if isinstance(user, uuid.UUID):
+    #     #     user = str(user)
+    #     if isinstance(user, uuid.UUID):
+    #         user = user
+    #     elif isinstance(user, (int, str)):
+    #         user = uuid.UUID(str(user)) if isinstance(user, str) else user
+    #     else:
+    #         user = None
+
+    #     # Nếu user là BaseModel, vẫn giữ nguyên
+    #     return self.with_env(self.env(user=user, su=False))
+
     @api.private
-    def with_company(self, company: BaseModel | IdType) -> Self:
+    def with_company(self, company: BaseModel | uuid.UUID | IdType) -> Self:
         """ Return a new version of this recordset with a modified context, such that::
 
             result.env.company = company
@@ -6004,7 +6365,13 @@ class BaseModel(metaclass=MetaModel):
             # With company = None/False/0/[]/empty recordset: keep current environment
             return self
 
-        company_id = int(company)
+        if isinstance(company, uuid.UUID):
+            company_id = company
+        elif isinstance(company, (int, str)):
+            company_id = uuid.UUID(str(company)) if isinstance(company, str) else company
+        else:
+            company_id = None
+
         allowed_company_ids = self.env.context.get('allowed_company_ids') or []
         if allowed_company_ids and company_id == allowed_company_ids[0]:
             return self
@@ -6653,8 +7020,8 @@ class BaseModel(metaclass=MetaModel):
             pass
         return NotImplemented
 
-    def __int__(self) -> int:
-        return self.id or 0
+    def __int__(self) -> uuid.UUID:
+        return self.id or uuid.UUID()
 
     def __repr__(self):
         return f"{self._name}{self._ids!r}"
@@ -6911,6 +7278,12 @@ class BaseModel(metaclass=MetaModel):
                     records = model.search([(field.name, 'in', real_records.ids)], order='id')
                 if new_records:
                     field_cache = field._get_cache(model.env)
+                    if fetched._name == "res.company":
+                        _logger.warning(
+                            "[UUID DEBUG] [_fetch_query:post-insert] model=%s field=%s cache_now=%s",
+                            fetched._name, field.name,
+                            {str(k): v for k, v in fcache.items() if k in fetched._ids}
+                        )
                     cache_records = model.browse(field_cache)
                     new_ids = set(self._ids)
                     records |= cache_records.filtered(lambda r: not set(r[field.name]._ids).isdisjoint(new_ids))
@@ -7127,3 +7500,18 @@ def get_columns_from_sql_diagnostics(cr, diagnostics, *, check_registry=False) -
     """, diagnostics.constraint_name, diagnostics.table_name))
     columns = cr.fetchone()
     return columns[0] if columns else []
+
+# === uuid7 PATCH ===
+def _normalize_ids(self, vals):
+    import uuid
+    out = []
+    for v in vals:
+        if isinstance(v, (uuid.UUID, str)):
+            try:
+                out.append(uuid.UUID(str(v)))
+                continue
+            except Exception:
+                pass
+        out.append(v)
+    return out
+# === uuid7 PATCH ===

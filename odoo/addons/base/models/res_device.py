@@ -111,7 +111,8 @@ class ResDeviceLog(models.Model):
                 last_activity=datetime.fromtimestamp(trace['last_activity']),
                 revoked=False,
             ))
-        _logger.info("User %d inserts device log (%s)", user_id, session_identifier)
+        # UUIDv7 Patched
+        _logger.info("User %s inserts device log (%s)", user_id, session_identifier)
 
     @api.autovacuum
     def _gc_device_log(self):

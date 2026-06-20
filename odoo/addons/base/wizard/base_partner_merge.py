@@ -23,7 +23,7 @@ class BasePartnerMergeLine(models.TransientModel):
     _order = 'min_id asc'
 
     wizard_id = fields.Many2one('base.partner.merge.automatic.wizard', 'Wizard')
-    min_id = fields.Integer('MinID')
+    min_id = fields.Uuid('MinID')
     aggr_ids = fields.Char('Ids', required=True)
 
 
@@ -246,9 +246,9 @@ class BasePartnerMergeAutomaticWizard(models.TransientModel):
                 SET %(field)s = (
                     SELECT jsonb_object_agg(key,
                         CASE
-                            WHEN value::int IN %(src_record_ids)s
+                            WHEN value::uuid IN %(src_record_ids)s
                             THEN %(dest_record_id)s
-                            ELSE value::int
+                            ELSE value::uuid
                         END
                     )
                     FROM jsonb_each_text(%(field)s)
@@ -267,7 +267,7 @@ class BasePartnerMergeAutomaticWizard(models.TransientModel):
             UPDATE ir_default
             SET json_value =
                 CASE
-                    WHEN json_value::int IN %(src_record_ids)s
+                    WHEN json_value::uuid IN %(src_record_ids)s
                     THEN %(dest_record_id)s
                     ELSE json_value
                 END

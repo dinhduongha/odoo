@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import json
 import typing
+import uuid
+import logging
 
 from psycopg2.extras import Json as PsycopgJson
 
@@ -18,6 +20,7 @@ if typing.TYPE_CHECKING:
 # integer needs to be imported before Id because of `type` attribute clash
 from . import fields_numeric  # noqa: F401
 
+_logger = logging.getLogger('odoo.fields_mics')
 
 class Boolean(Field[bool]):
     """ Encapsulates a :class:`bool`. """
@@ -69,6 +72,14 @@ class Json(Field):
         return False if value is None else copy.deepcopy(value)
 
     def convert_to_cache(self, value, record, validate=True):
+        # if not value:
+        #     return None
+        # return json.loads(json.dumps(value))
+        # if record and record._name == "res.company":
+        #     _logger.warning(
+        #         "[UUID DEBUG] convert_to_cache [BEFORE] model=%s field=%s raw_value=%r type=%s",
+        #         record._name, self.name, value, type(value)
+        #     )
         if not value:
             return None
         return json.loads(json.dumps(value, ensure_ascii=False, default=json_default))
@@ -89,8 +100,8 @@ class Json(Field):
 class Id(Field[IdType | typing.Literal[False]]):
     """ Special case for field 'id'. """
     # Note: This field type is not necessarily an integer!
-    type = 'integer'  # note this conflicts with Integer
-    column_type = ('int4', 'int4')
+    type = 'uuid'  # note this conflicts with Integer
+    column_type = ('uuid', 'uuid')
 
     string = 'ID'
     store = True
@@ -102,22 +113,52 @@ class Id(Field[IdType | typing.Literal[False]]):
 
     def __get__(self, record, owner=None):
         if record is None:
-            return self         # the field is accessed through the class owner
+            return self
 
-        # the code below is written to make record.id as quick as possible
-        ids = record._ids
+        # Tránh đệ quy: truy cập _ids trực tiếp qua __getattribute__
+        ids = object.__getattribute__(record, "_ids")
         size = len(ids)
         if size == 0:
             return False
         elif size == 1:
             return ids[0]
-        raise ValueError("Expected singleton: %s" % record)
+        raise ValueError(f"Expected singleton: {record}")
 
     def __set__(self, record, value):
         raise TypeError("field 'id' cannot be assigned")
 
+    #def convert_to_column(self, value, record, values=None, validate=True):
+    #    return value
+
     def convert_to_column(self, value, record, values=None, validate=True):
-        return value
+        if value is None:
+            return None
+        if isinstance(value, uuid.UUID):
+            return str(value)
+        elif isinstance(value, str):
+            return value
+        elif not value:
+            return None
+        return None
+        #raise ValueError(f"Invalid UUID value for id: {value!r}")
+
+    def convert_to_column(self, value, record, values=None, validate=True):
+        """Nhận str, uuid.UUID hoặc record, trả về str."""
+        if value is None:
+            return None
+        # ⚙️ Nếu value là record, lấy id của nó
+        if hasattr(value, "id"):
+            value = value.id
+        # ⚙️ Nếu là list (Command.set([...]))
+        if isinstance(value, (list, tuple)):
+            return [str(v.id if hasattr(v, "id") else v) for v in value]
+        # ⚙️ Chuẩn hóa về str UUID
+        if isinstance(value, uuid.UUID):
+            return str(value)
+        if isinstance(value, str):
+            return value
+        return None
+        #raise ValueError(f"Invalid UUID value for {self.name}: {value!r}")
 
     def to_sql(self, model: BaseModel, alias: str) -> SQL:
         # do not flush, just return the identifier
@@ -133,3 +174,28 @@ class Id(Field[IdType | typing.Literal[False]]):
             return (id_ := record._ids[0]) or getattr(id_, 'origin', None) or False
 
         return getter
+
+    # def convert_to_cache(self, value, record=None, validate=True):
+    #     # Nếu value là UUID object thì chuyển sang string để JSON-safe
+    #     if isinstance(value, uuid.UUID):
+    #         return str(value)
+    #     return value
+    def convert_to_cache(self, value, record=None, validate=True):
+        """Convert DB/column value -> cache value (Python side)."""
+        # if record and record._name == "res.company":
+        #     _logger.warning(
+        #         "[UUID DEBUG] convert_to_cache [BEFORE] model=%s field=%s raw_value=%r type=%s",
+        #         record._name, self.name, value, type(value)
+        #     )
+        if value is None:
+            return None
+        if isinstance(value, uuid.UUID):
+            return value
+        if isinstance(value, str):
+            try:
+                return uuid.UUID(value)
+            except ValueError:
+                # Không hợp lệ thì giữ nguyên để debug dễ
+                _logger.warning("[UUID DEBUG] Invalid UUID string for id: %r", value)
+                return value
+        return value

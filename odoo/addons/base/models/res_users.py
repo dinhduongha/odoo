@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import time
+import traceback
 from functools import wraps
 from hashlib import sha256
 from itertools import chain
@@ -446,7 +447,9 @@ class ResUsers(models.Model):
     @api.depends('group_ids.all_implied_ids')
     def _compute_all_group_ids(self):
         for user in self:
-            user.all_group_ids = user.group_ids.all_implied_ids
+            #user.all_group_ids = user.group_ids.all_implied_ids
+            implied = user.group_ids.mapped('all_implied_ids')
+            user.all_group_ids = implied
 
     def _search_all_group_ids(self, operator, value):
         return [('group_ids.all_implied_ids', operator, value)]
@@ -499,15 +502,52 @@ class ResUsers(models.Model):
         return self.partner_id.onchange_parent_id()
 
     @api.constrains('company_id', 'company_ids', 'active')
+    #def _check_user_company(self):
+    #    for user in self.filtered(lambda u: u.active):
+    #       if user.company_id not in user.company_ids:
+    #            raise ValidationError(
+    #                _('Company %(company_name)s is not in the allowed companies for user %(user_name)s (%(company_allowed)s).',
+    #                  company_name=user.company_id.name,
+    #                  user_name=user.name,
+    #                  company_allowed=', '.join(user.mapped('company_ids.name')))
+    #            )
+
+    # UUIDv7 Patched
     def _check_user_company(self):
         for user in self.filtered(lambda u: u.active):
-            if user.company_id not in user.company_ids:
-                raise ValidationError(
-                    _('Company %(company_name)s is not in the allowed companies for user %(user_name)s (%(company_allowed)s).',
-                      company_name=user.company_id.name,
-                      user_name=user.name,
-                      company_allowed=', '.join(user.mapped('company_ids.name')))
-                )
+            try:
+                # _logger.warning(
+                #     "[CHECK COMPANY] user=%s (id=%s)\n"
+                #     "  company_id: %s (%s)\n"
+                #     "  company_ids: %s\n",
+                #     user.login,
+                #     user.id,
+                #     user.company_id and user.company_id.id,
+                #     user.company_id and user.company_id.name,
+                #     [(c.id, c.name) for c in user.company_ids],
+                # )
+
+                if user.company_id not in user.company_ids:
+                    _logger.error(
+                        "[VALIDATION ERROR] user=%s (id=%s)\n"
+                        "  company_id=%s (%s) NOT in company_ids=%s\n",
+                        user.login,
+                        user.id,
+                        user.company_id and user.company_id.id,
+                        user.company_id and user.company_id.name,
+                        [(c.id, c.name) for c in user.company_ids],
+                    )
+
+                    raise ValidationError(
+                        _('Company %(company_name)s is not in the allowed companies for user %(user_name)s (%(company_allowed)s).',
+                        company_name=user.company_id.name,
+                        user_name=user.name,
+                        company_allowed=', '.join(user.mapped('company_ids.name')))
+                    )
+            except Exception as e:
+                _logger.exception("[CHECK COMPANY EXCEPTION] user=%s error=%s", user.login, e)
+                raise
+
 
     @api.constrains('action_id')
     def _check_action_id(self):
@@ -577,7 +617,29 @@ class ResUsers(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+	# UUIDv7 Patched
+        env_company = self.env.company
+
+        # for vals in vals_list:
+        #     _logger.warning("[UUID DEBUG CREATE USER] login=%s, company_id=%s, company_ids=%s env_company.id:%s",
+        #                     vals.get('login'),
+        #                     vals.get('company_id'),
+        #                     vals.get('company_ids'), env_company.id)
+
+        for vals in vals_list:
+            if not vals.get('company_id') and env_company:
+                vals['company_id'] = env_company.id
+            if not vals.get('company_ids') and env_company:
+                vals['company_ids'] = [(6, 0, [env_company.id])]
+
         users = super().create(vals_list)
+	    # UUIDv7 Patched
+        # for user in users:
+        #     _logger.warning("[UUID DEBUG AFTER CREATE] user=%s, id=%s, company_id=%s, allowed_companies=%s",
+        #                     user.login,
+        #                     user.id,
+        #                     user.company_id,
+        #                     user.company_ids.ids)
         setting_vals = []
         for user in users:
             if not user.res_users_settings_ids and user._is_internal():
@@ -767,6 +829,7 @@ class ResUsers(models.Model):
                     # ruff: noqa: TRY301
                     raise AccessDenied()
                 user = user.with_user(user).sudo()
+                _logger.info("[UUID Debug] Login:%s", user)
                 auth_info = user._check_credentials(credential, user_agent_env)
                 tz = request.cookies.get('tz') if request else None
                 if tz in pytz.all_timezones and (not user.tz or not user.login_date):
@@ -1082,6 +1145,71 @@ class ResUsers(models.Model):
             result = result and bool(request and request.session.debug)
         return result
 
+    def _log_group_definitions_data(self):
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        # ĐÚNG MODEL: res.groups
+        groups = self.env['res.groups'].sudo().search([], order='id')
+        id_to_xml = groups.get_external_id()
+
+        defs = self.env['res.groups']._get_group_definitions()
+        
+        data = {}
+        for group in groups:
+            gid = group.id
+            xml_id = id_to_xml.get(gid, f"<NO_XML> {gid}")
+
+            supersets = defs.get_superset_ids([gid])
+            subsets = defs.get_subset_ids([gid])
+            disjoints = defs.get_disjoint_ids([gid])
+
+            data[xml_id] = {
+                'id': str(gid),
+                'name': group.name,
+                'implied_ids': [id_to_xml.get(i, str(i)) for i in group.implied_ids.ids],
+                'supersets': [id_to_xml.get(i, str(i)) for i in supersets],
+                'subsets': [id_to_xml.get(i, str(i)) for i in subsets],
+                'disjoints': [id_to_xml.get(i, str(i)) for i in disjoints],
+            }
+
+        # LOG ĐẸP, RÕ
+        lines = ["\n" + "="*80]
+        lines.append("FULL GROUP DEFINITIONS DATA (res.groups → UUID → Relations)")
+        lines.append("="*80)
+        
+        for xml_id, info in sorted(data.items()):
+            lines.append(f"• {xml_id}")
+            lines.append(f"  UUID: {info['id']}")
+            lines.append(f"  Name: {info['name']}")
+            if info['implied_ids']:
+                lines.append(f"  Implied: {', '.join(info['implied_ids'])}")
+            if info['supersets']:
+                lines.append(f"  Supersets: {', '.join(info['supersets'])}")
+            if info['subsets']:
+                lines.append(f"  Subsets: {', '.join(info['subsets'])}")
+            if info['disjoints']:
+                lines.append(f"  Disjoints: {', '.join(info['disjoints'])}")
+            lines.append("")
+
+        lines.append(f"TOTAL GROUPS: {len(data)}")
+        lines.append("="*80 + "\n")
+
+        _logger.info("\n".join(lines))
+
+    # def _has_group(self, group_ext_id: str) -> bool:
+    #     """ Return whether user ``self`` belongs to the given group.
+
+    #     :param str group_ext_id: external ID (XML ID) of the group.
+    #        Must be provided in fully-qualified form (``module.ext_id``), as there
+    #        is no implicit module to use..
+    #     :return: True if user ``self`` is a member of the group with the
+    #        given external ID (XML ID), else False.
+    #     """
+    #     group_id = self.env['res.groups']._get_group_definitions().get_id(group_ext_id)
+    #     # for new record don't fill the ormcache
+    #     return group_id in (self._get_group_ids() if self.id else self.all_group_ids._origin._ids)
+
     def _has_group(self, group_ext_id: str) -> bool:
         """ Return whether user ``self`` belongs to the given group.
 
@@ -1091,17 +1219,84 @@ class ResUsers(models.Model):
         :return: True if user ``self`` is a member of the group with the
            given external ID (XML ID), else False.
         """
+
+        # if not hasattr(self.env.registry, '_group_hierarchy_logged'):
+        #     self._log_group_definitions_data()
+        #     self.env.registry._group_hierarchy_logged = True
+
+        group_definitions = self.env['res.groups']._get_group_definitions()
         group_id = self.env['res.groups']._get_group_definitions().get_id(group_ext_id)
+        # _logger.info(
+        #     "[UUID DEBUG] _has_group for user %s group_ext_id:%s group_id: %s %s",
+        #     self.id,
+        #     group_ext_id,
+        #     group_id,
+        #     group_definitions
+        # )
         # for new record don't fill the ormcache
+        val = group_id in (self._get_group_ids() if self.id else self.all_group_ids._origin._ids)
+        _logger.info(
+            "[UUID DEBUG] _has_group for user %s %s (type=%s): %s val: %s",
+            self.id,
+            group_ext_id,
+            type(self.id),
+            group_id,
+            val
+        )
+        
+        # stack = ''.join(traceback.format_stack()[:-1])  # Bỏ dòng hiện tại    
+        # _logger.info(
+        #     "[UUID DEBUG] _has_group CALL TRACE\n"
+        #     "  → User ID: %s (type: %s)\n"
+        #     "  → Group XML ID: %s\n"
+        #     "  → Group Internal ID: %s\n"
+        #     "  → Result: %s\n"
+        #     "  → Called from:\n%s",
+        #     self.id,
+        #     type(self.id),
+        #     group_ext_id,
+        #     group_id,
+        #     val,
+        #     stack
+        # )
         return group_id in (self._get_group_ids() if self.id else self.all_group_ids._origin._ids)
+    
+    # @tools.ormcache('self.id')
+    # def _get_group_ids(self):
+    #     """ Return ``self``'s group ids (as a tuple)."""
+    #     self.ensure_one()
+    #     # `with_context({})` because this method is decorated with `@ormcache('self._ids')`,
+    #     # it cannot depend on the context (e.g. `active_test`, `lang`, ...)
+    #     return self.with_context({}).all_group_ids._ids
 
     @tools.ormcache('self.id')
     def _get_group_ids(self):
         """ Return ``self``'s group ids (as a tuple)."""
         self.ensure_one()
+        return tuple(self.with_context({}).all_group_ids._ids)
         # `with_context({})` because this method is decorated with `@ormcache('self._ids')`,
         # it cannot depend on the context (e.g. `active_test`, `lang`, ...)
-        return self.with_context({}).all_group_ids._ids
+        #return self.with_context({}).all_group_ids._ids
+
+        # user = self.with_context({})
+        # _logger.info("[UUID DEBUG] user.id=%s type=%s", user.id, type(user.id))
+        # _logger.info("[UUID DEBUG] user.group_ids._ids=%s", user.group_ids._ids)
+        # _logger.info("[UUID DEBUG] user.all_group_ids._ids(before)=%s", user.all_group_ids._ids)
+        # user._invalidate_cache(fnames=['all_group_ids'])
+        # user._compute_all_group_ids()
+        # _logger.info("[UUID DEBUG] user.all_group_ids._ids(after)=%s", user.all_group_ids._ids)
+        # return user.all_group_ids._ids
+
+        # group_ids = self.with_context({}).all_group_ids._ids
+        # _logger.info(
+        #     "[UUID DEBUG] _get_group_ids for user %s (type=%s): %s",
+        #     self.id,
+        #     type(self.id),
+        #     group_ids,
+        # )
+
+        # return group_ids
+
 
     def _action_show(self):
         """If self is a singleton, directly access the form view. If it is a recordset, open a list view"""
@@ -1532,9 +1727,9 @@ class ResUsersApikeys(models.Model):
         table = SQL.identifier(self._table)
         self.env.cr.execute(SQL("""
         CREATE TABLE IF NOT EXISTS %(table)s (
-            id serial primary key,
+            id uuid NOT NULL DEFAULT uuidv7() primary key,
             name varchar not null,
-            user_id integer not null REFERENCES res_users(id) ON DELETE CASCADE,
+            user_id uuid not null REFERENCES res_users(id) ON DELETE CASCADE,
             scope varchar,
             expiration_date timestamp without time zone,
             index varchar(%(index_size)s) not null CHECK (char_length(index) = %(index_size)s),
@@ -1839,5 +2034,5 @@ class ResUsersApikeysShow(models.AbstractModel):
     _description = 'Show API Key'
 
     # the field 'id' is necessary for the onchange that returns the value of 'key'
-    id = fields.Id()
+    # id = fields.Id()
     key = fields.Char(readonly=True)

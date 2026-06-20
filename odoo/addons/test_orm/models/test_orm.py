@@ -334,7 +334,7 @@ class TestOrmCreativeworkEdition(models.Model):
     _description = 'Test ORM Creative Work Edition'
 
     name = fields.Char()
-    res_id = fields.Integer(required=True)
+    res_id = fields.Uuid(required=True)
     res_model_id = fields.Many2one('ir.model', required=True, ondelete='cascade')
     res_model = fields.Char(related='res_model_id.model', store=True, readonly=False)
 
@@ -1214,7 +1214,7 @@ class TestOrmAttachment(models.Model):
     _description = 'Attachment'
 
     res_model = fields.Char(required=True)
-    res_id = fields.Integer(required=True)
+    res_id = fields.Uuid(required=True)
     name = fields.Char(compute='_compute_name', compute_sudo=True, store=True)
 
     @api.depends('res_model', 'res_id')

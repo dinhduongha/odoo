@@ -1,5 +1,7 @@
 import re
 import warnings
+from uuid import UUID
+
 from collections.abc import Set as AbstractSet
 
 import dateutil.relativedelta
@@ -16,7 +18,8 @@ regex_private = re.compile(r'^(_.*|init)$')
 # types handled as collections
 COLLECTION_TYPES = (list, tuple, AbstractSet)
 # The hard-coded super-user id (a.k.a. root user, or OdooBot).
-SUPERUSER_ID = 1
+#SUPERUSER_ID = 1
+SUPERUSER_ID = UUID('00000000-0000-0000-0000-000000000001')
 
 # _read_group stuff
 READ_GROUP_TIME_GRANULARITY = {
@@ -127,23 +130,29 @@ def expand_ids(id0, ids):
 
 
 class OriginIds:
-    """ A reversible iterable returning the origin ids of a collection of ``ids``.
-        Actual ids are returned as is, and ids without origin are not returned.
+    """A reversible iterable returning the origin ids of a collection of `ids`.
+
+    - Nếu phần tử là int hoặc uuid.UUID → yield nguyên giá trị.
+    - Nếu là NewId (có thuộc tính `origin`) → yield origin (nếu có).
+    - Nếu không có origin → bỏ qua.
     """
     __slots__ = ['ids']
 
     def __init__(self, ids):
-        self.ids = ids
+        self.ids = ids or []
 
     def __iter__(self):
         for id_ in self.ids:
-            if id_ := id_ or getattr(id_, 'origin', None):
+            if hasattr(id_, 'origin') and id_.origin:
+                yield id_.origin
+            elif isinstance(id_, (int, str, UUID)):
                 yield id_
 
     def __reversed__(self):
         for id_ in reversed(self.ids):
-            if id_ := id_ or getattr(id_, 'origin', None):
+            if hasattr(id_, 'origin') and id_.origin:
+                yield id_.origin
+            elif isinstance(id_, (int, str, UUID)):
                 yield id_
-
 
 origin_ids = OriginIds

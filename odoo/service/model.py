@@ -3,6 +3,7 @@ import logging
 import random
 import threading
 import time
+import uuid
 from collections.abc import Mapping, Sequence
 from functools import partial
 
@@ -108,7 +109,9 @@ def call_kw(model: BaseModel, name: str, args: list, kwargs: Mapping):
 
 def dispatch(method, params):
     db, uid, passwd, model, method_, *args = params
-    uid = int(uid)
+    #uid = int(uid)
+    uid = uuid.UUID(uid)
+
     if not passwd:
         raise AccessDenied
     # access checked once we open a cursor

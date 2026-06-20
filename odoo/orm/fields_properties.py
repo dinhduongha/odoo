@@ -6,6 +6,7 @@ import copy
 import json
 import typing
 import uuid
+
 from collections import abc, defaultdict
 from operator import attrgetter
 
@@ -13,6 +14,7 @@ from odoo.exceptions import AccessError, UserError, MissingError
 from odoo.tools import SQL, OrderedSet, is_list_of, html_sanitize
 from odoo.tools.misc import frozendict, has_list_types
 from odoo.tools.translate import _
+from odoo.tools.uuid_utils import uuid7
 
 from .domains import Domain
 from .fields import Field, _logger
@@ -129,7 +131,7 @@ class Properties(Field):
         return json.dumps(value)
 
     def convert_to_cache(self, value, record, validate=True):
-        # any format -> cache format {name: value} or None
+        #any format -> cache format {name: value} or None        
         if not value:
             return None
 
@@ -139,7 +141,13 @@ class Properties(Field):
         elif isinstance(value, dict):
             # avoid accidental side effects from shared mutable data
             value = copy.deepcopy(value)
-
+        # UUIDv7 Patched
+        # elif isinstance(value, uuid.UUID):
+        #     try:
+        #         #id_ = uuid.UUID(value)
+        #         value = value
+        #     except Exception:
+        #         value = None    
         elif isinstance(value, str):
             value = json.loads(value)
             if not isinstance(value, dict):
@@ -261,8 +269,8 @@ class Properties(Field):
 
                 if type_ == 'many2one':
                     default = [default] if default else []
-                    property_value = [property_value] if isinstance(property_value, int) else []
-                elif not is_list_of(property_value, int):
+                    property_value = [property_value] if isinstance(property_value, uuid.UUID) else []
+                elif not is_list_of(property_value, uuid.UUID):
                     property_value = []
 
                 ids_per_model[comodel].update(default)
@@ -358,10 +366,10 @@ class Properties(Field):
             return {}
 
         container_id = values[self.definition_record]
-        if not isinstance(container_id, (int, BaseModel)):
+        if not isinstance(container_id, (uuid.UUID, BaseModel)):
             raise ValueError(f"Wrong container value {container_id!r}")
 
-        if isinstance(container_id, int):
+        if isinstance(container_id, uuid.UUID):
             # retrieve the container record
             current_model = env[self.model_name]
             definition_record_field = current_model._fields[self.definition_record]
@@ -422,7 +430,7 @@ class Properties(Field):
             for value_key in value_keys:
                 property_value = property_definition.get(value_key)
 
-                if property_type == 'many2one' and property_value and isinstance(property_value, int):
+                if property_type == 'many2one' and property_value and isinstance(property_value, uuid.UUID):
                     try:
                         display_name = env[property_model].browse(property_value).display_name
                         property_definition[value_key] = (property_value, display_name)
@@ -432,7 +440,7 @@ class Properties(Field):
                     except MissingError:
                         property_definition[value_key] = False
 
-                elif property_type == 'many2many' and property_value and is_list_of(property_value, int):
+                elif property_type == 'many2many' and property_value and is_list_of(property_value, uuid.UUID):
                     property_definition[value_key] = []
                     records = env[property_model].browse(property_value)
                     for record in records:
@@ -487,7 +495,7 @@ class Properties(Field):
         for definition in values_list:
             if definition.get('definition_changed') and not definition.get('name'):
                 # keep only the first 64 bits
-                definition['name'] = str(uuid.uuid4()).replace('-', '')[:16]
+                definition['name'] = str(uuid7()).replace('-', '')[:16]
 
     @classmethod
     def _parse_json_types(cls, values_list, env, res_ids_per_model):
@@ -531,13 +539,13 @@ class Properties(Field):
                 property_value = [tag for tag in property_value if tag in all_tags]
 
             elif property_type == 'many2one':
-                if not isinstance(property_value, int) \
+                if not isinstance(property_value, uuid.UUID) \
                         or res_model not in env \
                         or property_value not in res_ids_per_model[res_model]:
                     property_value = False
 
             elif property_type == 'many2many':
-                if not is_list_of(property_value, int):
+                if not is_list_of(property_value, uuid.UUID):
                     property_value = []
 
                 elif len(property_value) != len(set(property_value)):
@@ -606,10 +614,10 @@ class Properties(Field):
                 property_value = property_value or False
             if property_type in ('many2one', 'many2many') and property_model and property_value:
                 # check that value are correct before storing them in database
-                if property_type == 'many2many' and property_value and not is_list_of(property_value, int):
+                if property_type == 'many2many' and property_value and not is_list_of(property_value, uuid.UUID):
                     raise ValueError(f"Wrong many2many value {property_value!r}")
 
-                if property_type == 'many2one' and not isinstance(property_value, int):
+                if property_type == 'many2one' and not isinstance(property_value, uuid.UUID):
                     raise ValueError(f"Wrong many2one value {property_value!r}")
 
             dict_value[property_definition['name']] = property_value

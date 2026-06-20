@@ -9,6 +9,7 @@ import logging
 import pytz
 import typing
 import warnings
+import uuid
 from collections import defaultdict
 from collections.abc import Mapping
 from contextlib import contextmanager, suppress
@@ -20,6 +21,7 @@ from odoo.sql_db import BaseCursor
 from odoo.tools import clean_context, frozendict, reset_cached_properties, OrderedSet, Query, SQL
 from odoo.tools.translate import get_translation, get_translated_module, LazyGettext
 from odoo.tools.misc import StackMap, SENTINEL
+from odoo.models import BaseModel
 
 from .registry import Registry
 from .utils import SUPERUSER_ID
@@ -61,8 +63,17 @@ class Environment(Mapping[str, "BaseModel"]):
         warnings.warn("Since 19.0, use directly `transaction.reset()`", DeprecationWarning)
         self.transaction.reset()
 
-    def __new__(cls, cr: BaseCursor, uid: int, context: dict, su: bool = False):
+    def __new__(cls, cr: BaseCursor, uid: UUID, context: dict, su: bool = False):
         assert isinstance(cr, BaseCursor)
+        if isinstance(uid, BaseModel):
+            # Nếu ai đó truyền vào res.users record
+            if len(uid) != 1:
+                raise ValueError(f"uid must be singleton, got {len(uid)} records")
+            uid = uid.id  # Lấy id thực (UUID)
+        elif isinstance(uid, str):
+            # Nếu ai đó truyền string UUID
+            uid = uuid.UUID(uid)
+
         if uid == SUPERUSER_ID:
             su = True
 
@@ -84,7 +95,7 @@ class Environment(Mapping[str, "BaseModel"]):
 
         transaction.envs.add(self)
         # the default transaction's environment is the first one with a valid uid
-        if transaction.default_env is None and uid and isinstance(uid, int):
+        if transaction.default_env is None and uid and isinstance(uid, uuid.UUID):
             transaction.default_env = self
         return self
 
@@ -141,7 +152,9 @@ class Environment(Mapping[str, "BaseModel"]):
         :returns: environment with specified args (new or existing one)
         """
         cr = self.cr if cr is None else cr
-        uid = self.uid if user is None else int(user)  # type: ignore
+        #uid = self.uid if user is None else int(user)  # type: ignore
+        uid = self.uid if user is None else user
+
         if context is None:
             context = clean_context(self.context) if su and not self.su else self.context
         su = (user is None and self.su) if su is None else su

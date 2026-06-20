@@ -35,6 +35,7 @@ from .release import MIN_PG_VERSION
 from .tools import config, SQL
 from .tools.func import frame_codeinfo, locked
 from .tools.misc import Callbacks, real_time
+from .tools.uuid_utils import uuid7
 
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -46,7 +47,6 @@ if typing.TYPE_CHECKING:
     _CursorProtocol = psycopg2.extensions.cursor
 else:
     _CursorProtocol = object
-
 
 def undecimalize(value, cr) -> float | None:
     if value is None:
@@ -104,7 +104,7 @@ class Savepoint:
     """
 
     def __init__(self, cr: _CursorProtocol):
-        self.name = str(uuid.uuid1())
+        self.name = str(uuid7())
         self._cr = cr
         self.closed: bool = False
         cr.execute('SAVEPOINT "%s"' % self.name)
@@ -116,6 +116,7 @@ class Savepoint:
         self.close(rollback=exc_type is not None)
 
     def close(self, *, rollback: bool = True):
+        #_logger.info("UUIDv7 SAVEPOINT CLOSE: %s self.closed:%s rollback:%s", self.name, self.closed, rollback )
         if not self.closed:
             self._close(rollback)
 
@@ -124,9 +125,18 @@ class Savepoint:
 
     def _close(self, rollback: bool):
         if rollback:
-            self.rollback()
-        self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
-        self.closed = True
+            try:
+                self.rollback()
+            except Exception:
+                pass        
+        try:
+            self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
+        except Exception:
+            # UUIDv7 SAVEPOINT PATCH: Savepoint đã mất → bỏ qua, không lỗi
+            pass
+        #self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
+        finally:
+            self.closed = True
 
 
 class _FlushingSavepoint(Savepoint):

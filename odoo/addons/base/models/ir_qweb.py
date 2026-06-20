@@ -377,6 +377,7 @@ import tokenize
 import traceback
 import warnings
 import werkzeug
+import uuid
 
 from markupsafe import Markup, escape
 from collections import defaultdict
@@ -493,7 +494,9 @@ WHITESPACE_REGEX = re.compile(r'[\s\x00-\x08\x0B\x0C\x0E-\x19]+')
 
 def _id_or_xmlid(ref):
     try:
-        return int(ref)
+        if isinstance(ref, uuid.UUID):
+            return ref
+        return uuid.UUID(ref)
     except ValueError:
         return ref
 
@@ -541,7 +544,7 @@ class QWebError(Exception):
 
 
 class QWebErrorInfo:
-    def __init__(self, error: str, ref_name: str | int | None, ref: int | None, path: str | None, element: str | None, source: list[tuple[int | str, str, str]], surrounding: str):
+    def __init__(self, error: str, ref_name: str | uuid.UUID | None, ref: uuid.UUID | None, path: str | None, element: str | None, source: list[tuple[int | str, str, str]], surrounding: str):
         self.error = error
         self.template = ref_name
         self.ref = ref
@@ -570,12 +573,12 @@ class QWebErrorInfo:
 
 class QwebCallParameters(NamedTuple):
     context: dict
-    view_ref: str | int
+    view_ref: str | uuid.UUID
     method: str | None
     values: dict | None
     scope: bool | Literal['root']
     directive: str
-    path_xml: tuple[str | int, str, str] | None
+    path_xml: tuple[str | uuid.UUID, str, str] | None
 
     def __repr__(self):
         # cleaning context and values in order to have a consistent log when debugging.
@@ -668,13 +671,38 @@ class QwebContent:
         return Markup(self).__rmod__(other)
 
 
+#class QwebJSON(json.JSON):
+#    def dumps(self, *args, **kwargs):
+#        prev_default = kwargs.pop('default', lambda obj: obj)
+#        return super().dumps(*args, **kwargs, default=(
+#            lambda obj: prev_default(str(obj) if isinstance(obj, QwebContent) else obj)
+#        ))
+
+
+# UUIDv7 Patched
 class QwebJSON(json.JSON):
     def dumps(self, *args, **kwargs):
         prev_default = kwargs.pop('default', lambda obj: obj)
-        return super().dumps(*args, **kwargs, default=(
-            lambda obj: prev_default(str(obj) if isinstance(obj, QwebContent) else obj)
-        ))
 
+        def normalize(obj):
+            """Convert UUID keys/values to str recursively."""
+            if isinstance(obj, uuid.UUID):
+                return str(obj)
+            elif isinstance(obj, dict):
+                # convert keys and values recursively
+                return {str(k) if isinstance(k, uuid.UUID) else k: normalize(v) for k, v in obj.items()}
+            elif isinstance(obj, (list, tuple, set)):
+                return [normalize(v) for v in obj]
+            elif isinstance(obj, QwebContent):
+                return str(obj)
+            return obj
+
+        normalized_args = tuple(normalize(a) for a in args)
+        normalized_kwargs = {k: normalize(v) for k, v in kwargs.items()}
+
+        return super().dumps(*normalized_args, **normalized_kwargs, default=(
+            lambda obj: prev_default(normalize(obj))
+        ))
 
 qwebJSON = QwebJSON()
 
@@ -691,7 +719,7 @@ class IrQweb(models.AbstractModel):
     _description = 'Qweb'
 
     @api.model
-    def _render(self, template: int | str | etree._Element, values: dict | None = None, **options) -> Markup:
+    def _render(self, template: uuid.UUID | str | etree._Element, values: dict | None = None, **options) -> Markup:
         """ Render the template specified by the given name.
 
         :param template: etree, xml_id, template name (see _get_template)
@@ -794,7 +822,7 @@ class IrQweb(models.AbstractModel):
                         irQweb = irQweb.with_context(**params.context)
 
                     render_template = loaded_functions.get(params.method)
-
+                    #_logger.info("[UUID QWEB] _compile begin")
                     # Fetch the compiled function and template options
                     if not render_template:
                         template_functions, def_name, options = irQweb._compile(params.view_ref)
@@ -802,7 +830,7 @@ class IrQweb(models.AbstractModel):
                         render_template = template_functions[params.method or def_name]
                     else:
                         options = irQweb._compile(params.view_ref)[2]
-
+                    #_logger.info("[UUID QWEB] _compile end")
                     # Apply a new scope if needed
                     if params.scope:
                         if params.scope == 'root':
@@ -971,6 +999,7 @@ class IrQweb(models.AbstractModel):
         else:
             template_functions, def_name, options = self._generate_code_uncached(template)
 
+        #_logger.info("[UUID QWEB] render_template: %s ", def_name)
         render_template = template_functions[def_name]
         if options.get('profile') and render_template.__name__ != 'profiled_method_compile':
             ref = options.get('ref')
@@ -997,12 +1026,12 @@ class IrQweb(models.AbstractModel):
         'xml' not in tools.config['dev_mode'],
         tools.ormcache('ref', 'tuple(self.env.context.get(k) or False for k in self._get_template_cache_keys())', cache='templates'),
     )
-    def _generate_code_cached(self, ref: int):
+    def _generate_code_cached(self, ref: uuid.UUID):
         return self._generate_code_uncached(ref)
 
-    def _generate_code_uncached(self, template: int | str | etree._Element):
+    def _generate_code_uncached(self, template: uuid.UUID | str | etree._Element):
         assert isinstance(self, IrQweb)
-        ref = self._get_template_info(template)['id'] if isinstance(template, (int, str)) else None
+        ref = self._get_template_info(template)['id'] if isinstance(template, (uuid.UUID, str)) else None
 
         code, options, def_name = self._generate_code(template)
 
@@ -1031,7 +1060,7 @@ class IrQweb(models.AbstractModel):
         unsafe_eval(compiled, globals_dict)
         return globals_dict['generate_functions'](), def_name, frozendict(options)
 
-    def _generate_code(self, template: int | str | etree._Element):
+    def _generate_code(self, template: uuid.UUID | str | etree._Element):
         """ Compile the given template into a rendering function (generator)::
 
             render_template(qweb, values)
@@ -1048,7 +1077,7 @@ class IrQweb(models.AbstractModel):
 
         :returns: tuple containing code, options and main method name
         """
-        if not isinstance(template, (int, str, etree._Element)):
+        if not isinstance(template, (uuid.UUID, str, etree._Element)):
             template = str(template)
         # The `compile_context`` dictionary includes the elements used for the
         # cache key to which are added the template references as well as
@@ -1070,8 +1099,9 @@ class IrQweb(models.AbstractModel):
         compile_context.pop('raise_if_not_found', None)
 
         ref_name = element.attrib.pop('t-name', None)
-        if isinstance(ref, int) or (isinstance(template, str) and '<' not in template):
+        if isinstance(ref, uuid.UUID) or (isinstance(template, str) and '<' not in template):
             ref_name = self._get_template_info(ref)['key'] or ref_name
+        #_logger.info("[UUID QWEB] _get_template_info: %s ", ref_name)
 
         # reference to get xml and etree (usually the template ID)
         compile_context['ref'] = ref
@@ -1185,6 +1215,43 @@ class IrQweb(models.AbstractModel):
         if isinstance(template, str) and '<' in template:
             raise ValueError('Inline templates must be passed as `etree` documents')
 
+        # user = request.env.user
+        # _logger.info("[UUID DEBUG] user.id=%s type=%s", user.id, type(user.id))
+        # _logger.info("[UUID DEBUG] user.group_ids._ids=%s", user.group_ids._ids)
+        # _logger.info("[UUID DEBUG] user.group_ids.ids=%s", user.group_ids.ids)
+        # _logger.info("[UUID DEBUG] user.group_ids.read([('id')])=%s", user.group_ids.read(['id', 'name']))
+        #_logger.info("[DEBUG SESSION] uid=%s is_admin=%s group_ids=%s", user.id, user.has_group('base.group_system'), list(user.group_ids.ids))
+
+        # ✅ UUIDv7 patch
+        # Nếu template là UUID hợp lệ hoặc kiểu int → load theo record.id, không qua xml_id
+        if isinstance(template, uuid.UUID) or (
+            isinstance(template, str)
+            and re.fullmatch(r"0[0-9a-f]{3}[0-9a-f\-]{28,}", template)
+        ):
+            try:
+                view_id = uuid.UUID(template) if isinstance(template, str) else template
+                _logger.info("[UUID QWEB] View UUID check: %s ", view_id)
+                view = self.env['ir.ui.view'].browse(view_id)
+                _logger.info("[UUID QWEB] View UUID browse: %s ", view_id)
+                if view.exists():
+                    _logger.info("[UUID QWEB] View UUID: %s exist", template)
+                    _logger.info("[UUID QWEB] UUID 2: view.id=%s, view.key=%s, view.name=%s, model=%s, arch_db length=%d",
+                        view.id, view.key, view.name, view.model, len(view.arch_db or ''))
+                    document = view.arch_db
+                    if not isinstance(document, str):
+                        _logger.warning("[UUID QWEB] arch_db type unexpected for view %s: %s", view.id, type(document))
+                        document = str(document or '')  # fallback convert
+                    try:
+                        element = etree.fromstring(document.encode())
+                    except Exception as e:
+                        _logger.error("[UUID QWEB] Failed to parse XML for view %s: %s\nXML snippet:\n%s",
+                                    view.id, e, document[:1000])  # log tối đa 1000 ký tự
+                        raise
+                    _logger.info("[UUID QWEB] View UUID return : %s exist", template)
+                    return (element, document, str(view.id))
+            except Exception as e:
+                _logger.warning("[UUID QWEB] Failed to resolve template by UUID: %s (%s) view_id:%s", template, e, view_id)
+
         # template is (id or ref) to a database stored template
         id_or_xmlid = _id_or_xmlid(template)  # e.g. <t t-call="33"/> or <t t-call="web.layout"/>
         value = self._preload_trees([id_or_xmlid]).get(id_or_xmlid)
@@ -1201,7 +1268,7 @@ class IrQweb(models.AbstractModel):
     def _get_preload_attribute_xmlids(self):
         return ['t-call']
 
-    def _preload_trees(self, refs: Sequence[int | str]):
+    def _preload_trees(self, refs: Sequence[uuid.UUID | str]):
         """ Preload all tree and subtree (from t-call and other '_get_preload_attribute_xmlids' values).
 
             Returns::
@@ -1209,7 +1276,7 @@ class IrQweb(models.AbstractModel):
                 {
                     id or xmlId/key: {
                         'xmlid': str | None,
-                        'ref': int | None,
+                        'ref': uuid.UUID | None,
                         'tree': etree | None,
                         'template': str | None,
                         'error': None | MissingError
@@ -2253,6 +2320,7 @@ class IrQweb(models.AbstractModel):
         ] or [indent_code('pass', level + 1)])
         return code
 
+    # UUIDv7 Patch
     def _compile_directive_foreach(self, el, compile_context, level):
         """Compile ``t-foreach`` expressions into a python code as a list of
         strings.
@@ -2633,6 +2701,7 @@ class IrQweb(models.AbstractModel):
             template = {template}
             """, level))
         if '%' in template:
+            # UUIDv7 Patch
             code.append(indent_code("""
                 if template.isnumeric():
                     template = int(template)
@@ -2974,7 +3043,7 @@ class IrQweb(models.AbstractModel):
 def render(template_name, values, load, **options):
     """ Rendering of a qweb template without database and outside the registry.
     (Widget, field, or asset rendering is not implemented.)
-    :param (string|int) template_name: template identifier
+    :param (string|uuid.UUID) template_name: template identifier
     :param dict values: template values to be used for rendering
     :param def load: function like `load(template_name)` which returns an etree
         from the given template name (from initial rendering or template
@@ -3017,7 +3086,7 @@ def render(template_name, values, load, **options):
 
             :returns: The loaded template (as string or etree) and its
                 identifier
-            :rtype: Tuple[Union[etree, str], Optional[str, int]]
+            :rtype: Tuple[Union[etree, str], Optional[str, uuid.UUID]]
             """
             return self.env.context['load'](ref)
 

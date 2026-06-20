@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 from abc import ABC, abstractmethod
 import typing
+import uuid
 
 if typing.TYPE_CHECKING:
     from collections.abc import Collection, Iterable
@@ -16,7 +17,7 @@ class SetDefinitions:
     """
     __slots__ = ('__leaves',)
 
-    def __init__(self, definitions: dict[int, dict]):
+    def __init__(self, definitions: dict[uuid.UUID, dict]):
         """ Initialize the object with ``definitions``, a dict which maps each
         set id to a dict with optional keys ``"ref"`` (value is the set's name),
         ``"supersets"`` (value is a collection of set ids), and ``"disjoints"``
@@ -51,7 +52,7 @@ class SetDefinitions:
             │    └──────────────────────────┘          │
             └──────────────────────────────────────────┘
         """
-        self.__leaves: dict[int | str, Leaf] = {}
+        self.__leaves: dict[uuid.UUID | str, Leaf] = {}
 
         for leaf_id, info in definitions.items():
             ref = info['ref']
@@ -115,7 +116,7 @@ class SetDefinitions:
         else:
             return Union([Inter(negatives)])
 
-    def from_ids(self, ids: Iterable[int], keep_subsets: bool = False) -> SetExpression:
+    def from_ids(self, ids: Iterable[uuid.UUID], keep_subsets: bool = False) -> SetExpression:
         """ Return the set expression corresponding to given set ids. """
         if keep_subsets:
             ids = set(ids)
@@ -142,7 +143,7 @@ class SetDefinitions:
         leaf = self.__leaves.get(ref)
         return None if leaf is None else leaf.id
 
-    def __get_leaf(self, ref: str | int, raise_if_not_found: bool = True) -> Leaf:
+    def __get_leaf(self, ref: str | uuid.UUID, raise_if_not_found: bool = True) -> Leaf:
         """ Return the group object from the string.
 
         :param str ref: the ref of a leaf
@@ -153,7 +154,7 @@ class SetDefinitions:
             return Leaf(UnknownId(ref), ref)
         return self.__leaves[ref]
 
-    def get_superset_ids(self, ids: Iterable[int]) -> list[int]:
+    def get_superset_ids(self, ids: Iterable[uuid.UUID]) -> list[uuid.UUID]:
         """ Returns the supersets matching the provided list of ids.
 
         Following example defined in this set definitions constructor::
@@ -167,7 +168,7 @@ class SetDefinitions:
             if sup_id != id_
         })
 
-    def get_subset_ids(self, ids: Iterable[int]) -> list[int]:
+    def get_subset_ids(self, ids: Iterable[uuid.UUID]) -> list[uuid.UUID]:
         """ Returns the subsets matching the provided list of ids.
 
         Following example defined in this set definitions constructor::
@@ -181,7 +182,7 @@ class SetDefinitions:
             if sub_id != id_
         })
 
-    def get_disjoint_ids(self, ids: Iterable[int]) -> list[int]:
+    def get_disjoint_ids(self, ids: Iterable[uuid.UUID]) -> list[uuid.UUID]:
         """ Returns the disjoints set matching the provided list of ids.
 
         Following example defined in this set definitions constructor::
@@ -217,7 +218,7 @@ class SetExpression(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def matches(self, user_group_ids: Iterable[int]) -> bool:
+    def matches(self, user_group_ids: Iterable[uuid.UUID]) -> bool:
         """ Return whether the given group ids are included to ``self``. """
         raise NotImplementedError()
 
@@ -527,7 +528,7 @@ class Leaf:
     """
     __slots__ = ('disjoints', 'id', 'inverse', 'key', 'negative', 'ref', 'subsets', 'supersets')
 
-    def __init__(self, leaf_id: LeafIdType, ref: str | int | None = None, negative: bool = False):
+    def __init__(self, leaf_id: LeafIdType, ref: str | uuid.UUID | None = None, negative: bool = False):
         self.id = leaf_id
         self.ref = ref or str(leaf_id)
         self.negative = bool(negative)
@@ -561,7 +562,7 @@ class Leaf:
         else:
             return self.id in other.disjoints
 
-    def matches(self, user_group_ids: Collection[int]) -> bool:
+    def matches(self, user_group_ids: Collection[uuid.UUID]) -> bool:
         return (self.id not in user_group_ids) if self.negative else (self.id in user_group_ids)
 
     def __eq__(self, other) -> bool:
@@ -603,7 +604,7 @@ class UnknownId(str):
         return True
 
 
-LeafIdType = int | typing.Literal["*"] | UnknownId
+LeafIdType = uuid.UUID | typing.Literal["*"] | UnknownId
 
 # constants
 UNIVERSAL_LEAF = Leaf('*')

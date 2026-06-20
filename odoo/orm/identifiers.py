@@ -1,15 +1,21 @@
 import functools
 import typing
-
+import uuid
 
 @functools.total_ordering
 class NewId:
-    """ Pseudo-ids for new records, encapsulating an optional origin id (actual
-        record id) and an optional reference (any value).
+    """Pseudo-ids for new records, encapsulating an optional origin id
+       (actual record id, can be int or uuid.UUID) and an optional reference.
     """
     __slots__ = ('origin', 'ref', '__hash')  # noqa: RUF023
 
     def __init__(self, origin=None, ref=None):
+        # Convert string UUID to uuid.UUID if needed
+        if isinstance(origin, str):
+            try:
+                origin = uuid.UUID(origin)
+            except ValueError:
+                pass
         self.origin = origin
         self.ref = ref
         self.__hash = hash(origin or ref or id(self))
@@ -18,39 +24,35 @@ class NewId:
         return False
 
     def __eq__(self, other):
-        return isinstance(other, NewId) and (
-            (self.origin and other.origin and self.origin == other.origin)
-            or (self.ref and other.ref and self.ref == other.ref)
-        )
+        if not isinstance(other, NewId):
+            return False
+        return ((self.origin is not None and other.origin is not None and self.origin == other.origin)
+                or (self.ref is not None and other.ref is not None and self.ref == other.ref))
 
     def __hash__(self):
         return self.__hash
 
     def __lt__(self, other):
-        if isinstance(other, NewId):
-            other = other.origin
-            if other is None:
-                return other > self.origin if self.origin else False
-        if isinstance(other, int):
-            return bool(self.origin) and self.origin < other
+        """Ordering support: NewId < int or NewId < UUID?"""
+        o = getattr(other, 'origin', other)
+        if self.origin is None:
+            return True
+        if isinstance(self.origin, (int, uuid.UUID)) and isinstance(o, type(self.origin)):
+            return self.origin < o
         return NotImplemented
 
     def __repr__(self):
-        return (
-            "<NewId origin=%r>" % self.origin if self.origin else
-            "<NewId ref=%r>" % self.ref if self.ref else
-            "<NewId 0x%x>" % id(self)
-        )
+        if self.origin:
+            return f"<NewId origin={self.origin!r}>"
+        elif self.ref:
+            return f"<NewId ref={self.ref!r}>"
+        else:
+            return f"<NewId 0x{id(self):x}>"
 
     def __str__(self):
-        if self.origin or self.ref:
-            id_part = repr(self.origin or self.ref)
-        else:
-            id_part = hex(id(self))
-        return "NewId_%s" % id_part
+        id_part = self.origin or self.ref or hex(id(self))
+        return f"NewId_{id_part}"
 
-
-# By default, in the ORM we initialize it as an int, but any type should work.
-# However, and some parts of the ORM may assume it is an integer.
-# Non-exhaustive list: relational fields, references, hierarchies, etc.
-IdType: typing.TypeAlias = int | NewId | str
+# Type alias for ORM fields
+# Can be int (legacy), NewId, str (reference), or UUID
+IdType: typing.TypeAlias = int | uuid.UUID | NewId | str

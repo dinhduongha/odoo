@@ -1152,7 +1152,7 @@ class Session(collections.abc.MutableMapping):
         return self.__data[item]
 
     def __setitem__(self, item, value):
-        value = json.loads(json.dumps(value))
+        value = json.loads(json.dumps(value, default=str))
         if item not in self.__data or self.__data[item] != value:
             self.is_dirty = True
         self.__data[item] = value

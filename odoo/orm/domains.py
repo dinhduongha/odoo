@@ -60,6 +60,8 @@ import pytz
 import types
 import typing
 import warnings
+import uuid
+from uuid import UUID
 from datetime import date, datetime, time, timedelta, timezone
 
 from odoo.exceptions import MissingError, UserError
@@ -1749,11 +1751,11 @@ def _operator_hierarchy(condition, model):
         if field.type == 'many2one':
             field = model._fields['id']
     # Get the initial ids and bind them to comodel_sudo before resolving the hierarchy
-    if isinstance(value, (int, str)):
+    if isinstance(value, (UUID, str)):
         value = [value]
     elif not isinstance(value, COLLECTION_TYPES):
         condition._raise(f"Value of type {type(value)} is not supported")
-    coids, other_values = partition(lambda v: isinstance(v, int), value)
+    coids, other_values = partition(lambda v: isinstance(v, UUID), value)
     search_domain = _FALSE_DOMAIN
     if field.type == 'many2many':
         # always search for many2many
@@ -1793,7 +1795,7 @@ def _operator_child_of_domain(comodel: BaseModel, parent):
         # recursively retrieve all children nodes with sudo(); the
         # filtering of forbidden records is done by the rest of the
         # domain
-        child_ids: OrderedSet[int] = OrderedSet()
+        child_ids: OrderedSet[UUID] = OrderedSet()
         while comodel:
             child_ids.update(comodel._ids)
             query = comodel._search(DomainCondition(parent, 'in', OrderedSet(comodel.ids)))
@@ -1801,16 +1803,34 @@ def _operator_child_of_domain(comodel: BaseModel, parent):
     return child_ids
 
 
+# def _operator_parent_of_domain(comodel: BaseModel, parent):
+#     """Return a set of ids or a domain to find all parents of given model"""
+#     parent_ids = OrderedSet()
+
+#     if comodel._parent_store and parent == comodel._parent_name:
+#         # parent_path chứa danh sách UUID ngăn cách bằng '/'
+#         for rec in comodel:
+#             # Bỏ phần tử rỗng cuối cùng do dấu '/'
+#             labels = [l for l in rec.parent_path.split('/')[:-1] if l]
+#             parent_ids.update(labels)
+#     else:
+#         # truy ngược cha
+#         while comodel:
+#             parent_ids.update(comodel._ids)
+#             comodel = comodel[parent].filtered(lambda p: p.id not in parent_ids)
+
+#     return parent_ids
+
 def _operator_parent_of_domain(comodel: BaseModel, parent):
     """Return a set of ids or a domain to find all parents of given model"""
-    parent_ids: OrderedSet[int]
+    parent_ids: OrderedSet[UUID]
     if comodel._parent_store and parent == comodel._parent_name:
         try:
             paths = comodel.mapped('parent_path')
         except MissingError:
             paths = comodel.exists().mapped('parent_path')
         parent_ids = OrderedSet(
-            int(label)
+            uuid.UUID(label)
             for path in paths
             for label in path.split('/')[:-1]
         )

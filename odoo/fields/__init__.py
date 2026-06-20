@@ -9,6 +9,7 @@ from odoo.orm.fields_numeric import Integer, Float, Monetary
 from odoo.orm.fields_textual import Char, Text, Html
 from odoo.orm.fields_selection import Selection
 from odoo.orm.fields_temporal import Date, Datetime
+from odoo.orm.fields_uuid import Uuid
 
 from odoo.orm.fields_relational import Many2one, Many2many, One2many
 from odoo.orm.fields_reference import Many2oneReference, Reference

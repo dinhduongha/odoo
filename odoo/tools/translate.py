@@ -20,6 +20,7 @@ import polib
 import re
 import tarfile
 import typing
+import uuid
 from collections import defaultdict, namedtuple
 from collections.abc import Iterable, Iterator
 from contextlib import suppress
@@ -509,15 +510,18 @@ def _get_cr(frame):
     return None
 
 
-def _get_uid(frame) -> int | None:
+def _get_uid(frame) -> uuid.UUID | None:
     # try, in order: uid, user, self.env.uid
     if 'uid' in frame.f_locals:
         return frame.f_locals['uid']
     if 'user' in frame.f_locals:
-        return int(frame.f_locals['user'])      # user may be a record
+        return frame.f_locals['user']      # user may be a record
     if (local_self := frame.f_locals.get('self')) is not None:
         if hasattr(local_self, 'env') and (uid := local_self.env.uid):
             return uid
+    if hasattr(uid, 'id'):
+        uid = uid.id
+        return uid
     return None
 
 
@@ -733,7 +737,7 @@ class CSVFileReader:
             # determine <module>.<imd_name> from res_id
             if entry["res_id"] and entry["res_id"].isnumeric():
                 # res_id is an id or line number
-                entry["res_id"] = int(entry["res_id"])
+                entry["res_id"] = uuid.UUID(entry["res_id"])
             elif not entry.get("imd_name"):
                 # res_id is an external id and must follow <module>.<name>
                 entry["module"], entry["imd_name"] = entry["res_id"].split(".")
@@ -889,7 +893,7 @@ class PoFileReader:
                         'src': source,
                         'value': translation,
                         'comments': comments,
-                        'res_id': int(line_number),
+                        'res_id': line_number,
                         'module': module,
                     }
                     continue
