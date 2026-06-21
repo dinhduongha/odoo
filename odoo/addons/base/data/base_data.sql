@@ -152,22 +152,28 @@ insert into res_currency (id, name, symbol) VALUES ('00000000-0000-0000-0000-000
 insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('USD', 'base', 'res.currency', true, '00000000-0000-0000-0000-000000000001');
 -- select setval('res_currency_id_seq', 1);
 
-insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'My Company', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
-insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('main_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000001');
+-- SWAP ROLES: the primary company (base.main_company, where Odoo loads demo data into
+-- the loading user's company) IS the dedicated "Demo Company" (...0002). Making the demo
+-- company primary means all demo data lands here naturally, avoiding the cross-company
+-- _check_company / company-dependent failures that happen when redirecting demo to a
+-- secondary company.
+insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('main_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000002');
 -- select setval('res_company_id_seq', 1);
 
-insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'My Company', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
-insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('main_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000001');
+insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', now() at time zone 'UTC');
+insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('main_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000002');
 -- select setval('res_partner_id_seq', 1);
 
--- Demo Company (force multi-company baseline): always present as the 2nd company,
--- pinned to ...0002. Demo data is loaded into this company (see modules/loading.py).
-insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
-insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('demo_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000002');
-insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', now() at time zone 'UTC');
-insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('demo_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000002');
+-- Secondary clean company = "YourCompany" (...0001) = base.your_company. Always present
+-- as the 2nd company (force multi-company baseline); holds no demo data (pristine
+-- production company alongside the demo one).
+insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'YourCompany', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('your_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000001');
+insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'YourCompany', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('your_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000001');
 
-insert into res_users (id, login, password, active, partner_id, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', '__system__', NULL, false, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+insert into res_users (id, login, password, active, partner_id, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', '__system__', NULL, false, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', now() at time zone 'UTC');
 insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('user_root', 'base', 'res.users', true, '00000000-0000-0000-0000-000000000001');
 -- select setval('res_users_id_seq', 1);
 

@@ -76,12 +76,12 @@ class IrModuleModule(models.Model):
             ), None))
         ):
             def try_loading(env):
-                # Load the chart for the current company and also for the dedicated
-                # Demo Company (multi-company baseline) so it has its own accounting setup.
+                # Load the chart for the current company and also for the secondary clean
+                # company (multi-company baseline) so it has its own accounting setup.
                 companies = env.company
-                demo_company = env.ref('base.demo_company', raise_if_not_found=False)
-                if demo_company:
-                    companies = companies | demo_company
+                your_company = env.ref('base.your_company', raise_if_not_found=False)
+                if your_company:
+                    companies = companies | your_company
                 for company in companies:
                     if not company.chart_template:
                         env['account.chart.template'].try_loading(guessed, company)
