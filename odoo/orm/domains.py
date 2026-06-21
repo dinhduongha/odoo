@@ -64,6 +64,8 @@ import uuid
 from uuid import UUID
 from datetime import date, datetime, time, timedelta, timezone
 
+from odoo.tools.uuid_utils import is_uuid
+
 from odoo.exceptions import MissingError, UserError
 from odoo.tools import SQL, OrderedSet, Query, classproperty, partition, str2bool
 from odoo.tools.date_utils import parse_date, parse_iso_date
@@ -1436,7 +1438,9 @@ def _optimize_relational_name_search(condition, model):
     # Handle equality with str values
     if positive_operator != 'in' or not isinstance(value, COLLECTION_TYPES):
         return condition
-    str_values, other_values = partition(lambda v: isinstance(v, str), value)
+    # uuidv7: a string that is a valid uuid is an id, not a display_name to
+    # search. Only genuine (non-uuid) strings are routed to a name search.
+    str_values, other_values = partition(lambda v: isinstance(v, str) and not is_uuid(v), value)
     if not str_values:
         return condition
     domain = DomainCondition(

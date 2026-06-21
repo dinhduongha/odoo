@@ -769,7 +769,7 @@ class BaseModel(metaclass=MetaModel):
         try:
             cr.copy_from(io.StringIO(
                 u'\n'.join(
-                    u"%s\t%s\t%s\t%d" % (
+                    u"%s\t%s\t%s\t%s" % (
                         modname,
                         record._name,
                         xids[record.id][1],
