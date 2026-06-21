@@ -1451,7 +1451,7 @@ class AccountTax(models.Model):
         if (
             extra_tax_data
             and extra_tax_data.get('manual_tax_amounts')
-            and base_line['currency_id'].id == extra_tax_data['currency_id']
+            and str(base_line['currency_id'].id) == str(extra_tax_data['currency_id'])
             and base_line['currency_id'].compare_amounts(base_line['price_unit'], extra_tax_data['price_unit']) == 0
             and base_line['currency_id'].compare_amounts(base_line['discount'], extra_tax_data['discount']) == 0
             and base_line['currency_id'].compare_amounts(base_line['quantity'], extra_tax_data['quantity']) == 0
