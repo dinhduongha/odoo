@@ -128,7 +128,7 @@ FROM (SELECT
         m.state != 'done'
     UNION ALL
     SELECT
-        -q.id as id,
+        q.id as id,
         q.product_id,
         pp.product_tmpl_id,
         'forecast' as state,

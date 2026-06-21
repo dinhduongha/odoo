@@ -35,7 +35,7 @@ class HrTimesheetAttendanceReport(models.Model):
                 NULLIF((coalesce(sum(t.attendance), 0) -  coalesce(sum(t.timesheet), 0)) * t.emp_cost, 0)  as cost_difference
             FROM (
                 SELECT
-                    -hr_attendance.id AS id,
+                    hr_attendance.id AS id,
                     hr_employee.hourly_cost AS emp_cost,
                     hr_attendance.employee_id AS employee_id,
                     hr_attendance.worked_hours AS attendance,

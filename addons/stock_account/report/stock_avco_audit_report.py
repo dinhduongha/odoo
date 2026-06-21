@@ -70,7 +70,7 @@ WHERE
     )
 UNION ALL
 SELECT
-    -pv.id,
+    pv.id,
     pv.product_id,
     pv.date,
     pv.user_id,

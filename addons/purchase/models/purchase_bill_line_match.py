@@ -107,7 +107,7 @@ class PurchaseBillLineMatch(models.Model):
     @api.model
     def _select_am_line(self):
         return SQL("""
-            SELECT -aml.id,
+            SELECT aml.id,
                    NULL as pol_id,
                    aml.id as aml_id,
                    aml.company_id as company_id,
