@@ -5,7 +5,17 @@ Run dir: `/home/ha/work/odoo-uuidv7-refactor` (compose `odoo-uuid`, ports 18069/
 Auto mode. Code reviewed externally by Antigravity + codex.
 
 ## ⭐ MILESTONE — branch `uuid-19-swap` (SWAP ROLES) — 2026-06-21
-Full all-module demo install: **227/227 modules, Registry loaded, EXIT 0.**
+Full all-module demo install: **227/227 modules, Registry loaded, EXIT 0, ZERO demo
+failures** (every module's demo data loads). Runtime-verified: login + web client (/odoo,
+/web = 200) + 4 companies switchable + demo data readable via web call_kw.
+- Final fixes that cleared the last failures:
+  - `ir_sequence` standard-impl PG sequence names: `%03d % uuid` -> uuid hex (date-range
+    sub keyed by its own id, <=63 char). Latent RUNTIME bug (order/invoice/picking numbering).
+  - `pos_restaurant` last_order_preparation_change: json.dumps default=str (uuid ids).
+  - `website_sale` recursion: get_param_id did int(False)==0 -> browse(0) phantom id-0
+    pricelist whose _origin self-references (infinite currency_id recursion). Fixed
+    get_param_id (uuid-aware, None when absent) + OriginIds only yields truthy ids.
+
 - Built from `3327d6fce` (start of the abandoned option-2 "keep routing/fix check_company
   per-module") + cherry-picked GENERIC uuid fixes (QWeb, Json, mail tracking, reference-o2m,
   parse_res_ids, alias_defaults, website_visitor, analytic, survey domain, lunch/event/rating…)
