@@ -502,7 +502,7 @@ class IrModuleModule(models.Model):
         :returns: next res.config item to execute
         :rtype: dict[str, object]
         """
-        _logger.info('User #%d triggered module installation', self.env.uid)
+        _logger.info('User #%s triggered module installation', self.env.uid)
         # We use here the request object (which is thread-local) as a kind of
         # "global" env because the env is not usable in the following use case.
         # When installing a Chart of Account, I would like to send the
@@ -684,7 +684,7 @@ class IrModuleModule(models.Model):
         Uninstall the selected module(s) immediately and fully,
         returns the next res.config action to execute
         """
-        _logger.info('User #%d triggered module uninstallation', self.env.uid)
+        _logger.info('User #%s triggered module uninstallation', self.env.uid)
         return self._button_immediate_function(self.env.registry[self._name].button_uninstall)
 
     @assert_log_admin_access

@@ -620,7 +620,7 @@ class ExportFormat(object):
             response_data = self.from_data(fields, columns_headers, all_rows)
 
         _logger.info(
-            "User %d exported %d %r records from %s. Fields: %s. %s: %s",
+            "User %s exported %d %r records from %s. Fields: %s. %s: %s",
             request.env.user.id, len(records.ids), records._name, request.httprequest.environ['REMOTE_ADDR'],
             ','.join(field_names),
             'IDs sample' if ids else 'Domain',

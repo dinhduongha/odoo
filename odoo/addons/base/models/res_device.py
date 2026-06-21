@@ -189,7 +189,7 @@ class ResDevice(models.Model):
         root.session_store.delete_from_identifiers(session_identifiers)
         revoked_devices = ResDeviceLog.sudo().search([('session_identifier', 'in', session_identifiers)])
         revoked_devices.write({'revoked': True})
-        _logger.info("User %d revokes devices (%s)", self.env.uid, ', '.join(session_identifiers))
+        _logger.info("User %s revokes devices (%s)", self.env.uid, ', '.join(session_identifiers))
 
         must_logout = bool(self.filtered('is_current'))
         if must_logout:

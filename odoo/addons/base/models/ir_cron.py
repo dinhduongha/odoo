@@ -679,7 +679,7 @@ class IrCron(models.Model):
                 self.env.transaction.reset()
 
             _logger.debug(
-                "cron.object.execute(%r, %d, '*', %r, %d)",
+                "cron.object.execute(%r, %s, '*', %r, %s)",
                 self.env.cr.dbname,
                 self.env.uid,
                 cron_name,

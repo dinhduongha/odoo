@@ -986,7 +986,7 @@ class ResUsers(models.Model):
 
         ip = request.httprequest.environ['REMOTE_ADDR'] if request else 'n/a'
         _logger.info(
-            "Password change for %r (#%d) by %r (#%d) from %s",
+            "Password change for %r (#%s) by %r (#%s) from %s",
              self.login, self.id,
              self.env.user.login, self.env.user.id,
              ip

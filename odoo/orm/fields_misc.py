@@ -127,38 +127,21 @@ class Id(Field[IdType | typing.Literal[False]]):
     def __set__(self, record, value):
         raise TypeError("field 'id' cannot be assigned")
 
-    #def convert_to_column(self, value, record, values=None, validate=True):
-    #    return value
-
     def convert_to_column(self, value, record, values=None, validate=True):
+        """Accept str, uuid.UUID, record, or list -> uuid string(s)."""
         if value is None:
             return None
-        if isinstance(value, uuid.UUID):
-            return str(value)
-        elif isinstance(value, str):
-            return value
-        elif not value:
-            return None
-        return None
-        #raise ValueError(f"Invalid UUID value for id: {value!r}")
-
-    def convert_to_column(self, value, record, values=None, validate=True):
-        """Nhận str, uuid.UUID hoặc record, trả về str."""
-        if value is None:
-            return None
-        # ⚙️ Nếu value là record, lấy id của nó
+        # if value is a record, take its id
         if hasattr(value, "id"):
             value = value.id
-        # ⚙️ Nếu là list (Command.set([...]))
+        # if value is a list (Command.set([...]))
         if isinstance(value, (list, tuple)):
             return [str(v.id if hasattr(v, "id") else v) for v in value]
-        # ⚙️ Chuẩn hóa về str UUID
         if isinstance(value, uuid.UUID):
             return str(value)
         if isinstance(value, str):
             return value
         return None
-        #raise ValueError(f"Invalid UUID value for {self.name}: {value!r}")
 
     def to_sql(self, model: BaseModel, alias: str) -> SQL:
         # do not flush, just return the identifier

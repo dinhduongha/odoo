@@ -20,6 +20,6 @@ class WizardIrModelMenuCreate(models.TransientModel):
             self.env['ir.ui.menu'].create({
                 'name': menu.name,
                 'parent_id': menu.menu_id.id,
-                'action': 'ir.actions.act_window,%d' % (action_id,)
+                'action': 'ir.actions.act_window,%s' % (action_id.id,)
             })
         return {'type': 'ir.actions.act_window_close'}

@@ -233,9 +233,9 @@ class BasePartnerMergeAutomaticWizard(models.TransientModel):
                 continue
 
             for src_record in src_records:
-                records_ref = Model.sudo().search([(record.name, '=', '%s,%d' % (referenced_model, src_record.id))])
+                records_ref = Model.sudo().search([(record.name, '=', '%s,%s' % (referenced_model, src_record.id))])
                 values = {
-                    record.name: '%s,%d' % (referenced_model, dst_record.id),
+                    record.name: '%s,%s' % (referenced_model, dst_record.id),
                 }
                 records_ref.sudo().write(values)
         # company_dependent fields referring the merged records

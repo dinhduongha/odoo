@@ -29,6 +29,7 @@ from .misc import file_open, file_path, SKIPPED_ELEMENT_TYPES
 from odoo.exceptions import ValidationError
 from odoo.models import BaseModel
 from .safe_eval import safe_eval, pytz, time
+from .uuid_utils import to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -343,7 +344,7 @@ form: module.record_id""" % (xml_id,)
             if '.' not in a_action:
                 a_action = '%s.%s' % (self.module, a_action)
             act = self.env.ref(a_action).sudo()
-            values['action'] = "%s,%d" % (act.type, act.id)
+            values['action'] = "%s,%s" % (act.type, act.id)
 
             if not values.get('name') and act.type.endswith(('act_window', 'wizard', 'url', 'client', 'server')) and act.name:
                 values['name'] = act.name
@@ -469,7 +470,7 @@ form: module.record_id""" % (xml_id,)
                 if f_name in model._fields:
                     field_type = model._fields[f_name].type
                     if field_type == 'many2one':
-                        f_val = int(f_val) if f_val else False
+                        f_val = to_uuid(f_val) if f_val else False
                     elif field_type == 'integer':
                         f_val = int(f_val)
                     elif field_type in ('float', 'monetary'):
