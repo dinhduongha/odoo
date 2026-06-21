@@ -133,7 +133,7 @@ class Website(Home):
 
         raise request.not_found()
 
-    @http.route('/website/force/<int:website_id>', type='http', auth="user", website=True, sitemap=False, multilang=False, readonly=True)
+    @http.route('/website/force/<string:website_id>', type='http', auth="user", website=True, sitemap=False, multilang=False, readonly=True)
     def website_force(self, website_id, path='/', isredir=False, **kw):
         """ To switch from a website to another, we need to force the website in
         session, AFTER landing on that website domain (if set) as this will be a
