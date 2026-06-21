@@ -732,7 +732,7 @@ class Properties(Field):
             if len(value) == 1:
                 # check single value equality
                 sql_operator = SQL_OPERATORS['=' if operator == 'in' else '!=']
-                sql_right = SQL("%s", json.dumps(value[0]))
+                sql_right = SQL("%s", json.dumps(value[0], default=str))
                 sqls.append(SQL("%s%s%s", sql_left, sql_operator, sql_right))
             if value:
                 sql_not = SQL('NOT ') if operator == 'not in' else SQL()
@@ -744,7 +744,7 @@ class Properties(Field):
                 else:
                     # left @> value -- value_list in left
                     sql_operator = SQL(" @> ")
-                sql_right = SQL("%s", json.dumps(value))
+                sql_right = SQL("%s", json.dumps(value, default=str))
                 sqls.append(SQL(
                     "%s%s%s%s",
                     sql_not, sql_left, sql_operator, sql_right,
@@ -780,7 +780,7 @@ class Properties(Field):
                 sql = SQL("(%s OR %s IS NULL)", sql, sql_left)
             return sql
 
-        sql_right = SQL("%s", json.dumps(value))
+        sql_right = SQL("%s", json.dumps(value, default=str))
         return SQL(
             "%s%s%s",
             unaccent(sql_left), sql_operator, unaccent(sql_right),

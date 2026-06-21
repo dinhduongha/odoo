@@ -4477,7 +4477,7 @@ class BaseModel(metaclass=MetaModel):
                         """,
                         table=SQL.identifier(model._table),
                         field=SQL.identifier(field.name),
-                        jsonpath=f"$.* ? ({' || '.join(f'@ == {id_}' for id_ in sub_ids)})",
+                        jsonpath=f"$.* ? ({' || '.join(f'@ == {json.dumps(str(id_))}' for id_ in sub_ids)})",
                     )):
                         on_restrict_id, field_json = res[0]
                         to_delete_id = next(iter(id_ for id_ in field_json.values()))
@@ -4504,7 +4504,7 @@ class BaseModel(metaclass=MetaModel):
                         table=SQL.identifier(model._table),
                         field=SQL.identifier(field.name),
                         ids=sub_ids,
-                        jsonpath=f"$.* ? ({' || '.join(f'@ == {id_}' for id_ in sub_ids)})",
+                        jsonpath=f"$.* ? ({' || '.join(f'@ == {json.dumps(str(id_))}' for id_ in sub_ids)})",
                     ))
 
             # For the same reason, remove the defaults having some of the
