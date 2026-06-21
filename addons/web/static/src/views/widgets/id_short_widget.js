@@ -1,7 +1,7 @@
 /** @odoo-module **/
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
-import { Component } from "@web/core/utils/component";
+import { Component } from "@odoo/owl";
 
 export class IdShortField extends Component {
     static template = "web.IdShortField";
