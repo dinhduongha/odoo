@@ -57,7 +57,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(CREATE, 0, {values})`
         """
-        return (cls.CREATE, uuid.UUID('00000000-0000-0000-0000-000000000000'), values)
+        return (cls.CREATE, 0, values)
 
     @classmethod
     def update(cls, id: uuid.UUID, values: ValuesType) -> CommandValue:
@@ -80,7 +80,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(DELETE, {id}, 0)`
         """
-        return (cls.DELETE, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
+        return (cls.DELETE, id, 0)
 
     @classmethod
     def unlink(cls, id: uuid.UUID) -> CommandValue:
@@ -94,7 +94,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(UNLINK, {id}, 0)`
         """
-        return (cls.UNLINK, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
+        return (cls.UNLINK, id, 0)
 
     @classmethod
     def link(cls, id: uuid.UUID) -> CommandValue:
@@ -103,7 +103,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(LINK, {id}, 0)`
         """
-        return (cls.LINK, id, uuid.UUID('00000000-0000-0000-0000-000000000000'))
+        return (cls.LINK, id, 0)
 
     @classmethod
     def clear(cls) -> CommandValue:
@@ -113,7 +113,7 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(CLEAR, 0, 0)`
         """
-        return (cls.CLEAR, uuid.UUID('00000000-0000-0000-0000-000000000000'), uuid.UUID('00000000-0000-0000-0000-000000000000'))
+        return (cls.CLEAR, 0, 0)
 
     @classmethod
     def set(cls, ids: Collection[int]) -> CommandValue:
@@ -124,8 +124,6 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(SET, 0, {ids})`
         """
-        # 2nd element is an unused placeholder for SET (only ids matter); keep it 0 as in
-        # stock — making it a uuid breaks code/tests that expect the (SET, 0, ids) shape.
         return (cls.SET, 0, ids)
 
 
