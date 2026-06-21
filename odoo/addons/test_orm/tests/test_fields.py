@@ -1650,12 +1650,13 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
         company1 = self.env['res.company'].create({'name': 'A'})  # noqa: F841
         Model = self.env['test_orm.company']
         record = Model.create({})
-        record.tag_id = 1000  # non-existing record id
+        wrong_id = uuid7()  # non-existing record id
+        record.tag_id = wrong_id
         record.invalidate_recordset()
 
         self.env.cr.execute(
-            'SELECT id FROM test_orm_company WHERE id = %s and (tag_id->%s)::int = %s',
-            [record.id, str(self.env.company.id), 1000],
+            'SELECT id FROM test_orm_company WHERE id = %s and (tag_id->>%s)::uuid = %s',
+            [record.id, str(self.env.company.id), str(wrong_id)],
         )
         self.assertEqual(self.env.cr.rowcount, 1)
         self.assertFalse(record.tag_id)

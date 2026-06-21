@@ -291,7 +291,7 @@ class TestPerformance(SavepointCaseWithUserDemo):
 
         with self.assertQueryCount(4):
             self.env.invalidate_all()
-            rec1.write({'line_ids': [Command.update(line.id, {'value': 42 + i}) for i, line in enumerate(lines[1:])]})
+            rec1.write({'line_ids': [Command.update(line.id, {'value': 100 + i}) for i, line in enumerate(lines[1:])]})
         self.assertEqual(rec1.line_ids, lines)
 
         # delete N lines: O(1) queries

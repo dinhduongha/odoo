@@ -552,13 +552,15 @@ class TestOnchange(SavepointCaseWithUserDemo):
         )
 
     def test_onchange_related(self):
-        user = self.env.user
         message = self.env.ref('test_orm.message_0_0')
+        author = message.author
 
+        # message_currency is related to message.author; pass a different
+        # (empty) input value so the onchange reports the recomputed value
         values = {
             'message': message.id,
             'message_name': False,
-            'message_currency': user.id,
+            'message_currency': False,
         }
         fields_spec = {
             'message': {'fields': {'display_name': {}}},
@@ -568,7 +570,7 @@ class TestOnchange(SavepointCaseWithUserDemo):
 
         expected = {
             'message_name': 'Hey dude!',
-            'message_currency': {'id': user.id, 'display_name': user.display_name},
+            'message_currency': {'id': author.id, 'display_name': author.display_name},
         }
 
         self.env.invalidate_all()
