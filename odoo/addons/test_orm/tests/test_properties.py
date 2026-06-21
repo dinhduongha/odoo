@@ -118,7 +118,18 @@ class TestPropertiesMixin(TransactionCase):
         )
         value = self.env.cr.fetchone()
         self.assertTrue(value and value[0])
-        return value[0]
+        # raw jsonb stores relational default ids as strings; coerce uuid-looking
+        # strings back to uuid.UUID so assertions can compare against .id/.ids
+        definition = value[0]
+        for property_definition in definition:
+            default = property_definition.get('default')
+            if isinstance(default, str):
+                property_definition['default'] = to_uuid(default)
+            elif isinstance(default, list):
+                property_definition['default'] = [
+                    to_uuid(x) if isinstance(x, str) else x for x in default
+                ]
+        return definition
 
     def get_read_dict(self, record, field_name):
         read_value = record.read([field_name])[0][field_name]
@@ -1453,7 +1464,8 @@ class PropertiesCase(TestPropertiesMixin):
         self.env.flush_all()
         moderator_partner_ids = partners[6:10].ids
         moderator_partner_ids += moderator_partner_ids[2:]
-        new_value = json.dumps({"moderator_partner_ids": moderator_partner_ids})
+        # uuid PKs: ids are stored in jsonb as strings (no uuid json type)
+        new_value = json.dumps({"moderator_partner_ids": moderator_partner_ids}, default=str)
         self.env.cr.execute(
             """
             UPDATE test_orm_message
@@ -1567,7 +1579,7 @@ class PropertiesCase(TestPropertiesMixin):
             UPDATE "test_orm_message"
             SET "attributes" = "__tmp"."attributes"::jsonb,
                 "write_date" = "__tmp"."write_date"::timestamp,
-                "write_uid" = "__tmp"."write_uid"::int4
+                "write_uid" = "__tmp"."write_uid"::uuid
             FROM (VALUES %s) AS "__tmp"("id", "attributes", "write_date", "write_uid")
             WHERE "test_orm_message"."id" = "__tmp"."id"
         """]
@@ -1590,9 +1602,10 @@ class PropertiesCase(TestPropertiesMixin):
             ]
             self.message_1.flush_recordset()
 
-        last_message_id = self.env['test_orm.message'].search([], order="id DESC", limit=1).id
+        # uuid PKs: a fresh uuid7 is a non-existent record id
+        non_existing_id = uuid7()
         # based on batch optimization, _read_format should not crash on non existing records
-        values = self.env['test_orm.message'].browse((self.message_1.id, last_message_id + 1))._read_format(['attributes'])
+        values = self.env['test_orm.message'].browse((self.message_1.id, non_existing_id))._read_format(['attributes'])
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0]['id'], self.message_1.id)
 
@@ -3104,13 +3117,13 @@ class PropertiesGroupByCase(TestPropertiesMixin):
         self.message_2.attributes = {'mypartner': self.partner.id}
         self.message_4.attributes = {'mypartner': False}  # explicit False value
 
-        # this partner id doesn't exist
-        unexisting_record_id = self.env['test_orm.partner'].search(
-            [], order="id DESC", limit=1).id + 1
+        # this partner id doesn't exist (uuid PKs: generate a fresh uuid that
+        # is not in the table; ids are stored as strings in jsonb)
+        unexisting_record_id = uuid7()
         self.env.cr.execute(
             """
             UPDATE test_orm_message
-               SET attributes = '{"mypartner": %s}'
+               SET attributes = jsonb_build_object('mypartner', %s::text)
              WHERE id = %s
             """,
             [unexisting_record_id, self.message_3.id],

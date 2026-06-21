@@ -3081,9 +3081,10 @@ class BaseModel(metaclass=MetaModel):
                         property_name=definition.get('string', property_name), model_name=definition.get('comodel'),
                     ))
 
-                # check the existences of the many2many
+                # check the existences of the many2many; jsonb_array_elements
+                # yields jsonb scalars, extract their text before casting to uuid
                 condition = SQL(
-                    "%s::uuid IN (SELECT id FROM %s)",
+                    "(%s #>> '{}')::uuid IN (SELECT id FROM %s)",
                     SQL.identifier(property_alias), SQL.identifier(comodel._table),
                 )
 
@@ -3120,8 +3121,8 @@ class BaseModel(metaclass=MetaModel):
 
             return SQL(
                 """ CASE
-                        WHEN jsonb_typeof(%(property)s) = 'number'
-                         AND (%(property)s)::uuid IN (SELECT id FROM %(table)s)
+                        WHEN jsonb_typeof(%(property)s) = 'string'
+                         AND (%(property)s #>> '{}')::uuid IN (SELECT id FROM %(table)s)
                         THEN %(property)s
                         ELSE NULL
                      END """,

@@ -195,6 +195,27 @@ class Properties(Field):
     #       }
     #
     def convert_to_record(self, value, record):
+        # uuid PKs: jsonb is read into cache without going through
+        # convert_to_cache (see BaseModel._fetch_query, which inserts raw column
+        # values), so a relational id may still be a uuid-looking *string* here.
+        # Coerce many2one/many2many ids back to uuid.UUID using the definition,
+        # so the record-format value (and Property._values) holds the native id
+        # type. Build a fresh dict to avoid mutating the shared cache value.
+        if value:
+            types_by_name = {
+                d.get('name'): d.get('type')
+                for d in (self._get_properties_definition(record) or ())
+            }
+            if types_by_name:
+                coerced = {}
+                for name, val in value.items():
+                    prop_type = types_by_name.get(name)
+                    if prop_type == 'many2one' and isinstance(val, str):
+                        val = to_uuid(val)
+                    elif prop_type == 'many2many' and isinstance(val, (list, tuple)):
+                        val = [to_uuid(v) if isinstance(v, str) else v for v in val]
+                    coerced[name] = val
+                value = coerced
         return Property(value or {}, self, record)
 
     # Read format: the value is a list, where each element is a dict containing
@@ -492,14 +513,20 @@ class Properties(Field):
 
             property_type = property_definition.get('type')
 
-            if property_type == 'many2one' and has_list_types(property_value, [(int, uuid.UUID), (str, NoneType)]):
-                property_definition[value_key] = property_value[0]
+            if property_type == 'many2one' and (
+                has_list_types(property_value, [(int, uuid.UUID), (str, NoneType)])
+                # uuid PKs: after a json round-trip (e.g. PropertiesDefinition
+                # cache conversion) a uuid id is a string, so the web pair looks
+                # like ['019..', 'Bob']; reduce it to the bare (uuid-looking) id.
+                or has_list_types(property_value, [str, (str, NoneType)])
+            ):
+                property_definition[value_key] = to_uuid(property_value[0])
 
             elif property_type == 'many2many':
                 if is_list_of(property_value, (list, tuple)):
                     # [(35, 'Admin'), (36, 'Demo')] -> [35, 36]
                     property_definition[value_key] = [
-                        many2many_value[0]
+                        to_uuid(many2many_value[0])
                         for many2many_value in property_value
                     ]
 
@@ -986,6 +1013,19 @@ class PropertiesDefinition(Field):
             type_ = property_definition.get('type')
 
             if type_ in ('many2one', 'many2many'):
+                # uuid PKs: the relational default id is stored in jsonb as a
+                # string; coerce it back to uuid.UUID so the record-format
+                # default holds the native id type (and so _add_display_name,
+                # which checks isinstance(uuid.UUID), can resolve the display
+                # name or reduce a removed record to False).
+                default = property_definition.get('default')
+                if type_ == 'many2one' and isinstance(default, str):
+                    property_definition['default'] = to_uuid(default)
+                elif type_ == 'many2many' and isinstance(default, (list, tuple)):
+                    property_definition['default'] = [
+                        to_uuid(v) if isinstance(v, str) else v for v in default
+                    ]
+
                 # check if the model still exists in the environment, the module of the
                 # model might have been uninstalled so the model might not exist anymore
                 property_model = property_definition.get('comodel')
