@@ -6,6 +6,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import SQL, Query, unique
 from odoo.tools.float_utils import float_compare, float_round
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.tools.sql import table_exists
 
 
@@ -51,16 +52,16 @@ class AnalyticMixin(models.AbstractModel):
             return []
 
         if isinstance(distributions, (list, tuple, set)):
-            return {int(_id) for distribution in distributions for key in (distribution or {}) for _id in key.split(',')}
+            return {to_uuid(_id) for distribution in distributions for key in (distribution or {}) for _id in key.split(',') if is_uuid(_id)}
         else:
-            return {int(_id) for key in (distributions or {}) for _id in key.split(',')}
+            return {to_uuid(_id) for key in (distributions or {}) for _id in key.split(',') if is_uuid(_id)}
 
     @api.depends('analytic_distribution')
     def _compute_distribution_analytic_account_ids(self):
-        all_ids = {int(_id) for rec in self for key in (rec.analytic_distribution or {}) for _id in key.split(',') if _id.isdigit()}
+        all_ids = {to_uuid(_id) for rec in self for key in (rec.analytic_distribution or {}) for _id in key.split(',') if is_uuid(_id)}
         existing_accounts_ids = set(self.env['account.analytic.account'].browse(all_ids).exists().ids)
         for rec in self:
-            ids = list(unique(int(_id) for key in (rec.analytic_distribution or {}) for _id in key.split(',') if _id.isdigit() and int(_id) in existing_accounts_ids))
+            ids = list(unique(to_uuid(_id) for key in (rec.analytic_distribution or {}) for _id in key.split(',') if is_uuid(_id) and to_uuid(_id) in existing_accounts_ids))
             rec.distribution_analytic_account_ids = self.env['account.analytic.account'].browse(ids)
 
     def _search_distribution_analytic_account_ids(self, operator, value):
@@ -187,7 +188,7 @@ class AnalyticMixin(models.AbstractModel):
             decimal_precision = self.env['decimal.precision'].precision_get('Percentage Analytic')
             distribution_by_root_plan = {}
             for analytic_account_ids, percentage in (self.analytic_distribution or {}).items():
-                for analytic_account in self.env['account.analytic.account'].browse(map(int, analytic_account_ids.split(","))).exists():
+                for analytic_account in self.env['account.analytic.account'].browse(analytic_account_ids.split(",")).exists():
                     root_plan = analytic_account.root_plan_id
                     distribution_by_root_plan[root_plan.id] = distribution_by_root_plan.get(root_plan.id, 0) + percentage
 
@@ -220,7 +221,7 @@ class AnalyticMixin(models.AbstractModel):
         for old_key, old_val in old_distribution.items():
             remaining_key = tuple(sorted(
                 account.id
-                for account in self.env['account.analytic.account'].browse(int(aid) for aid in old_key.split(','))
+                for account in self.env['account.analytic.account'].browse(old_key.split(','))
                 if account.plan_id.root_id in non_changing_plans
             ))
             if remaining_key:
@@ -232,7 +233,7 @@ class AnalyticMixin(models.AbstractModel):
         for new_key, new_val in new_distribution.items():
             remaining_key = tuple(sorted(
                 account.id
-                for account in self.env['account.analytic.account'].browse(int(aid) for aid in new_key.split(','))
+                for account in self.env['account.analytic.account'].browse(new_key.split(','))
                 if account.plan_id.root_id not in non_changing_plans
             ))
             if remaining_key:

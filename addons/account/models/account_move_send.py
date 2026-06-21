@@ -3,8 +3,11 @@ from collections import defaultdict
 
 from markupsafe import Markup
 
+import uuid
+
 from odoo import Command, _, api, models, modules, tools
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.uuid_utils import is_uuid
 
 
 _logger = logging.getLogger(__name__)
@@ -594,9 +597,14 @@ class AccountMoveSend(models.AbstractModel):
             if attachment_data['name'] in to_exclude and not attachment_data.get('manual'):
                 continue
 
-            try:
-                attachment_id = int(attachment_data['id'])
-            except ValueError:
+            # Real attachments expose a uuid id; placeholders use a non-uuid
+            # 'placeholder_<name>' string sentinel that must be skipped.
+            attachment_id = attachment_data['id']
+            if isinstance(attachment_id, str):
+                if not is_uuid(attachment_id):
+                    continue
+                attachment_id = uuid.UUID(attachment_id)
+            elif not isinstance(attachment_id, uuid.UUID):
                 continue
 
             seen_attachment_ids.add(attachment_id)
