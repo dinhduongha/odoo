@@ -776,8 +776,9 @@ class Registry(Mapping[str, type["BaseModel"]]):
             del self._post_init_queue
             del self._foreign_keys
             del self._is_install
-        
-        _logger.info('module %s: finish init_models ', context['module'])
+
+        if 'module' in context:
+            _logger.info('module %s: finish init_models', context['module'])
 
 
     def check_null_constraints(self, cr: Cursor) -> None:

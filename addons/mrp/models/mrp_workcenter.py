@@ -636,7 +636,7 @@ class MrpWorkcenterCapacity(models.Model):
         'Capacity should be a non-negative number.',
     )
     _workcenter_product_product_uom_unique = models.UniqueIndex(
-        '(workcenter_id, COALESCE(product_id, 0), product_uom_id)',
+        '(workcenter_id, product_id, product_uom_id) NULLS NOT DISTINCT',
         'Product/Unit capacity should be unique for each workcenter.'
     )
 

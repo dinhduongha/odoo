@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import contextlib
+import uuid
 
 from odoo import api, models
 from odoo.exceptions import AccessError
@@ -60,4 +61,4 @@ class IrUiMenu(models.Model):
                 if action and action.type == 'ir.actions.act_window' and action.res_model == res_model
                    and all(int(menu_id) in visible_menu_ids for menu_id in menu.parent_path.split('/') if menu_id)
             ), key=_menu_sort_key, default=(None, None))[0]
-            return int(menu_sudo.parent_path[:menu_sudo.parent_path.index('/')]) if menu_sudo else None
+            return uuid.UUID(menu_sudo.parent_path[:menu_sudo.parent_path.index('/')]) if menu_sudo else None

@@ -6194,9 +6194,11 @@ class BaseModel(metaclass=MetaModel):
         #     _logger.warning("[UUID DEBUG] browse called: model=%s, input_ids=%s", self._name, ids)
 
         raw_ids = ids  # lưu lại ids gốc
-        if ids is None:
+        if ids is None or ids is False:
             ids = ()
         elif isinstance(ids, (uuid.UUID)):  # single id
+            ids = (ids,)
+        elif isinstance(ids, int):  # legacy/sentinel int id (e.g. 0), keep as single id
             ids = (ids,)
         elif isinstance(ids, str):
             # cố gắng parse UUID từ chuỗi

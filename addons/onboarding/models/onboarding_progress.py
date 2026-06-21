@@ -25,7 +25,7 @@ class OnboardingProgress(models.Model):
     progress_step_ids = fields.Many2many('onboarding.progress.step', string='Progress Steps Trackers')
 
     # not in _sql_constraint because COALESCE is not supported for PostgreSQL constraint
-    _onboarding_company_uniq = models.UniqueIndex("(onboarding_id, COALESCE(company_id, 0))")
+    _onboarding_company_uniq = models.UniqueIndex("(onboarding_id, company_id) NULLS NOT DISTINCT")
 
     @api.depends('onboarding_id.step_ids', 'progress_step_ids', 'progress_step_ids.step_state')
     def _compute_onboarding_state(self):

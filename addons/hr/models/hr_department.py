@@ -2,6 +2,7 @@
 
 import ast
 import re
+import uuid
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
@@ -89,7 +90,7 @@ class HrDepartment(models.Model):
     @api.depends('parent_path')
     def _compute_master_department_id(self):
         for department in self:
-            department.master_department_id = int(department.parent_path.split('/')[0])
+            department.master_department_id = uuid.UUID(department.parent_path.split('/')[0])
 
     def _compute_total_employee(self):
         emp_data = self.env['hr.employee'].sudo()._read_group([('department_id', 'in', self.ids), ('company_id', 'in', self.env.companies.ids)], ['department_id'], ['__count'])

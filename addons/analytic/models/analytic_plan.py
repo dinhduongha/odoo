@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import re
+import uuid
 from random import randint
 
 from odoo import _, api, fields, models
@@ -103,7 +104,10 @@ class AccountAnalyticPlan(models.Model):
 
     @ormcache()
     def __get_all_plans(self):
-        project_plan = self.browse(int(self.env['ir.config_parameter'].sudo().get_param('analytic.project_plan', 0)))
+        # param holds the project plan uuid once configured; before that, fall back to
+        # the nil uuid (a truthy, non-existent recordset) so bootstrap proceeds like the
+        # former integer id 0 sentinel did.
+        project_plan = self.browse(self.env['ir.config_parameter'].sudo().get_param('analytic.project_plan') or '00000000-0000-0000-0000-000000000000')
         if not project_plan:
             raise UserError(_("A 'Project' plan needs to exist and its id needs to be set as `analytic.project_plan` in the system variables"))
         other_plans = self.sudo().search([('parent_id', '=', False)]) - project_plan
@@ -115,7 +119,9 @@ class AccountAnalyticPlan(models.Model):
     def _strict_column_name(self):
         self.ensure_one()
         project_plan, _other_plans = self._get_all_plans()
-        return 'account_id' if self == project_plan else f"x_plan{self.id}_id"
+        # uuid ids contain hyphens and exceed the 63-char identifier limit; use the
+        # hyphen-stripped hex form so the dynamic column name is a valid identifier.
+        return 'account_id' if self == project_plan else f"x_plan{str(self.id).replace('-', '')}_id"
 
     def _column_name(self):
         return self.root_id._strict_column_name()
@@ -129,7 +135,7 @@ class AccountAnalyticPlan(models.Model):
     @api.depends('parent_id', 'parent_path')
     def _compute_root_id(self):
         for plan in self.sudo():
-            plan.root_id = int(plan.parent_path[:-1].split('/')[0]) if plan.parent_path else plan
+            plan.root_id = uuid.UUID(plan.parent_path[:-1].split('/')[0]) if plan.parent_path else plan
 
     def _search_root_id(self, operator, value):
         if operator != '=':

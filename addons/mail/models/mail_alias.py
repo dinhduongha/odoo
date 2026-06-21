@@ -93,7 +93,7 @@ class MailAlias(models.Model):
         ], compute='_compute_alias_status', store=True,
         help='Alias status assessed on the last message received.')
 
-    _name_domain_unique = models.UniqueIndex("(alias_name, COALESCE(alias_domain_id, '00000000-0000-0000-0000-000000000000'::uuid))")
+    _name_domain_unique = models.UniqueIndex("(alias_name, alias_domain_id) NULLS NOT DISTINCT")
 
     @api.constrains('alias_domain_id', 'alias_force_thread_id', 'alias_parent_model_id',
                     'alias_parent_thread_id', 'alias_model_id')

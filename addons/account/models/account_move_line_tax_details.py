@@ -137,7 +137,7 @@ class AccountMoveLine(models.Model):
                         OR (tax.tax_exigibility = 'on_payment' AND tax.cash_basis_transition_account_id IS NOT NULL)
                         OR sign(account_move_line.balance) = sign(base_line.balance * tax.amount * tax_rep.factor_percent)
                     )
-                    AND COALESCE(base_line.partner_id, 0) = COALESCE(account_move_line.partner_id, 0)
+                    AND base_line.partner_id IS NOT DISTINCT FROM account_move_line.partner_id
                     AND base_line.currency_id = account_move_line.currency_id
                     AND (
                         COALESCE(tax_rep.account_id, base_line.account_id) = account_move_line.account_id
