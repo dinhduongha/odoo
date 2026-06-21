@@ -19,18 +19,12 @@ class Uuid(Field[uuid.UUID]):
     # Id field (DB-side ``DEFAULT uuidv7()``); every fields.Uuid is a regular,
     # usually nullable, value/reference field. A model that wants a generated
     # default must set ``default=lambda _: uuid7()`` explicitly.
-
-    def __get__(self, record, owner=None):
-        if record is None:
-            return self
-        # avoid recursion: read _ids directly
-        ids = object.__getattribute__(record, "_ids")
-        size = len(ids)
-        if size == 0:
-            return False
-        elif size == 1:
-            return ids[0]
-        raise ValueError(f"Expected singleton: {record}")
+    #
+    # NOTE: do NOT override __get__. A previous version returned ``record._ids[0]``
+    # (the record's own primary key) for every Uuid field, so a non-id value field
+    # such as a reference ``res_id`` read back the record's own id instead of its
+    # stored value. Inherit the standard Field.__get__, which reads the field
+    # value from cache.
 
     def convert_to_column(self, value, record, values=None, validate=True):
         """Python-side value -> DB column (uuid string)."""
