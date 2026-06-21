@@ -46,6 +46,31 @@ Root-caused via fresh core init (base,web,mail,contacts) + curl. Fixes:
 - [x] ORM via call_kw: search_read, domain `('id','in',[uuid])`, create (new uuid) → all OK.
 - [x] share correct: __system__/admin=False, portal/public=True.
 
+## FULL MODULE INSTALL (in progress — 69/217 modules)
+Driving `-i base,web,sale,account,stock,mrp,hr,website,project,mail,... --without-demo`
+to ground-truth addon-level uuid bugs. Fixed bug CLASSES (commits after `55028bf`):
+- parent_path int()→uuid (analytic, ir_ui_menu, hr_department, +earlier).
+- browse() accepts single int/False (legacy 0 sentinel).
+- unique indexes: NULLS NOT DISTINCT (+ partial WHERE for mail_alias) instead of COALESCE(col,0).
+- analytic.plan: project_plan nil-uuid sentinel; dynamic column name uses uuid hex.
+- registry.init_models stray debug log guard.
+- domain STRINGS interpolating ids: quote/str() (fleet, sale, gamification, hr_version, +data).
+- generated code / alias_defaults: str() ids (lunch cron, account/project/crm/maintenance).
+- fields.Uuid no longer auto-defaults uuid7() (was populating nullable refs → constraint fails).
+- view xpath predicate id quoting; uuid-safe python domains in view strings (Field._description_domain).
+- lunch report: drop -id negation (uuids globally unique).
+
+### CURRENT BLOCKER (hr.employee_admin)
+hr.employee.company_id inherits `related='resource_id.company_id'` + precompute from
+resource.mixin; the precompute chain isn't resolving → company_id NULL → not-null
+violation. Needs hands-on debugging on an hr-installed DB (related/precompute path).
+Likely a CLASS (related+precompute company_id) — worth fixing centrally.
+
+### Remaining
+~148 modules unverified. Expect more addon-specific uuid issues past hr (website,
+pos, l10n if added). Re-run: `cd /home/ha/work/odoo-uuidv7-refactor && ./run.sh` (full
+config) or the minimal `-i <mods>` loop used this session (see handoff.md).
+
 ## NOT DONE / FOLLOW-UP
 - [ ] **Discuss unread separator JS side**: backend now uses uuid `>`; web/owl client still
       assumes integer id arithmetic for `new_message_separator`. Needs matching JS change.
