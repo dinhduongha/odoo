@@ -361,7 +361,7 @@ class Many2one(_Relational):
             if validate and (value._name != self.comodel_name or len(value) > 1):
                 raise ValueError("Wrong value for %s: %r" % (self, value))
             id_ = value._ids[0] if value._ids else None
-        elif isinstance(value, uuid.UUID):
+        elif isinstance(value, (uuid.UUID, NewId)):
             id_ = value
         elif isinstance(value, tuple):
             # value is either a pair (id, name), or a tuple of ids
