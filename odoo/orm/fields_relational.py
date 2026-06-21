@@ -379,9 +379,9 @@ class Many2one(_Relational):
         else:
             id_ = None
 
-        # if self.delegate and record and not any(record._ids):
-        #     # if all records are new, then so is the parent
-        #     id_ = id_ and NewId(id_)
+        if self.delegate and record and not any(record._ids):
+            # if all records are new, then so is the parent
+            id_ = id_ and NewId(id_)
 
         return id_
 

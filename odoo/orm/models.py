@@ -3095,6 +3095,9 @@ class BaseModel(metaclass=MetaModel):
                 condition,
             )
 
+            if property_type == 'many2many':
+                # the joined element is a jsonb scalar string; group by the uuid value
+                return SQL("(%s #>> '{}')::uuid", SQL.identifier(property_alias))
             return SQL.identifier(property_alias)
 
         elif property_type == 'selection':
@@ -3123,7 +3126,7 @@ class BaseModel(metaclass=MetaModel):
                 """ CASE
                         WHEN jsonb_typeof(%(property)s) = 'string'
                          AND (%(property)s #>> '{}')::uuid IN (SELECT id FROM %(table)s)
-                        THEN %(property)s
+                        THEN (%(property)s #>> '{}')::uuid
                         ELSE NULL
                      END """,
                 property=sql_property,
