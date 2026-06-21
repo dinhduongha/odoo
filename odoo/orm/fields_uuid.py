@@ -45,6 +45,12 @@ class Uuid(Field[uuid.UUID]):
         """DB/column value -> cache value (Python side, uuid.UUID)."""
         if value is None:
             return None
+        if isinstance(value, BaseModel):
+            # a recordset assigned to a reference field (e.g. res_id) -> its id
+            # (empty recordset -> False -> treated as no value)
+            value = value.id or None
+            if value is None:
+                return None
         if isinstance(value, uuid.UUID):
             return value
         if isinstance(value, str):
