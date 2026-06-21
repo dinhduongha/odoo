@@ -1,6 +1,7 @@
 from odoo.addons.base.tests.test_expression import TransactionExpressionCase
 from odoo.fields import Command, Domain
 from odoo.tests import TransactionCase
+from odoo.tools.uuid_utils import uuid7
 
 
 class TestSubqueries(TransactionCase):
@@ -475,9 +476,9 @@ class TestSearchRelated(TransactionCase):
         model = self.env['test_orm.related'].with_user(self.env.ref('base.user_admin'))
 
         # warmup
-        model.search([('foo_bar_id', '=', 42)])
+        model.search([('foo_bar_id', '=', uuid7())])
         model.search([('foo_bar_id.name', '=', 'a')])
-        model.search([('foo_bar_sudo_id', '=', 42)])
+        model.search([('foo_bar_sudo_id', '=', uuid7())])
         model.search([('foo_bar_sudo_id.name', '=', 'a')])
 
         with self.assertQueries(["""
@@ -492,7 +493,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_bar_id', '=', 42)])
+            model.search([('foo_bar_id', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
@@ -525,7 +526,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_bar_sudo_id', '=', 42)])
+            model.search([('foo_bar_sudo_id', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
@@ -549,9 +550,9 @@ class TestSearchRelated(TransactionCase):
         model = self.env['test_orm.related'].with_user(self.env.ref('base.user_admin'))
 
         # warmup
-        model.search([('foo_bar_ids', '=', 42)])
+        model.search([('foo_bar_ids', '=', uuid7())])
         model.search([('foo_bar_ids.name', '=', 'a')])
-        model.search([('foo_bar_sudo_ids', '=', 42)])
+        model.search([('foo_bar_sudo_ids', '=', uuid7())])
         model.search([('foo_bar_sudo_ids.name', '=', 'a')])
 
         with self.assertQueries(["""
@@ -571,7 +572,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_bar_ids', '=', 42)])
+            model.search([('foo_bar_ids', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
@@ -611,7 +612,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_bar_sudo_ids', '=', 42)])
+            model.search([('foo_bar_sudo_ids', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
@@ -638,9 +639,9 @@ class TestSearchRelated(TransactionCase):
         model = self.env['test_orm.related'].with_user(self.env.ref('base.user_admin'))
 
         # warmup
-        model.search([('foo_foo_ids', '=', 42)])
+        model.search([('foo_foo_ids', '=', uuid7())])
         model.search([('foo_foo_ids.name', '=', 'a')])
-        model.search([('foo_foo_sudo_ids', '=', 42)])
+        model.search([('foo_foo_sudo_ids', '=', uuid7())])
         model.search([('foo_foo_sudo_ids.name', '=', 'a')])
 
         with self.assertQueries(["""
@@ -660,7 +661,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_foo_ids', '=', 42)])
+            model.search([('foo_foo_ids', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
@@ -697,7 +698,7 @@ class TestSearchRelated(TransactionCase):
             AND "test_orm_related"."id" < %s
             ORDER BY "test_orm_related"."id"
         """]):
-            model.search([('foo_foo_sudo_ids', '=', 42)])
+            model.search([('foo_foo_sudo_ids', '=', uuid7())])
 
         with self.assertQueries(["""
             SELECT "test_orm_related"."id"
