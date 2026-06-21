@@ -154,9 +154,10 @@ Also relevant: gen_company_id_backfill_sql.py for child company_id.
   Word-boundary \bint\( to avoid constraint(/print(); skipped numeric/real-int params.
   Runtime-verified: /web/image/res.partner/<uuid>/avatar_128 -> 200 image/png, company
   logo -> 200, website / -> 200, /my -> 303. Commits in odoo repo.
-- Python `-id` negations (runtime, not install-blocking): virtual-record dicts/sorts in
-  hr_holidays/l10n_in_hr_holidays/mail ir_ui_menu/product_template/stock — `-uuid` will
-  TypeError when hit; need a non-arithmetic unique-id / reverse-sort scheme.
+- Python `-id` negations — ✅ DONE: sort keys use tools.Reverse(id) (product variant pick,
+  stock.quant closest removal, stock.move.line, ir.ui.menu, res.partner main_user_id);
+  virtual calendar records (hr_holidays public/mandatory days, l10n_in optional holidays)
+  use a deterministic negative int from the uuid (owl popover tests id<0). Runtime-verified.
 - [ ] **Discuss unread separator JS side**: backend now uses uuid `>`; web/owl client still
       assumes integer id arithmetic for `new_message_separator`. Needs matching JS change.
 - [ ] **Full module install** (the 40-module `etc/odoo.conf` list) not yet run — only core.
