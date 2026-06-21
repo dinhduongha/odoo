@@ -102,7 +102,22 @@ config) or the minimal `-i <mods>` loop used this session (see handoff.md).
   module set (account_demo.xml `_install_demo` runs for chart'd companies but produces
   no moves; no error). Separate account-demo investigation, not Demo-Company-specific.
 
-## CUSTOM ADDONS uuid conversion (NEW task — custom-addons/odooapps om_account suite)
+## CUSTOM ADDONS uuid conversion — ✅ DONE (om_account_accountant suite)
+Installed clean with uuidv7 (56 modules incl deps, EXIT 0): om_account_accountant,
+om_account_asset, om_account_budget, om_account_daily_reports, om_account_followup,
+om_fiscal_year, om_recurring_payments, accounting_pdf_reports. Fixes:
+- (core) translate._get_uid UnboundLocalError (broken uid.id block) — committed in odoo repo.
+- om_data_remove: parameterize raw SQL (was company_id=%d / unquoted field_id=%s).
+- om_hr_payroll_account: analytic_distribution dict key str(account_id).
+- om_account_followup: synthetic followup_stat id partner_id*10000+company_id ->
+  md5(partner_id::text||'-'||company_id::text)::uuid in the view + matching python helper.
+The om SQL report views (asset/followup) work via the global max(uuid)/min(uuid) aggregates.
+Custom-addons commits are in the custom-addons/odooapps git repo (separate from odoo repo).
+Run: install with --addons-path=...,/path/to/custom-addons/odooapps -i om_account_accountant.
+NOTE: followup-report *printing* (wizard) not runtime-tested, but the md5-uuid logic mirrors
+the view exactly.
+
+## (was) CUSTOM ADDONS uuid conversion (NEW task — custom-addons/odooapps om_account suite)
 Convert om_account_accountant + related OM modules to uuidv7 (same bug classes as core:
 %d/int() on ids, browse(int()), -id negations, ids in domain/code strings, json uuid
 keys, COALESCE(id,0), create_column int4 FK, fields.Integer used as an id). Modules in
