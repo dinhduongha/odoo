@@ -1215,44 +1215,11 @@ class IrQweb(models.AbstractModel):
         if isinstance(template, str) and '<' in template:
             raise ValueError('Inline templates must be passed as `etree` documents')
 
-        # user = request.env.user
-        # _logger.info("[UUID DEBUG] user.id=%s type=%s", user.id, type(user.id))
-        # _logger.info("[UUID DEBUG] user.group_ids._ids=%s", user.group_ids._ids)
-        # _logger.info("[UUID DEBUG] user.group_ids.ids=%s", user.group_ids.ids)
-        # _logger.info("[UUID DEBUG] user.group_ids.read([('id')])=%s", user.group_ids.read(['id', 'name']))
-        #_logger.info("[DEBUG SESSION] uid=%s is_admin=%s group_ids=%s", user.id, user.has_group('base.group_system'), list(user.group_ids.ids))
-
-        # ✅ UUIDv7 patch
-        # Nếu template là UUID hợp lệ hoặc kiểu int → load theo record.id, không qua xml_id
-        if isinstance(template, uuid.UUID) or (
-            isinstance(template, str)
-            and re.fullmatch(r"0[0-9a-f]{3}[0-9a-f\-]{28,}", template)
-        ):
-            try:
-                view_id = uuid.UUID(template) if isinstance(template, str) else template
-                _logger.info("[UUID QWEB] View UUID check: %s ", view_id)
-                view = self.env['ir.ui.view'].browse(view_id)
-                _logger.info("[UUID QWEB] View UUID browse: %s ", view_id)
-                if view.exists():
-                    _logger.info("[UUID QWEB] View UUID: %s exist", template)
-                    _logger.info("[UUID QWEB] UUID 2: view.id=%s, view.key=%s, view.name=%s, model=%s, arch_db length=%d",
-                        view.id, view.key, view.name, view.model, len(view.arch_db or ''))
-                    document = view.arch_db
-                    if not isinstance(document, str):
-                        _logger.warning("[UUID QWEB] arch_db type unexpected for view %s: %s", view.id, type(document))
-                        document = str(document or '')  # fallback convert
-                    try:
-                        element = etree.fromstring(document.encode())
-                    except Exception as e:
-                        _logger.error("[UUID QWEB] Failed to parse XML for view %s: %s\nXML snippet:\n%s",
-                                    view.id, e, document[:1000])  # log tối đa 1000 ký tự
-                        raise
-                    _logger.info("[UUID QWEB] View UUID return : %s exist", template)
-                    return (element, document, str(view.id))
-            except Exception as e:
-                _logger.warning("[UUID QWEB] Failed to resolve template by UUID: %s (%s) view_id:%s", template, e, view_id)
-
         # template is (id or ref) to a database stored template
+        # NB: uuid refs flow through the normal path below (_id_or_xmlid / _preload_trees
+        # handle uuid.UUID). Do NOT special-case uuids here to read view.arch_db directly:
+        # that skips view inheritance (get_combined_arch), so inheriting templates render
+        # without their parent's content (e.g. a parent <t t-set> -> KeyError at render).
         id_or_xmlid = _id_or_xmlid(template)  # e.g. <t t-call="33"/> or <t t-call="web.layout"/>
         value = self._preload_trees([id_or_xmlid]).get(id_or_xmlid)
         if value.get('error'):
@@ -1407,6 +1374,10 @@ class IrQweb(models.AbstractModel):
             'QwebCallParameters': QwebCallParameters,
             'QwebContent': QwebContent,
             'ValueError': ValueError,
+            # uuid PKs: template/view refs are uuids embedded into the generated code via
+            # repr (e.g. QwebCallParameters(..., UUID('...'), ...)); expose UUID so those
+            # literals resolve in the compiled namespace.
+            'UUID': uuid.UUID,
             **_BUILTINS,
         }
 
