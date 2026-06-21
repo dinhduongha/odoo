@@ -74,6 +74,12 @@ function validatePrimitiveList(name, type, value) {
         throw new Error(`Invalid ${name} list: ${value}`);
     }
 }
+// record ids are uuid (string) under uuid PKs, but may still be number (legacy)
+function validateIdList(value) {
+    if (!Array.isArray(value) || value.some((val) => typeof val !== "number" && typeof val !== "string")) {
+        throw new Error(`Invalid ids list: ${value}`);
+    }
+}
 function validateObject(name, obj) {
     if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
         throw new Error(`${name} should be an object`);
@@ -162,7 +168,7 @@ export class ORM {
      * @returns {Promise<any[]>}
      */
     read(model, ids, fields, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         if (fields) {
             validatePrimitiveList("fields", "string", fields);
         }
@@ -268,7 +274,7 @@ export class ORM {
      * @returns {Promise<boolean>}
      */
     unlink(model, ids, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         if (!ids.length) {
             return Promise.resolve(true);
         }
@@ -303,7 +309,7 @@ export class ORM {
      * @returns {Promise<any[]>}
      */
     webRead(model, ids, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         return this.call(model, "web_read", [ids], kwargs);
     }
 
@@ -318,7 +324,7 @@ export class ORM {
      * @returns {Promise<any[]>}
      */
     webResequence(model, ids, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         return this.call(model, "web_resequence", [ids], {
             ...kwargs,
             specification: kwargs.specification || {},
@@ -344,7 +350,7 @@ export class ORM {
      * @returns {Promise<boolean>}
      */
     write(model, ids, data, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         validateObject("data", data);
         return this.call(model, "write", [ids, data], kwargs);
     }
@@ -359,7 +365,7 @@ export class ORM {
      * @returns {Promise<any[]>}
      */
     webSave(model, ids, data, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         validateObject("data", data);
         return this.call(model, "web_save", [ids, data], kwargs);
     }
@@ -374,7 +380,7 @@ export class ORM {
      * @returns {Promise<any[]>}
      */
     async webSaveMulti(model, ids, data, kwargs = {}) {
-        validatePrimitiveList("ids", "number", ids);
+        validateIdList(ids);
         validateArray("data", data);
         data.forEach((d) => {
             validateObject("data item", d);
