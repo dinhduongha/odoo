@@ -432,7 +432,7 @@ class TestSalePayment(AccountPaymentCommon, MailCase, PaymentHttpCommon, SaleCom
         url = self._build_url(f'/my/orders/{self.sale_order.id}/transaction')
         route_kwargs = {
             'access_token': self.sale_order._portal_ensure_token(),
-            'partner_id': self.partner.id,  # This should be rejected.
+            'partner_id': str(self.partner.id),  # This should be rejected.
         }
         with self.assertRaises(JsonRpcException, msg='odoo.exceptions.ValidationError'):
             self.make_jsonrpc_request(url, route_kwargs)
@@ -474,7 +474,7 @@ class TestSalePayment(AccountPaymentCommon, MailCase, PaymentHttpCommon, SaleCom
             tx_done._post_process()
 
             self.assertEqual(notification_mail_mock.call_count, 2)
-            order_confirmation_mail_template_id = int(
+            order_confirmation_mail_template_id = (
                 self.env["ir.config_parameter"]
                 .sudo()
                 .get_param("sale.default_confirmation_template", self.env.ref("sale.mail_template_sale_confirmation").id)

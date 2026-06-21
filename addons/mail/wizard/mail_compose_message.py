@@ -744,7 +744,7 @@ class MailComposeMessage(models.TransientModel):
             'scheduled_date': post_values.pop('scheduled_date'),
             'send_context': clean_context(self.env.context),
             'subject': post_values.pop('subject'),
-            'notification_parameters': json.dumps(post_values),  # last to not include popped post_values
+            'notification_parameters': json.dumps(post_values, default=str),  # last to not include popped post_values
         }
 
     def _action_schedule_message(self):
