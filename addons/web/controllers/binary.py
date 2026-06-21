@@ -180,6 +180,8 @@ class Binary(http.Controller):
         '/web/image/<string:xmlid>/<int:width>x<int:height>/<string:filename>',
         '/web/image/<string:model>/<uuid:id>/<string:field>',
         '/web/image/<string:model>/<uuid:id>/<string:field>/<string:filename>',
+        '/web/image/<string:model>/<int:id>/<string:field>',
+        '/web/image/<string:model>/<int:id>/<string:field>/<string:filename>',
         '/web/image/<string:model>/<uuid:id>/<string:field>/<int:width>x<int:height>',
         '/web/image/<string:model>/<uuid:id>/<string:field>/<int:width>x<int:height>/<string:filename>',
         '/web/image/<uuid:id>',
@@ -196,6 +198,11 @@ class Binary(http.Controller):
                       filename_field='name', filename=None, mimetype=None, unique=False,
                       download=False, width=0, height=0, crop=False, access_token=None,
                       nocache=False):
+        if isinstance(id, int) and id and model not in ('ir.attachment',):
+            # uuid PKs: a numeric id for a uuid-keyed model is a stale/wrong
+            # reference (no such record) -> serve the placeholder, not a 404/500
+            placeholder = request.env[model]._get_placeholder_filename(field) if model in request.env else 'web/static/img/placeholder.png'
+            return request.env['ir.binary']._get_placeholder_stream(placeholder).get_response()
         try:
             record = request.env['ir.binary']._find_record(xmlid, model, id, access_token, field=field)
             stream = request.env['ir.binary']._get_image_stream_from(
