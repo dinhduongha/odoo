@@ -1066,8 +1066,8 @@ class MockEmail(common.BaseCase, MockSmtplibCase):
                 self.assertEqual(tracking[new_value_fname], new_value,
                                  msg_base + f'expected {new_value}, received {tracking[new_value_fname]})')
             if value_type == 'many2one':
-                self.assertEqual(tracking.old_value_integer, old_value and old_value.id or False)
-                self.assertEqual(tracking.new_value_integer, new_value and new_value.id or False)
+                self.assertEqual(tracking.old_value_uuid, old_value and old_value.id or False)
+                self.assertEqual(tracking.new_value_uuid, new_value and new_value.id or False)
                 self.assertEqual(tracking.old_value_char, old_value and old_value.display_name or '')
                 self.assertEqual(tracking.new_value_char, new_value and new_value.display_name or '')
             elif value_type == 'monetary':

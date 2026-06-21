@@ -61,7 +61,7 @@ class MailTrackingDurationMixin(models.AbstractModel):
             trackings = self.env.execute_query_dict(SQL("""
                    SELECT m.res_id,
                           v.create_date,
-                          v.old_value_integer
+                          v.old_value_uuid AS old_value_integer
                      FROM mail_tracking_value v
                 LEFT JOIN mail_message m
                        ON m.id = v.mail_message_id
@@ -117,7 +117,12 @@ class MailTrackingDurationMixin(models.AbstractModel):
         })
 
         for tracking in trackings:
-            json[tracking['old_value_integer']] += int((tracking['create_date'] - previous_date).total_seconds())
+            value_id = tracking['old_value_integer']
+            # uuid PKs: Json field keys must be strings; a UUID key would not
+            # serialize properly (rendered as null)
+            if value_id is not None and not isinstance(value_id, (int, str)):
+                value_id = str(value_id)
+            json[value_id] += int((tracking['create_date'] - previous_date).total_seconds())
             previous_date = tracking['create_date']
 
         return json

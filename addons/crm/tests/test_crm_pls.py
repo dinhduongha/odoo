@@ -493,8 +493,8 @@ class TestCrmPls(CrmPlsCommon):
         self.assertEqual(tools.float_compare(lead_tag_1_2.automated_probability, 28.05, 2), 0)
 
         # set email_state for each lead and update probabilities
-        leads.filtered(lambda lead: lead.id % 2 == 0).email_state = 'correct'
-        leads.filtered(lambda lead: lead.id % 2 == 1).email_state = 'incorrect'
+        leads[::2].email_state = 'correct'
+        leads[1::2].email_state = 'incorrect'
         Lead._cron_update_automated_probabilities()
         self.env.invalidate_all()
 

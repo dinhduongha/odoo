@@ -2,6 +2,7 @@
 
 import logging
 import pytz
+import uuid
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from markupsafe import Markup
@@ -1188,15 +1189,16 @@ class CrmLead(models.Model):
         if len(self.message_ids) >= 25:
             return _('Phew, that took some effort — but you nailed it. Good job!')
 
-        team_condition = f'team_id = {self.team_id.id}' if self.team_id else 'team_id IS NULL'
-        source_case = f'source_id = {self.source_id.id} AND {team_condition}' if self.source_id else 'false'
-        country_case = f'country_id = {self.country_id.id} AND {team_condition}' if self.country_id else 'false'
+        team_condition = 'team_id = %(team_id)s' if self.team_id else 'team_id IS NULL'
+        source_case = f'source_id = %(source_id)s AND {team_condition}' if self.source_id else 'false'
+        country_case = f'country_id = %(country_id)s AND {team_condition}' if self.country_id else 'false'
         tz_midnight = fields.Datetime.now().astimezone(pytz.timezone(self.env.user.tz or self.user_id.tz or 'UTC')).replace(hour=0, minute=0, second=0)
         tz_midnight_in_utc = tz_midnight.astimezone(pytz.UTC).replace(tzinfo=None)
+        team_match = '%(team_id)s' if self.team_id else 'NULL'
         query = f"""
         SELECT
-            MAX(CASE WHEN team_id = %(team_id)s AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '31 days' AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_team_31,
-            MAX(CASE WHEN team_id = %(team_id)s AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '7 days'  AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_team_7,
+            MAX(CASE WHEN team_id = {team_match} AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '31 days' AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_team_31,
+            MAX(CASE WHEN team_id = {team_match} AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '7 days'  AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_team_7,
             MAX(CASE WHEN user_id = %(user_id)s AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '31 days' AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_user_31,
             MAX(CASE WHEN user_id = %(user_id)s AND COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '7 days'  AND id <> %(lead_id)s THEN expected_revenue ELSE 0 END) AS max_user_7,
             MIN(CASE WHEN COALESCE(date_closed, create_date) >= %(tz_midnight)s - INTERVAL '31 days' THEN day_close ELSE 31 END) AS min_day_close_31,
@@ -1217,11 +1219,13 @@ class CrmLead(models.Model):
             AND
                 DATE_TRUNC('year', COALESCE(date_closed, create_date)) = DATE_TRUNC('year', %(tz_midnight)s)
             AND
-                (user_id = %(user_id)s OR team_id = %(team_id)s)
+                (user_id = %(user_id)s OR team_id = {team_match})
         """
         self.env.cr.execute(query, {
             'user_id': self.env.user.id,
-            'team_id': self.team_id.id or -1,
+            'team_id': self.team_id.id,
+            'source_id': self.source_id.id,
+            'country_id': self.country_id.id,
             'lead_id': self.id,
             'tz_midnight': tz_midnight_in_utc,
         })
@@ -1960,7 +1964,7 @@ class CrmLead(models.Model):
                 opportunity.type == 'opportunity', \
                 opportunity.stage_id.sequence, \
                 opportunity.probability, \
-                -opportunity._origin.id
+                -(opportunity._origin.id.int if isinstance(opportunity._origin.id, uuid.UUID) else opportunity._origin.id)
 
         return self.sorted(key=opps_key, reverse=reverse)
 

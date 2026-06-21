@@ -311,7 +311,7 @@ class NewLeadNotification(TestCrmCommon):
             'alias_model_id': crm_lead_model_id,
             'alias_parent_model_id': crm_team_model_id,
             'alias_parent_thread_id': crm_team0.id,
-            'alias_defaults': "{'type': 'opportunity', 'team_id': %s}" % crm_team0.id,
+            'alias_defaults': "{'type': 'opportunity', 'team_id': %r}" % str(crm_team0.id),
         })
         mail_alias1 = self.env['mail.alias'].create({
             'alias_domain_id': company1.alias_domain_id.id,
@@ -319,7 +319,7 @@ class NewLeadNotification(TestCrmCommon):
             'alias_model_id': crm_lead_model_id,
             'alias_parent_model_id': crm_team_model_id,
             'alias_parent_thread_id': crm_team1.id,
-            'alias_defaults': "{'type': 'opportunity', 'team_id': %s}" % crm_team1.id,
+            'alias_defaults': "{'type': 'opportunity', 'team_id': %r}" % str(crm_team1.id),
         })
 
         crm_team0.write({'alias_id': mail_alias0.id})
