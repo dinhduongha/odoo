@@ -15,11 +15,10 @@ class Uuid(Field[uuid.UUID]):
     type = 'uuid'
     column_type = ('uuid', 'uuid')
 
-    def __init__(self, *args, **kwargs):
-        # still accept string, required, default, ... kwargs
-        if 'default' not in kwargs:
-            kwargs['default'] = lambda _: uuid7()
-        super().__init__(*args, **kwargs)
+    # NOTE: do NOT auto-default to uuid7(). The primary-key id uses the dedicated
+    # Id field (DB-side ``DEFAULT uuidv7()``); every fields.Uuid is a regular,
+    # usually nullable, value/reference field. A model that wants a generated
+    # default must set ``default=lambda _: uuid7()`` explicitly.
 
     def __get__(self, record, owner=None):
         if record is None:
