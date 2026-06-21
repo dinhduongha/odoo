@@ -30,7 +30,7 @@ class MercadoPagoOnboardingController(Controller):
         _logger.info("Returning from authorization with data:\n%s", pprint.pformat(data))
 
         # Retrieve the Mercado Pago data and Odoo metadata from the redirect data.
-        provider_id = int(data['provider_id'])
+        provider_id = data['provider_id']
         authorization_code = data.get('authorization_code')
         csrf_token = data.get('csrf_token')  # Could be missing if authorization was cancelled.
         provider_sudo = request.env['payment.provider'].sudo().browse(provider_id).exists()
@@ -44,7 +44,7 @@ class MercadoPagoOnboardingController(Controller):
 
         # Request and set the OAuth tokens on the provider.
         action = request.env.ref('payment.action_payment_provider')
-        redirect_url = f'/odoo/action-{action.id}/{int(provider_sudo.id)}'
+        redirect_url = f'/odoo/action-{action.id}/{provider_sudo.id}'
         if not authorization_code:  # The user cancelled the authorization.
             return request.redirect(redirect_url)
 

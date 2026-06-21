@@ -45,7 +45,7 @@ class Delivery(WebsiteSale):
         if not (order_sudo := request.cart):
             return {}
 
-        dm_id = int(dm_id)
+        dm_id = dm_id
         if dm_id in order_sudo._get_delivery_methods().ids and dm_id != order_sudo.carrier_id.id:
             for tx_sudo in order_sudo.transaction_ids:
                 if tx_sudo.state not in ('draft', 'cancel', 'error'):
@@ -97,7 +97,7 @@ class Delivery(WebsiteSale):
         if not (order_sudo := request.cart):
             raise ValidationError(_("Your cart is empty."))
 
-        if int(dm_id) not in order_sudo._get_delivery_methods().ids:
+        if dm_id not in order_sudo._get_delivery_methods().ids:
             raise UserError(_(
                 "It seems that a delivery method is not compatible with your address. Please"
                 " refresh the page and try again."

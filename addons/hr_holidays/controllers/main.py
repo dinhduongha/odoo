@@ -9,7 +9,7 @@ class HrHolidaysController(http.Controller):
 
     @http.route('/leave/approve', type='http', auth='user', methods=['GET'])
     def hr_holidays_request_approve(self, res_id, token):
-        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', int(res_id), token)
+        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', res_id, token)
         if comparison and record:
             try:
                 record.action_approve()
@@ -19,7 +19,7 @@ class HrHolidaysController(http.Controller):
 
     @http.route('/leave/validate', type='http', auth='user', methods=['GET'])
     def hr_holidays_request_validate(self, res_id, token):
-        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', int(res_id), token)
+        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', res_id, token)
         if comparison and record:
             try:
                 record.action_approve()
@@ -29,7 +29,7 @@ class HrHolidaysController(http.Controller):
 
     @http.route('/leave/refuse', type='http', auth='user', methods=['GET'])
     def hr_holidays_request_refuse(self, res_id, token):
-        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', int(res_id), token)
+        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave', res_id, token)
         if comparison and record:
             try:
                 record.action_refuse()
@@ -39,7 +39,7 @@ class HrHolidaysController(http.Controller):
 
     @http.route('/allocation/validate', type='http', auth='user', methods=['GET'])
     def hr_holidays_allocation_validate(self, res_id, token):
-        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave.allocation', int(res_id), token)
+        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave.allocation', res_id, token)
         if comparison and record:
             try:
                 record.action_approve()
@@ -49,7 +49,7 @@ class HrHolidaysController(http.Controller):
 
     @http.route('/allocation/refuse', type='http', auth='user', methods=['GET'])
     def hr_holidays_allocation_refuse(self, res_id, token):
-        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave.allocation', int(res_id), token)
+        comparison, record, redirect = MailController._check_token_and_record_or_redirect('hr.leave.allocation', res_id, token)
         if comparison and record:
             try:
                 record.action_refuse()

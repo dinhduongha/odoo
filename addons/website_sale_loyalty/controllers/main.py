@@ -63,7 +63,7 @@ class WebsiteSale(main.WebsiteSale):
             return request.redirect(redirect)
 
         try:
-            reward_id = int(reward_id)
+            reward_id = reward_id
         except ValueError:
             reward_id = None
 
@@ -72,7 +72,7 @@ class WebsiteSale(main.WebsiteSale):
             return request.redirect(redirect)
 
         if reward_sudo.multi_product and 'product_id' in post:
-            request.update_context(product_id=int(post['product_id']))
+            request.update_context(product_id=post['product_id'])
         else:
             request.redirect(redirect)
 

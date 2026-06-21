@@ -376,7 +376,7 @@ class WebsiteForum(WebsiteProfile):
 
     @http.route('/forum/<model("forum.forum"):forum>/question/<model("forum.post"):question>/close', type='http', auth="user", methods=['POST'], website=True)
     def question_close(self, forum, question, **post):
-        question.close(reason_id=int(post.get('reason_id', False)))
+        question.close(reason_id=post.get('reason_id', False))
         slug = request.env['ir.http']._slug
         return request.redirect("/forum/%s/%s" % (slug(forum), slug(question)))
 
@@ -639,7 +639,7 @@ class WebsiteForum(WebsiteProfile):
 
     @http.route('/forum/<model("forum.forum"):forum>/post/<model("forum.post"):post>/mark_as_offensive', type='http', auth="user", methods=["POST"], website=True)
     def post_mark_as_offensive(self, forum, post, **kwargs):
-        post._mark_as_offensive(reason_id=int(kwargs.get('reason_id', False)))
+        post._mark_as_offensive(reason_id=kwargs.get('reason_id', False))
         slug = request.env['ir.http']._slug
         if post.parent_id:
             url = f'/forum/{slug(forum)}/{post.parent_id.id}/#answer-{post.id}'

@@ -160,7 +160,7 @@ class Cart(PaymentPortal):
                     uom_id=product_data.get('uom_id'),
                     product_custom_attribute_values=product_data['product_custom_attribute_values'],
                     no_variant_attribute_value_ids=[
-                        int(value_id) for value_id in product_data['no_variant_attribute_value_ids']
+                        value_id for value_id in product_data['no_variant_attribute_value_ids']
                     ],
                     # Using `line_ids[...]` instead of `line_ids.get(...)` ensures that this throws
                     # if an optional product contains bad data.

@@ -137,7 +137,7 @@ class MassMailController(http.Controller):
         email_found, hash_token_found = self._fetch_user_information(email, hash_token)
         try:
             mailing_sudo = self._check_mailing_email_token(
-                int(mailing_id), document_id, email_found, hash_token_found,
+                mailing_id, document_id, email_found, hash_token_found,
                 required_mailing_id=True
             )
         except NotFound as e:  # fails if mailing doesn't exist or token is wrong
@@ -546,7 +546,7 @@ class MassMailController(http.Controller):
         return {
             'mailing_link': Markup(f'<a href="#" data-oe-model="mailing.mailing" data-oe-id="{mailing.id}">{escape(mailing.subject)}</a>'),
             'record_link': Markup(
-                f'<a href="#" data-oe-model="{escape(mailing.mailing_model_real)}" data-oe-id="{int(document_id)}">{escape(mailing_model_name)}</a>'
+                f'<a href="#" data-oe-model="{escape(mailing.mailing_model_real)}" data-oe-id="{document_id}">{escape(mailing_model_name)}</a>'
             ) if document_id else '',
         }
 

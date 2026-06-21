@@ -90,7 +90,7 @@ class WebsiteProfile(http.Controller):
         if (int(width), int(height)) == (0, 0):
             width, height = tools.image.image_guess_size_from_field_name(field)
 
-        can_sudo = self._check_avatar_access(int(user_id), **post)
+        can_sudo = self._check_avatar_access(user_id, **post)
         return request.env['ir.binary']._get_image_stream_from(
             request.env['res.users'].sudo(can_sudo).browse(user_id),
             field_name=field, width=int(width), height=int(height), crop=crop
@@ -144,7 +144,7 @@ class WebsiteProfile(http.Controller):
 
     @http.route('/profile/user/save', type='jsonrpc', auth='user', methods=['POST'], website=True)
     def save_edited_profile(self, **kwargs):
-        user_id = int(kwargs.get('user_id', 0))
+        user_id = kwargs.get('user_id', 0)
         if user_id and request.env.user.id != user_id and request.env.user._is_admin():
             user = request.env['res.users'].browse(user_id)
         else:

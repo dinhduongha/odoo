@@ -62,7 +62,7 @@ class ProductFeed(Controller):
         :rtype: product.feed
         """
         try:
-            feed_id = int(feed_id)
+            feed_id = feed_id
         except ValueError:
             raise BadRequest()
         feed_sudo = request.env['product.feed'].sudo().browse(feed_id).exists()

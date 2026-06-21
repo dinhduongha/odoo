@@ -555,7 +555,7 @@ class ProjectCustomerPortal(CustomerPortal):
     @http.route('/project_sharing/attachment/add_image', type='http', auth='user', methods=['POST'], website=True)
     def add_image(self, name, data, res_id, access_token=None, **kwargs):
         try:
-            task_sudo = self._document_check_access('project.task', int(res_id), access_token=access_token)
+            task_sudo = self._document_check_access('project.task', res_id, access_token=access_token)
             if not task_sudo.with_user(request.env.uid).project_id._check_project_sharing_access():
                 return request.not_found()
         except (AccessError, MissingError):

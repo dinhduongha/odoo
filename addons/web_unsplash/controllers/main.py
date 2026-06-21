@@ -74,7 +74,7 @@ class Web_Unsplash(http.Controller):
 
         res_model = kwargs.get('res_model', 'ir.ui.view')
         if res_model != 'ir.ui.view' and kwargs.get('res_id'):
-            res_id = int(kwargs['res_id'])
+            res_id = kwargs['res_id']
         else:
             res_id = None
 

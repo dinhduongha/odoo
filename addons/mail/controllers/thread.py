@@ -49,7 +49,7 @@ class ThreadController(http.Controller):
         """ Simplified getter that filters access params only, making model methods
         using strong parameters. """
         return request.env[thread_model]._get_thread_with_access(
-            int(thread_id), mode=mode, **{
+            thread_id, mode=mode, **{
                 key: value for key, value in kwargs.items()
                 if key in request.env[thread_model]._get_allowed_access_params()
             },

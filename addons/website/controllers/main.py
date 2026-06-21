@@ -1210,7 +1210,7 @@ class Website(Home):
                 [('website_path', '=', path_or_xml_id_or_id), ('website_published', '=', True)], limit=1)
         if not action:
             try:
-                action_id = int(path_or_xml_id_or_id)
+                action_id = path_or_xml_id_or_id
                 action = ServerActions.sudo().browse(action_id).exists()
             except ValueError:
                 pass

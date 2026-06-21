@@ -45,7 +45,7 @@ class DigestController(Controller):
 
         # new route parameters
         if digest_sudo and token and user_id:
-            correct_token = digest_sudo._get_unsubscribe_token(int(user_id))
+            correct_token = digest_sudo._get_unsubscribe_token(user_id)
             if not consteq(correct_token, token):
                 raise NotFound()
             digest_sudo._action_unsubscribe_users(request.env['res.users'].sudo().browse(user_id))

@@ -373,7 +373,7 @@ class CustomerPortal(Controller):
         :return: The rendered address form.
         :rtype: str
         """
-        partner_id = partner_id and int(partner_id)
+        partner_id = partner_id
         partner_sudo = request.env['res.partner'].with_context(show_address=1).sudo().browse(
             partner_id
         )
@@ -483,7 +483,7 @@ class CustomerPortal(Controller):
         :rtype: str
         """
         partner_sudo = request.env['res.partner'].with_context(show_address=1).sudo().browse(
-            partner_id and int(partner_id)
+            partner_id and partner_id
         )
         if partner_sudo and not partner_sudo._can_be_edited_by_current_customer():
             raise Forbidden()
@@ -944,7 +944,7 @@ class CustomerPortal(Controller):
         `access_token`.
         """
         try:
-            attachment_sudo = self._document_check_access('ir.attachment', int(attachment_id), access_token=access_token)
+            attachment_sudo = self._document_check_access('ir.attachment', attachment_id, access_token=access_token)
         except (AccessError, MissingError) as e:
             raise UserError(_("The attachment does not exist or you do not have the rights to access it."))
 

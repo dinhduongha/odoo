@@ -204,7 +204,7 @@ class WebsiteHrRecruitment(WebsiteForm):
     def check_recent_application(self, field, value, job_id):
         def refused_applicants_condition(applicant):
             return not applicant.active \
-                and applicant.job_id.id == int(job_id) \
+                and applicant.job_id.id == job_id \
                 and applicant.create_date >= (datetime.now() - relativedelta(months=6))
 
         field_domain = {
@@ -234,7 +234,7 @@ class WebsiteHrRecruitment(WebsiteForm):
             return {'message': None}
 
         ongoing_application = applications_by_status.get('ongoing')[0]
-        if ongoing_application.job_id.id == int(job_id):
+        if ongoing_application.job_id.id == job_id:
             recruiter_contact = "" if not ongoing_application.user_id else _(
                 ' In case of issue, contact %(contact_infos)s',
                 contact_infos=", ".join(

@@ -30,7 +30,7 @@ class WorldlineController(http.Controller):
         """
         _logger.info("Handling redirection from Worldline with data:\n%s", pprint.pformat(data))
 
-        provider_id = int(data['provider_id'])
+        provider_id = data['provider_id']
         provider_sudo = request.env['payment.provider'].sudo().browse(provider_id).exists()
         if not provider_sudo or provider_sudo.code != 'worldline':
             _logger.warning("Received payment data with invalid provider id.")

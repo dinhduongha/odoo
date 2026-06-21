@@ -174,7 +174,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 domains.append(Domain.OR(subdomains))
 
         if category:
-            domains.append(Domain('public_categ_ids', 'child_of', int(category)))
+            domains.append(Domain('public_categ_ids', 'child_of', category))
 
         if attribute_value_dict:
             domains.extend(
@@ -743,7 +743,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         ):
             raise NotFound()
 
-        image_res_id = int(image_res_id)
+        image_res_id = image_res_id
         image_to_resequence = request.env[image_res_model].browse(image_res_id)
         if image_res_model == 'product.product':
             product = image_to_resequence
@@ -1123,7 +1123,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
         # Retrieve the partner whose address to update, if any, and its address type.
         partner_sudo, address_type = self._prepare_address_update(
-            order_sudo, partner_id=partner_id and int(partner_id), address_type=address_type
+            order_sudo, partner_id=partner_id and partner_id, address_type=address_type
         )
 
         use_delivery_as_billing = str2bool(use_delivery_as_billing or 'false')
@@ -1225,7 +1225,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
         # Retrieve the partner whose address to update, if any, and its address type.
         partner_sudo, address_type = self._prepare_address_update(
-            order_sudo, partner_id=partner_id and int(partner_id), address_type=address_type
+            order_sudo, partner_id=partner_id and partner_id, address_type=address_type
         )
 
         is_new_address = not partner_sudo
@@ -1492,7 +1492,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
     @route('/shop/update_address', type='jsonrpc', auth='public', website=True)
     def shop_update_address(self, partner_id, address_type='billing', **kw):
-        partner_id = int(partner_id)
+        partner_id = partner_id
 
         if not (order_sudo := request.cart):
             return
@@ -1850,7 +1850,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if 'ppg' in options and not options['ppg']:
             options['ppg'] = 1
         if 'product_page_grid_columns' in options:
-            options['product_page_grid_columns'] = int(options['product_page_grid_columns'])
+            options['product_page_grid_columns'] = options['product_page_grid_columns']
 
         # Checkout Extra Step
         if 'extra_step' in options:
@@ -1968,7 +1968,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if not isinstance(category, ProductCategory.__class__) and category and not str(category).isdigit():
             raise ValidationError(_("Invalid category."))
         if (
-            (category := ProductCategory.browse(category and int(category)).exists())
+            (category := ProductCategory.browse(category and category).exists())
             and category.can_access_from_current_website()
         ):
             return category
@@ -2013,6 +2013,6 @@ class WebsiteSale(payment_portal.PaymentPortal):
         """
         attribute_value_pairs = [value.split('-') for value in attribute_values if value]
         return {
-            int(pair[0]): [int(value_id) for value_id in pair[1].split(',')]
+            int(pair[0]): [value_id for value_id in pair[1].split(',')]
             for pair in attribute_value_pairs
         }

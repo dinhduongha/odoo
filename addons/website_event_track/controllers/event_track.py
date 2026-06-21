@@ -478,7 +478,7 @@ class EventTrackController(http.Controller):
 
         # Only accept existing tag indices. Use search instead of browse + exists:
         # this prevents users to register colorless tags if not allowed to (ACL).
-        input_tag_indices = [int(tag_id) for tag_id in post['tags'].split(',') if tag_id]
+        input_tag_indices = [tag_id for tag_id in post['tags'].split(',') if tag_id]
         valid_tag_indices = request.env['event.track.tag'].search([('id', 'in', input_tag_indices)]).ids
 
         contact = request.env['res.partner']

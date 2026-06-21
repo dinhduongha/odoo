@@ -555,7 +555,7 @@ class WebsiteSlides(WebsiteProfile):
         (**) Those are used to check and give invited attendees the access to the course and
             allow them browing its list of contents.
         """
-        invite_partner_id = int(kw['invite_partner_id']) if kw.get('invite_partner_id') else False
+        invite_partner_id = kw['invite_partner_id'] if kw.get('invite_partner_id') else False
         invite_hash = kw.get('invite_hash')
         valid_invite_values = {}
 
@@ -641,7 +641,7 @@ class WebsiteSlides(WebsiteProfile):
         errors = {'access_error': False}
         if request.params.get('access_error') == 'course_content' and request.params.get('access_error_slide_id'):
             # Access are re-verified to support use case where the user refresh the page after an update of their access
-            user_slide_authorization = self._get_user_slide_authorization(int(request.params.get('access_error_slide_id')))
+            user_slide_authorization = self._get_user_slide_authorization(request.params.get('access_error_slide_id'))
             if user_slide_authorization['status'] == 'not_authorized':
                 errors.update({
                     'access_error': 'course_content',
@@ -827,7 +827,7 @@ class WebsiteSlides(WebsiteProfile):
         # --- Compute rights of current user
         has_rights = channel.has_access('read')
 
-        invite_values = self._get_channel_values_from_invite(channel_id, invite_hash, int(invite_partner_id))
+        invite_values = self._get_channel_values_from_invite(channel_id, invite_hash, invite_partner_id)
         if invite_values.get('invite_error'):
             return self._redirect_to_channel(channel) if has_rights else self._redirect_to_slides_main(invite_values.get('invite_error'))
 
@@ -861,7 +861,7 @@ class WebsiteSlides(WebsiteProfile):
         if not request.website.is_public_user():
             return self._redirect_to_slides_main('identify_fail')
 
-        invite_partner_id = int(invite_partner_id)
+        invite_partner_id = invite_partner_id
         invite_values = self._get_channel_values_from_invite(channel_id, invite_hash, invite_partner_id)
         if invite_values.get('invite_preview'):
             partner_sudo = invite_values.get('invite_partner')

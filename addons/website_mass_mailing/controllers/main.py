@@ -16,7 +16,7 @@ class MassMailController(main.MassMailController):
         is_subscriber = False
         if value and fname:
             contacts_count = request.env['mailing.subscription'].sudo().search_count(
-                [('list_id', 'in', [int(list_id)]), (f'contact_id.{fname}', '=', value), ('opt_out', '=', False)])
+                [('list_id', 'in', [list_id]), (f'contact_id.{fname}', '=', value), ('opt_out', '=', False)])
             is_subscriber = contacts_count > 0
 
         return {'is_subscriber': is_subscriber, 'value': value}

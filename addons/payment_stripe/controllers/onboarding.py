@@ -36,5 +36,5 @@ class OnboardingController(http.Controller):
                             `ir.ui.menu` id
         """
         stripe_provider = request.env['payment.provider'].browse(provider_id)
-        account_link = stripe_provider._stripe_create_account_link(account_id, int(menu_id))
+        account_link = stripe_provider._stripe_create_account_link(account_id, menu_id)
         return request.redirect(account_link, local=False)

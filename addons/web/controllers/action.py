@@ -25,7 +25,7 @@ class Action(Controller):
             request.update_context(**context)
         Actions = request.env['ir.actions.actions']
         try:
-            action_id = int(action_id)
+            action_id = action_id
         except ValueError:
             try:
                 if '.' in action_id:

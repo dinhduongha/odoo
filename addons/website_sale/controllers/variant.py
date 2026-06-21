@@ -16,8 +16,8 @@ class WebsiteSaleVariantController(Controller):
     def get_combination_info_website(
         self, product_template_id, product_id, combination, add_qty, uom_id=None, **kwargs
     ):
-        product_template_id = product_template_id and int(product_template_id)
-        product_id = product_id and int(product_id)
+        product_template_id = product_template_id
+        product_id = product_id
         add_qty = (add_qty and float(add_qty)) or 1.0
 
         product_template = request.env['product.template'].browse(product_template_id)
@@ -68,5 +68,5 @@ class WebsiteSaleVariantController(Controller):
     def create_product_variant(self, product_template_id, product_template_attribute_value_ids, **kwargs):
         """Old product configurator logic, only used by frontend configurator, will be deprecated soon"""
         return request.env['product.template'].browse(
-            int(product_template_id)
+            product_template_id
         ).create_product_variant(product_template_attribute_value_ids)

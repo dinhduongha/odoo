@@ -64,7 +64,7 @@ class PortalMailGroup(http.Controller):
     def groups_index(self, email='', **kw):
         """View of the group lists. Allow the users to subscribe and unsubscribe."""
         if kw.get('group_id') and kw.get('token'):
-            group_id = int(kw.get('group_id'))
+            group_id = kw.get('group_id')
             token = kw.get('token')
             group = request.env['mail.group'].browse(group_id).exists().sudo()
             if not group:
@@ -188,7 +188,7 @@ class PortalMailGroup(http.Controller):
 
         replies_domain = Domain.AND([
             self._get_website_domain(),
-            [('id', '>', int(last_displayed_id)), ('group_message_parent_id', '=', message.id)],
+            [('id', '>', last_displayed_id), ('group_message_parent_id', '=', message.id)],
         ])
         # SUDO after the search to apply access rules but be able to read attachments
         replies_sudo = request.env['mail.group.message'].search(replies_domain, limit=self._replies_per_page).sudo()

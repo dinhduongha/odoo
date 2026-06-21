@@ -37,7 +37,7 @@ class CrmClient(MailPluginController):
         """
         server_action = http.request.env.ref("crm_mail_plugin.lead_creation_prefilled_action")
         return request.redirect(
-            '/odoo/action-%s?partner_id=%s' % (server_action.id, int(partner_id)))
+            '/odoo/action-%s?partner_id=%s' % (server_action.id, partner_id))
 
     @http.route('/mail_plugin/lead/create', type='jsonrpc', auth='outlook', cors="*")
     def crm_lead_create(self, partner_id, email_body, email_subject):

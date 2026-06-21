@@ -17,7 +17,7 @@ class EventController(Controller):
         if request.env.user._is_public():
             lang = request.cookies.get('frontend_lang')
         event = event.with_context(lang=lang)
-        slot_id = int(kwargs['slot_id']) if kwargs.get('slot_id') else False
+        slot_id = kwargs['slot_id'] if kwargs.get('slot_id') else False
         files = event._get_ics_file(slot=request.env['event.slot'].sudo().browse(slot_id))
         if not event.id in files:
             return NotFound()

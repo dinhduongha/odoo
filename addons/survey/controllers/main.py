@@ -299,7 +299,7 @@ class Survey(http.Controller):
 
         # Bypass all if page_id is specified (comes from breadcrumb or previous button)
         if 'previous_page_id' in post:
-            previous_page_or_question_id = int(post['previous_page_id'])
+            previous_page_or_question_id = post['previous_page_id']
             new_previous_id = survey_sudo._get_next_page_or_question(answer_sudo, previous_page_or_question_id, go_back=True).id
             page_or_question = request.env['survey.question'].sudo().browse(previous_page_or_question_id)
             data.update({
@@ -469,7 +469,7 @@ class Survey(http.Controller):
         survey_sudo, answer_sudo = access_data['survey_sudo'], access_data['answer_sudo']
 
         suggested_answer = False
-        if int(question_id) in survey_sudo.question_ids.ids:
+        if question_id in [str(qid) for qid in survey_sudo.question_ids.ids]:
             suggested_answer = request.env['survey.question.answer'].sudo().search([
                 ('id', '=', suggested_answer_id),
                 ('question_id', '=', question_id),
@@ -876,7 +876,7 @@ class Survey(http.Controller):
             if not data:
                 break
             model_short_key, row_id, answer_id = data.split(',')
-            row_id, answer_id = int(row_id), int(answer_id)
+            row_id, answer_id = row_id, answer_id
             if model_short_key == 'A':
                 if row_id:
                     answer_by_column[answer_id].append(row_id)

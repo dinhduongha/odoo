@@ -10,7 +10,7 @@ class HrOrgChartController(http.Controller):
     _managers_level = 5  # FP request
 
     def _get_employee(self, employee_id, **kw):
-        employee_id = int(employee_id) if employee_id else False
+        employee_id = employee_id if employee_id else False
 
         context = kw.get('context', request.env.context)
         if 'allowed_company_ids' in context:
@@ -32,7 +32,7 @@ class HrOrgChartController(http.Controller):
             job_name=job.name or '',
             direct_sub_count=len(employee.child_ids - employee),
             indirect_sub_count=employee.child_all_count,
-            write_date=int(employee.write_date.timestamp() * 1000) if employee.write_date else 0,  # ms for js; 0 when missing
+            write_date=employee.write_date.timestamp() * 1000 if employee.write_date else 0,  # ms for js; 0 when missing
         )
 
     @http.route('/hr/get_redirect_model', type='jsonrpc', auth='user')

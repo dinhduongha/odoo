@@ -17,7 +17,7 @@ class WebsiteEventBoothController(WebsiteEventController):
         if not event.has_access('read'):
             raise Forbidden()
 
-        booth_category_id = int(booth_category_id) if booth_category_id else False
+        booth_category_id = booth_category_id if booth_category_id else False
         return request.render(
             'website_event_booth.event_booth_registration',
             self._prepare_booth_main_values(event, booth_category_id=booth_category_id, booth_ids=booth_ids) | {'seo_object': event.booth_menu_ids}
@@ -48,7 +48,7 @@ class WebsiteEventBoothController(WebsiteEventController):
 
     def _prepare_booth_contact_form_values(self, event, booth_ids, booth_category_id):
         booth_category = request.env['event.booth.category'].sudo().browse(booth_category_id)
-        event_booths = request.env['event.booth'].sudo().browse([int(booth_id) for booth_id in booth_ids.split(',')])
+        event_booths = request.env['event.booth'].sudo().browse([booth_id for booth_id in booth_ids.split(',')])
         default_contact = {}
 
         if not request.env.user._is_public():

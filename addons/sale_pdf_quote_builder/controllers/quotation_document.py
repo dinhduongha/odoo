@@ -24,7 +24,7 @@ class QuotationDocumentController(Controller):
         if allowed_company_ids:
             request.update_context(allowed_company_ids=json.loads(allowed_company_ids))
         sale_order_template = request.env['sale.order.template'].browse(
-            int(sale_order_template_id)
+            sale_order_template_id
         )
         if sale_order_template:
             sale_order_template.check_access('write')
