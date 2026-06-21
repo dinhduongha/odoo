@@ -71,7 +71,20 @@ Likely a CLASS (related+precompute company_id) — worth fixing centrally.
 pos, l10n if added). Re-run: `cd /home/ha/work/odoo-uuidv7-refactor && ./run.sh` (full
 config) or the minimal `-i <mods>` loop used this session (see handoff.md).
 
+## MULTI-COMPANY FORCING (after full install — user decisions 2026-06-21)
+1. Force multi-company = on DB init auto-create a 2nd company + grant base.group_multi_company
+   to internal users (so multi-company UI always shows).
+2. Demo data → a dedicated "Demo Company" (main_company stays clean); load demo with that
+   company as the active/default company.
+3. Do AFTER uuid full install is stable.
+Implementation sketch: post_init hook (or base data) to create the 2nd/Demo company + add
+group; for demo, load demo data under with_company(demo_company) / default_company_id context.
+Also relevant: gen_company_id_backfill_sql.py for child company_id.
+
 ## NOT DONE / FOLLOW-UP
+- Python `-id` negations (runtime, not install-blocking): virtual-record dicts/sorts in
+  hr_holidays/l10n_in_hr_holidays/mail ir_ui_menu/product_template/stock — `-uuid` will
+  TypeError when hit; need a non-arithmetic unique-id / reverse-sort scheme.
 - [ ] **Discuss unread separator JS side**: backend now uses uuid `>`; web/owl client still
       assumes integer id arithmetic for `new_message_separator`. Needs matching JS change.
 - [ ] **Full module install** (the 40-module `etc/odoo.conf` list) not yet run — only core.

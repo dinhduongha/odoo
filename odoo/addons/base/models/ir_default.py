@@ -94,7 +94,7 @@ class IrDefault(models.Model):
             parsed = field.convert_to_cache(value, model)
             if field.type in ('date', 'datetime') and isinstance(value, date):
                 value = field.to_string(value)
-            json_value = json.dumps(value, ensure_ascii=False)
+            json_value = json.dumps(value, ensure_ascii=False, default=str)
         except KeyError:
             raise ValidationError(self.env._("Invalid field %(model)s.%(field)s", model=model_name, field=field_name))
         except Exception:
