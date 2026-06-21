@@ -435,8 +435,7 @@ class Many2one(_Relational):
             # mới: chấp nhận string UUID
             return value
         if isinstance(value, uuid.UUID):
-            # nếu bạn muốn dùng object UUID thật
-            return str(value)
+            return value
         if isinstance(value, BaseModel) and value._name == self.comodel_name:
             return value.id
         if isinstance(value, tuple):

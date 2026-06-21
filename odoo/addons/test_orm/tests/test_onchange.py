@@ -553,11 +553,12 @@ class TestOnchange(SavepointCaseWithUserDemo):
 
     def test_onchange_related(self):
         user = self.env.user
+        message = self.env.ref('test_orm.message_0_0')
 
         values = {
-            'message': 1,
+            'message': message.id,
             'message_name': False,
-            'message_currency': 2,
+            'message_currency': user.id,
         }
         fields_spec = {
             'message': {'fields': {'display_name': {}}},
@@ -789,7 +790,7 @@ class TestOnchange(SavepointCaseWithUserDemo):
         self.assertEqual(result['value']['messages'], [
             Command.create({
                 'name': f'[{{generate_dummy_message}}] {USER.name}',
-                'author': {'id': 1, 'display_name': f'{USER.name}'},
+                'author': {'id': USER.id, 'display_name': f'{USER.name}'},
                 'discussion': False,  # this value is False because the main record does not exist yet
             }),
         ])

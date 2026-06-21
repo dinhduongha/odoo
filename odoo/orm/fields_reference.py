@@ -110,13 +110,8 @@ class Many2oneReference(Field[uuid.UUID]):
             row = cr.fetchone()
             value_id = row[0] if row else None
 
-        # if use_display_name and value_id:
-        #     # lookup display name (tuỳ implementation)
-        #     # có thể lấy từ record env
-        #     display_name = record.env[self.comodel_name].browse(value_id).display_name
-        #     return display_name
-
-        return value_id
+        # empty relational value reads as False (ORM convention), not None
+        return value_id or False
 
     # UUIDv7 Patch
     def convert_to_cache(self, value, record, validate=True):

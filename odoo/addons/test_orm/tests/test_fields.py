@@ -415,7 +415,7 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
         # add a rule to not give access to user2
         self.env['ir.rule'].create({
             'model_id': self.env['ir.model'].search([('model', '=', 'res.users')]).id,
-            'domain_force': "[('id', '!=', %d)]" % user2.id,
+            'domain_force': str([('id', '!=', user2.id)]),
         })
         # DLE P72: Since we decided that we do not raise security access errors for data to which we had the occassion
         # to put the value in the cache, we need to invalidate the cache for user1, user2 and user3 in order
@@ -3089,7 +3089,7 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
         # create a passing ir.rule
         self.env['ir.rule'].create({
             'model_id': self.env['ir.model']._get(record._name).id,
-            'domain_force': "[('id', '=', %d)]" % record.id,
+            'domain_force': str([('id', '=', record.id)]),
         })
 
         # prep the following query count by caching access check related data
@@ -3106,7 +3106,7 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
         # create a blocking ir.rule
         self.env['ir.rule'].create({
             'model_id': self.env['ir.model']._get(record._name).id,
-            'domain_force': "[('id', '!=', %d)]" % record.id,
+            'domain_force': str([('id', '!=', record.id)]),
         })
 
         # ensure ir.rule is applied even when reading m2m
