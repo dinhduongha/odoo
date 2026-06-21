@@ -14,6 +14,6 @@ class ResUsers(models.Model):
         default_digest_id = self.env['ir.config_parameter'].sudo().get_param('digest.default_digest_id')
         users_to_subscribe = users.filtered_domain([('share', '=', False)])
         if default_digest_emails and default_digest_id and users_to_subscribe:
-            digest = self.env['digest.digest'].sudo().browse(int(default_digest_id)).exists()
+            digest = self.env['digest.digest'].sudo().browse(default_digest_id).exists()
             digest.user_ids |= users_to_subscribe
         return users
