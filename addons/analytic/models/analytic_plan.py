@@ -295,8 +295,11 @@ class AccountAnalyticPlan(models.Model):
         """
         assert '_id_' in field.name
         root_name, depth = field.name.rsplit('_', maxsplit=1)
-        plan_id_match = re.search(r'\d+', root_name)
-        plan_id = int(plan_id_match.group() if plan_id_match else next(self._get_all_plans()))
+        # The column name embeds the root plan's uuid as a hyphen-stripped hex run
+        # (see `_strict_column_name`): `x_plan{hex}_id`. The project plan uses
+        # `x_account_id` and has no embedded id, so fall back to its id.
+        plan_id_match = re.search(r'x_plan([0-9a-f]{32})_id', root_name)
+        plan_id = uuid.UUID(plan_id_match.group(1)) if plan_id_match else next(self._get_all_plans())
         return bool(self.env['account.analytic.plan'].search([
             ('root_id', '=', plan_id),
             ('parent_path', 'like', '%'.join('/' * (int(depth) + 1))),
