@@ -69,8 +69,16 @@ def load_demo(env: Environment, package: ModuleNode, idref: IdRef, mode: LoadMod
     try:
         if package.manifest.get('demo') or package.manifest.get('demo_xml'):
             _logger.info("Module %s: loading demo", package.name)
+            # Load demo data into the dedicated Demo Company (base.demo_company, ...0002)
+            # so demo records default to it instead of the main company. Demo records that
+            # explicitly reference another company still go where they point.
+            demo_ctx = dict(env.context, install_demo=True)
+            demo_company = env.ref('base.demo_company', raise_if_not_found=False)
+            if demo_company:
+                others = [c for c in (env.context.get('allowed_company_ids') or []) if c != demo_company.id]
+                demo_ctx['allowed_company_ids'] = [demo_company.id, *others]
             with env.cr.savepoint(flush=False):
-                load_data(env(su=True, context=dict(env.context, install_demo=True)), idref, mode, kind='demo', package=package)
+                load_data(env(su=True, context=demo_ctx), idref, mode, kind='demo', package=package)
         return True
     except Exception:  # noqa: BLE001
         # If we could not install demo data for this module
