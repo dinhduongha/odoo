@@ -2148,7 +2148,8 @@ class TestOrmPrecomputeMonetary(models.Model):
             record.amount = 12.333
 
     def _compute_currency_id(self):
-        self.currency_id = self.env.ref('base.EUR').id  # EUR
+        # use the cached xmlid->id lookup (env.ref would add an exists() query)
+        self.currency_id = self.env['ir.model.data']._xmlid_to_res_id('base.EUR')  # EUR
 
 
 class TestOrmPrefetch(models.Model):
