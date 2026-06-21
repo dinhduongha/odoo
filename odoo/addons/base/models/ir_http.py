@@ -79,7 +79,8 @@ class ModelConverter(werkzeug.routing.BaseConverter):
 
 
 class ModelsConverter(werkzeug.routing.BaseConverter):
-    regex = r'[0-9,]+'
+    # accept both legacy integer ids and uuid (uuidv7) ids, comma-separated
+    regex = r'[0-9a-fA-F,-]+'
 
     def __init__(self, url_map, model=False):
         super().__init__(url_map)
@@ -88,10 +89,11 @@ class ModelsConverter(werkzeug.routing.BaseConverter):
     def to_python(self, value: str) -> models.BaseModel:
         _uid = RequestUID(value=value, converter=self)
         env = api.Environment(request.env.cr, _uid, request.env.context)
-        return env[self.model].browse(int(v) for v in value.split(','))
+        # legacy int ids stay ints; uuid ids are coerced by browse()
+        return env[self.model].browse(int(v) if v.isdigit() else v for v in value.split(','))
 
     def to_url(self, value: models.BaseModel) -> str:
-        return ",".join(value.ids)
+        return ",".join(str(record_id) for record_id in value.ids)
 
 
 class SignedIntConverter(NumberConverter):
