@@ -14,7 +14,7 @@ from odoo.exceptions import AccessError, UserError, MissingError
 from odoo.tools import SQL, OrderedSet, is_list_of, html_sanitize
 from odoo.tools.misc import frozendict, has_list_types
 from odoo.tools.translate import _
-from odoo.tools.uuid_utils import uuid7
+from odoo.tools.uuid_utils import to_uuid, uuid7
 
 from .domains import Domain
 from .fields import Field, _logger
@@ -646,7 +646,17 @@ class Properties(Field):
         values_list = copy.deepcopy(properties_definition)
         for property_definition in values_list:
             if property_definition['name'] in values_dict:
-                property_definition['value'] = values_dict[property_definition['name']]
+                value = values_dict[property_definition['name']]
+                # uuid PKs: many2one/many2many ids are stored in jsonb as
+                # strings; coerce them back to uuid.UUID so downstream code
+                # (browse, display_name, validation) sees the native id type.
+                prop_type = property_definition.get('type')
+                if value:
+                    if prop_type == 'many2one':
+                        value = to_uuid(value)
+                    elif prop_type == 'many2many' and isinstance(value, (list, tuple)):
+                        value = [to_uuid(v) for v in value]
+                property_definition['value'] = value
             else:
                 property_definition.pop('value', None)
         return values_list
