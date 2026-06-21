@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools.uuid_utils import to_uuid
 
 
 class ProductPricelist(models.Model):
@@ -287,11 +288,12 @@ class ProductPricelist(models.Model):
 
     def _get_country_pricelist_multi(self, country_ids):
         def get_param_id(key):
+            # uuid PKs: the param stores a uuid (string); int() would both fail on a real
+            # uuid AND, crucially, turn the absent-default False into 0 -> browse(0) yields
+            # a phantom id-0 pricelist whose _origin self-references (infinite recursion in
+            # currency_id). Return None when absent, the uuid otherwise.
             string_value = self.env['ir.config_parameter'].sudo().get_param(key, False)
-            try:
-                return int(string_value)
-            except (TypeError, ValueError, OverflowError):
-                return None
+            return to_uuid(string_value) if string_value else None
 
         company_id = self.env.company.id
         pl_domain = self._get_partner_pricelist_multi_search_domain_hook(company_id)

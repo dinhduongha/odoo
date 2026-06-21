@@ -145,14 +145,18 @@ class OriginIds:
         for id_ in self.ids:
             if hasattr(id_, 'origin') and id_.origin:
                 yield id_.origin
-            elif isinstance(id_, (int, str, UUID)):
+            elif id_ and isinstance(id_, (int, str, UUID)):
+                # only yield truthy ids: a falsy id (e.g. int 0 from a phantom browse(0))
+                # is not a real record, and yielding it makes _origin self-reference -> infinite recursion
                 yield id_
 
     def __reversed__(self):
         for id_ in reversed(self.ids):
             if hasattr(id_, 'origin') and id_.origin:
                 yield id_.origin
-            elif isinstance(id_, (int, str, UUID)):
+            elif id_ and isinstance(id_, (int, str, UUID)):
+                # only yield truthy ids: a falsy id (e.g. int 0 from a phantom browse(0))
+                # is not a real record, and yielding it makes _origin self-reference -> infinite recursion
                 yield id_
 
 origin_ids = OriginIds
