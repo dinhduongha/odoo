@@ -53,8 +53,12 @@ class MailGuest(models.Model):
         parts = token.split(self._cookie_separator)
         if len(parts) == 2:
             guest_id, guest_access_token = parts
+            try:
+                guest_id = uuid.UUID(guest_id)
+            except ValueError:
+                return guest.sudo(False)
             # sudo: mail.guest: guests need sudo to read their access_token
-            guest = self.browse(int(guest_id)).sudo().exists()
+            guest = self.browse(guest_id).sudo().exists()
             if not guest or not guest.access_token or not consteq(guest.access_token, guest_access_token):
                 guest = self.env["mail.guest"]
         return guest.sudo(False)

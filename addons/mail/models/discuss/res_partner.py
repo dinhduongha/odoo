@@ -46,7 +46,7 @@ class ResPartner(models.Model):
         email_already_sent = None
         if channel_invites["count"] == 0 and single_email_re.match(search_term):
             email = email_normalize(search_term)
-            channel = self.env["discuss.channel"].search_fetch([("id", "=", int(channel_id))])
+            channel = self.env["discuss.channel"].search_fetch([("id", "=", channel_id)])
             member_domain = Domain("channel_id", "=", channel.id)
             member_domain &= Domain("guest_id.email", "=", email) | Domain(
                 "partner_id.email", "=", email
@@ -91,7 +91,7 @@ class ResPartner(models.Model):
         )
         channel = self.env["discuss.channel"]
         if channel_id:
-            channel = self.env["discuss.channel"].search([("id", "=", int(channel_id))])
+            channel = self.env["discuss.channel"].search([("id", "=", channel_id)])
             domain &= Domain("channel_ids", "not in", channel.id)
             if channel.group_public_id:
                 domain &= Domain("user_ids.all_group_ids", "in", channel.group_public_id.id)

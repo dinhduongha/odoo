@@ -2,6 +2,7 @@
 
 import logging
 import re
+import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -13,7 +14,7 @@ from odoo.tools.misc import verify_limited_field_access_token
 PRESENCE_CHANNEL_PREFIX = "odoo-presence-"
 PRESENCE_CHANNEL_REGEX = re.compile(
     rf"{PRESENCE_CHANNEL_PREFIX}"
-    r"(?P<model>res\.partner|mail\.guest)_(?P<record_id>\d+)"
+    r"(?P<model>res\.partner|mail\.guest)_(?P<record_id>[0-9a-fA-F-]+)"
     r"(?:-(?P<token>[a-f0-9]{64}o0x[a-f0-9]+))?$"
 )
 _logger = logging.getLogger(__name__)
@@ -54,7 +55,12 @@ class IrWebsocket(models.AbstractModel):
                 _logger.warning("Malformed presence channel: %s", channel)
                 continue
             model, record_id, token = match.groups()
-            model_ids_to_token[model][int(record_id)] = token or ""
+            try:
+                record_id = uuid.UUID(record_id)
+            except ValueError:
+                _logger.warning("Malformed presence channel: %s", channel)
+                continue
+            model_ids_to_token[model][record_id] = token or ""
         # sudo - res.partner, mail.guest: can access presence targets to decide whether
         # the current user is allowed to read it or not.
         partner_ids = model_ids_to_token["res.partner"].keys()

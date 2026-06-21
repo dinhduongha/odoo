@@ -7,6 +7,7 @@ from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools import consteq, email_normalize, replace_exceptions
 from odoo.tools.misc import verify_hash_signed
+from odoo.tools.uuid_utils import is_uuid
 from odoo.addons.mail.tools.discuss import add_guest_to_context, Store
 
 
@@ -14,6 +15,14 @@ class PublicPageController(http.Controller):
     @http.route(
         [
             "/chat/<string:create_token>",
+            # NOTE: this 2-segment '/chat/' route is shared between channel
+            # invitation links ('/chat/<channel_uuid>/<invitation_token>') and
+            # chat-from-token ('/chat/<create_token>/<channel_name>'). With integer
+            # record ids these were two mutually exclusive routes ('<int:>' vs
+            # '<string:>'); record ids are now uuid, so both would match the same
+            # '<string:>/<string:>' shape and werkzeug cannot disambiguate them.
+            # They are therefore handled by a single endpoint that dispatches on
+            # whether the first segment is the uuid of an existing channel.
             "/chat/<string:create_token>/<string:channel_name>",
         ],
         methods=["GET"],
@@ -21,8 +30,23 @@ class PublicPageController(http.Controller):
         auth="public",
     )
     @add_guest_to_context
-    def discuss_channel_chat_from_token(self, create_token, channel_name=None):
+    def discuss_channel_chat_from_token(self, create_token, channel_name=None, email_token=None):
+        if channel_name:
+            # sudo: discuss.channel - only checking existence by uuid id; access is
+            # validated below with the invitation token via consteq.
+            channel = request.env["discuss.channel"].sudo().browse(create_token).exists() \
+                if is_uuid(create_token) else request.env["discuss.channel"]
+            if channel and channel.uuid and consteq(channel.uuid, channel_name):
+                return self._discuss_channel_invitation(channel.sudo(False), email_token=email_token)
         return self._response_discuss_channel_from_token(create_token=create_token, channel_name=channel_name)
+
+    def _discuss_channel_invitation(self, channel, email_token=None):
+        guest_email = email_token and verify_hash_signed(
+            self.env(su=True), "mail.invite_email", email_token
+        )
+        guest_email = email_normalize(guest_email)
+        store = Store().add_global_values(isChannelTokenSecret=True)
+        return self._response_discuss_channel_invitation(store, channel, guest_email)
 
     @http.route(
         [
@@ -38,20 +62,6 @@ class PublicPageController(http.Controller):
         return self._response_discuss_channel_from_token(
             create_token=create_token, channel_name=channel_name, default_display_mode="video_full_screen"
         )
-
-    @http.route("/chat/<string:channel_id>/<string:invitation_token>", methods=["GET"], type="http", auth="public")
-    @add_guest_to_context
-    def discuss_channel_invitation(self, channel_id, invitation_token, email_token=None):
-        guest_email = email_token and verify_hash_signed(
-            self.env(su=True), "mail.invite_email", email_token
-        )
-        guest_email = email_normalize(guest_email)
-        channel = request.env["discuss.channel"].browse(channel_id).exists()
-        # sudo: discuss.channel - channel access is validated with invitation_token
-        if not channel or not channel.sudo().uuid or not consteq(channel.sudo().uuid, invitation_token):
-            raise NotFound()
-        store = Store().add_global_values(isChannelTokenSecret=True)
-        return self._response_discuss_channel_invitation(store, channel, guest_email)
 
     @http.route("/discuss/channel/<string:channel_id>", methods=["GET"], type="http", auth="public")
     @add_guest_to_context

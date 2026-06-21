@@ -8,6 +8,7 @@ from odoo import http
 from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools.misc import verify_limited_field_access_token
+from odoo.tools.uuid_utils import is_uuid
 from odoo.addons.mail.tools.discuss import add_guest_to_context, Store
 
 
@@ -154,7 +155,7 @@ class ThreadController(http.Controller):
             if key in thread._get_allowed_message_params()
         }
         if (attachment_ids := post_data.get("attachment_ids")) is not None:
-            attachments = request.env["ir.attachment"].browse(map(int, attachment_ids))
+            attachments = request.env["ir.attachment"].browse(attachment_ids)
             if not attachments._has_attachments_ownership(post_data.get("attachment_tokens")):
                 msg = self.env._(
                     "One or more attachments do not exist, or you do not have the rights to access them.",
@@ -169,7 +170,7 @@ class ThreadController(http.Controller):
         partner_emails = post_data.get("partner_emails")
         role_ids = post_data.get("role_ids")
         if partner_ids is not None or partner_emails is not None or role_ids is not None:
-            partners = request.env["res.partner"].browse(map(int, partner_ids or []))
+            partners = request.env["res.partner"].browse(partner_ids or [])
             if partner_emails:
                 partners |= thread._partner_find_from_emails_single(
                     partner_emails,
@@ -204,7 +205,7 @@ class ThreadController(http.Controller):
         request.update_context(message_post_store=store)
         if context:
             request.update_context(**context)
-        canned_response_ids = tuple(cid for cid in kwargs.get('canned_response_ids', []) if isinstance(cid, int))
+        canned_response_ids = tuple(cid for cid in kwargs.get('canned_response_ids', []) if isinstance(cid, str) and is_uuid(cid))
         if canned_response_ids:
             # Avoid serialization errors since last used update is not
             # essential and should not block message post.

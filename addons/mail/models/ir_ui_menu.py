@@ -48,7 +48,7 @@ class IrUiMenu(models.Model):
             # Prefetch menu fields and all menu's actions of type act_window
             menus = self.env['ir.ui.menu'].browse(visible_menu_ids)
             self.env['ir.actions.act_window'].sudo().browse([
-                int(menu['action'].split(',')[1])
+                menu['action'].split(',')[1]
                 for menu in menus.read(['action', 'parent_path'])
                 if menu['action'] and menu['action'].startswith('ir.actions.act_window,')
             ]).filtered('res_model')
@@ -60,6 +60,6 @@ class IrUiMenu(models.Model):
             menu_sudo = max((
                 (menu, action) for menu in menus.sudo() for action in (menu.action,)
                 if action and action.type == 'ir.actions.act_window' and action.res_model == res_model
-                   and all(int(menu_id) in visible_menu_ids for menu_id in menu.parent_path.split('/') if menu_id)
+                   and all(uuid.UUID(menu_id) in visible_menu_ids for menu_id in menu.parent_path.split('/') if menu_id)
             ), key=_menu_sort_key, default=(None, None))[0]
             return uuid.UUID(menu_sudo.parent_path[:menu_sudo.parent_path.index('/')]) if menu_sudo else None

@@ -10,6 +10,7 @@ from werkzeug.exceptions import NotFound, UnsupportedMediaType
 from odoo import _, http
 from odoo.addons.mail.controllers.thread import ThreadController
 from odoo.exceptions import AccessError, UserError
+from odoo.tools.uuid_utils import is_uuid
 from odoo.http import request, content_disposition
 from odoo.addons.mail.tools.discuss import add_guest_to_context, Store
 from odoo.tools.misc import file_open
@@ -103,7 +104,7 @@ class AttachmentController(ThreadController):
         :param file_ids: ids of the files to zip.
         :param zip_name: name of the zip file.
         """
-        ids_list = list(map(int, file_ids.split(',')))
+        ids_list = [fid for fid in file_ids.split(',') if is_uuid(fid)]
         attachments = request.env['ir.attachment'].browse(ids_list)
         return self._make_zip(zip_name, attachments)
 

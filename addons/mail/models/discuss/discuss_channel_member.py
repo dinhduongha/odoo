@@ -523,7 +523,7 @@ class DiscussChannelMember(models.Model):
         """
         self.ensure_one()
         self.channel_id.rtc_session_ids._delete_inactive_rtc_sessions()
-        check_rtc_sessions = self.env['discuss.channel.rtc.session'].browse([int(check_rtc_session_id) for check_rtc_session_id in (check_rtc_session_ids or [])])
+        check_rtc_sessions = self.env['discuss.channel.rtc.session'].browse(check_rtc_session_ids or [])
         return self.channel_id.rtc_session_ids, check_rtc_sessions - self.channel_id.rtc_session_ids
 
     def _get_rtc_invite_members_domain(self, member_ids=None):

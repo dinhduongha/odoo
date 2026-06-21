@@ -5,6 +5,7 @@ import contextlib
 import logging
 import re
 import textwrap
+import uuid
 from binascii import Error as binascii_error
 from collections import defaultdict
 from lxml import html
@@ -227,7 +228,7 @@ class MailMessage(models.Model):
             )
             for str_id in str_ids:
                 with contextlib.suppress(ValueError, TypeError):
-                    message_ids_by_message[message].append(int(str_id))
+                    message_ids_by_message[message].append(uuid.UUID(str_id))
         mids = [mid for mids in message_ids_by_message.values() for mid in mids]
         if not mids:
             self.linked_message_ids = self.env["mail.message"]
@@ -739,13 +740,13 @@ class MailMessage(models.Model):
         # and check rights on other documents
         attachments_tocheck = self.env['ir.attachment']
         doc_to_attachment_ids = defaultdict(set)
-        if all(isinstance(command, int) or command[0] in (4, 6)
+        if all(isinstance(command, (int, str, uuid.UUID)) or command[0] in (4, 6)
                for values in vals_list
                for command in values.get('attachment_ids', ())):
             for values in vals_list:
                 message_attachment_ids = set()
                 for command in values.get('attachment_ids', ()):
-                    if isinstance(command, int):
+                    if isinstance(command, (int, str, uuid.UUID)):
                         message_attachment_ids.add(command)
                     elif command[0] == 6:
                         message_attachment_ids |= set(command[2])
