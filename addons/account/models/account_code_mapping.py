@@ -3,7 +3,20 @@ from odoo.fields import Domain
 from odoo.exceptions import UserError
 from odoo.tools import Query
 
-COMPANY_OFFSET = 10000
+# Virtual id separator. account.code.mapping has no table; each cache record is
+# identified by a synthetic id packing (account_id, company_id). With uuid PKs the
+# old integer packing (account_id * COMPANY_OFFSET + company_id) is impossible, so
+# the id is a string "<account_id>|<company_id>" instead.
+_ID_SEP = '|'
+
+
+def _pack_id(account_id, company_id):
+    return f"{account_id}{_ID_SEP}{company_id}"
+
+
+def _unpack_id(packed_id):
+    account_id, _sep, company_id = str(packed_id).partition(_ID_SEP)
+    return account_id, company_id
 
 
 class AccountCodeMapping(models.Model):
@@ -39,7 +52,7 @@ class AccountCodeMapping(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         mappings = self.browse([
-            vals['account_id'] * COMPANY_OFFSET + vals['company_id']
+            _pack_id(vals['account_id'], vals['company_id'])
             for vals in vals_list
         ])
         for mapping, vals in zip(mappings, vals_list):
@@ -62,18 +75,20 @@ class AccountCodeMapping(models.Model):
                 "It is designed to be used only through the Chart of Accounts."
             ))
         return self.browse([
-            account_id * COMPANY_OFFSET + company.id
+            _pack_id(account_id, company.id)
             for account_id in account_ids
             for company in self.env.user.with_context(active_test=True).company_ids.sorted(lambda c: (c.sequence, c.name))
         ]).filtered_domain(remaining_domain)._as_query()
 
     def _compute_account_id(self):
         for record in self:
-            record.account_id = record._origin.id // COMPANY_OFFSET
+            account_id, _company_id = _unpack_id(record._origin.id)
+            record.account_id = account_id
 
     def _compute_company_id(self):
         for record in self:
-            record.company_id = record._origin.id % COMPANY_OFFSET
+            _account_id, company_id = _unpack_id(record._origin.id)
+            record.company_id = company_id
 
     @api.depends('account_id.code')
     def _compute_code(self):
