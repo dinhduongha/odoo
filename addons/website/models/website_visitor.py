@@ -98,8 +98,9 @@ class WebsiteVisitor(models.Model):
             # If the access_token is not a 32 length hexa string, it means that
             # the visitor is linked to a logged in user, in which case its
             # partner_id is used instead as the token.
-            partner_id = len(visitor.access_token) != 32 and int(visitor.access_token)
-            visitor.partner_id = self.env['res.partner'].browse(partner_id)
+            # uuid PKs: the token is the partner's uuid (str), not an int.
+            partner_id = len(visitor.access_token) != 32 and visitor.access_token
+            visitor.partner_id = self.env['res.partner'].browse(partner_id or ())
 
     @api.depends('partner_id.email_normalized', 'partner_id.phone')
     def _compute_email_phone(self):

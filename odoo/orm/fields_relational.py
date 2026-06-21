@@ -1090,7 +1090,9 @@ class One2many(_RelationalMulti):
             raise AccessError(records.env._("Failed to read field %s", self) + '\n' + str(e)) from e
 
         # group lines by inverse field (without prefetching other fields)
-        get_id = (lambda rec: rec.id) if inverse_field.type == 'many2one' else uuid.UUID
+        # to_uuid (not uuid.UUID): line[inverse] may already be a UUID for a
+        # many2one_reference, and uuid.UUID(<UUID>) raises.
+        get_id = (lambda rec: rec.id) if inverse_field.type == 'many2one' else to_uuid
         group = defaultdict(list)
         for line in lines:
             # line[inverse] may be a record or an integer

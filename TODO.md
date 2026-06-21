@@ -85,6 +85,26 @@ Likely a CLASS (related+precompute company_id) — worth fixing centrally.
 pos, l10n if added). Re-run: `cd /home/ha/work/odoo-uuidv7-refactor && ./run.sh` (full
 config) or the minimal `-i <mods>` loop used this session (see handoff.md).
 
+## FULL ALL-MODULE DEMO INSTALL + Demo-Company routing — 🔄 IN PROGRESS (2026-06-21)
+Goal (user): full all-module install with demo for ALL modules, all demo data in the
+Demo Company (…0002, option 2 = keep allowed_company_ids routing + relax check_company),
+rich supplemental demo where missing.
+- Decision history: user picked role-swap (option 1), then switched to option 2 (keep
+  routing, skip check). The swap was reverted; bootstrap stays main=…0001/demo=…0002.
+- Systemic fix: `models._check_company` early-returns when `install_demo` in context, so
+  demo records may reference shared/base data owned by the main company without crossover
+  errors. (User note: company-scoped models legitimately reference company-less shared
+  models — the framework already allows company_id=False; the skip covers the rest.)
+- Demo-data uuid bugs fixed so far (commits e3981f5ff, 2046a4b9d):
+  mail.tracking.value m2o uuid columns; Reference-in-o2m core (event/survey); event/
+  marketing_card %i/%d reference evals; im_livechat user→partner ref; lunch cron uuid
+  quote; rating soft-ref exists() guard; analytic project_plan param '1'→uuid; survey
+  certification domain unquoted uuid.
+- Module set: the etc/odoo.conf `init` list (~37 apps) + om_account_accountant. Custom
+  addons copied into the serve container's /mnt/extra-addons.
+- STATUS: iterating full installs (uuidfull_demo6) — crashes move forward each pass as
+  per-module demo bugs are fixed.
+
 ## MULTI-COMPANY FORCING — ✅ IMPLEMENTED (2026-06-21)
 - Demo Company bootstrapped in base_data.sql, pinned `…0002` (xmlid base.demo_company);
   main_company `…0001`. Always 2 companies present.
