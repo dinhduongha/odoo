@@ -61,7 +61,7 @@ class PosController(PortalAccount):
                 ('rescue', '=', False)
                 ]
         if config_id and request.env['pos.config'].sudo().browse(config_id).exists():
-            domain = Domain.AND([domain, [('config_id', '=', int(config_id))]])
+            domain = Domain.AND([domain, [('config_id', '=', config_id)]])
             pos_config = request.env['pos.config'].sudo().browse(config_id)
         pos_session = request.env['pos.session'].sudo().search(domain, limit=1)
 
@@ -72,7 +72,7 @@ class PosController(PortalAccount):
             domain = [
                 ('state', 'in', ['opening_control', 'opened']),
                 ('rescue', '=', False),
-                ('config_id', '=', int(config_id)),
+                ('config_id', '=', config_id),
             ]
             pos_session = request.env['pos.session'].sudo().search(domain, limit=1)
 

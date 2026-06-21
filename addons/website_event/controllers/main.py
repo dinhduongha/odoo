@@ -381,12 +381,12 @@ class WebsiteEventController(http.Controller):
             answer_values = None
             if question_type == 'simple_choice':
                 answer_values = {
-                    'question_id': int(question_id),
+                    'question_id': question_id,
                     'value_answer_id': int(value)
                 }
             else:
                 answer_values = {
-                    'question_id': int(question_id),
+                    'question_id': question_id,
                     'value_text_box': value
                 }
 

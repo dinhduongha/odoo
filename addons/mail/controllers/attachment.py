@@ -55,7 +55,7 @@ class AttachmentController(ThreadController):
         vals = {
             "name": ufile.filename,
             "raw": ufile.read(),
-            "res_id": int(thread_id),
+            "res_id": thread_id,
             "res_model": thread_model,
         }
         if is_pending and is_pending != "false":

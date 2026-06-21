@@ -47,7 +47,7 @@ class CustomerPortalLoyalty(CustomerPortal):
     )
     def portal_my_loyalty_card_history(self, card_id, page=1, sortby='date', **kw):
         card_sudo = request.env['loyalty.card'].sudo().search([
-            ('id', '=', int(card_id)),
+            ('id', '=', card_id),
             ('partner_id', '=', request.env.user.partner_id.id),
         ])
         if not card_sudo:
@@ -91,7 +91,7 @@ class CustomerPortalLoyalty(CustomerPortal):
         :return(dict): A dictionary with card history values.
         """
         card_sudo = request.env['loyalty.card'].sudo().search([
-            ('id', '=', int(card_id)),
+            ('id', '=', card_id),
             ('partner_id', '=', request.env.user.partner_id.id)
         ])
         if not card_sudo:

@@ -247,7 +247,7 @@ class Binary(http.Controller):
                     'name': filename,
                     'raw': ufile.read(),
                     'res_model': model,
-                    'res_id': int(id)
+                    'res_id': id
                 })
                 attachment._post_add_create()
             except AccessError:

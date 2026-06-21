@@ -1921,9 +1921,9 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if visitor_sudo:
             domain = [('visitor_id', '=', visitor_sudo.id)]
             if product_id:
-                domain += [('product_id', '=', int(product_id))]
+                domain += [('product_id', '=', product_id)]
             else:
-                domain += [('product_id.product_tmpl_id', '=', int(product_template_id))]
+                domain += [('product_id.product_tmpl_id', '=', product_template_id)]
             request.env['website.track'].sudo().search(domain).unlink()
         return {}
 

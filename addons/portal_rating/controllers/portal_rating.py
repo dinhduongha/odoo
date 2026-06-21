@@ -10,7 +10,7 @@ class PortalRating(http.Controller):
     @http.route(['/website/rating/comment'], type='jsonrpc', auth="user", methods=['POST'], website=True)
     def publish_rating_comment(self, rating_id, publisher_comment):
         rating = request.env['rating.rating'].search_fetch(
-            [('id', '=', int(rating_id))],
+            [('id', '=', rating_id)],
             ['publisher_comment', 'publisher_id', 'publisher_datetime'],
         )
         if not rating:

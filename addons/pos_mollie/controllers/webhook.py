@@ -32,7 +32,7 @@ class PosMollie(http.Controller):
         payment_details = payment_info["details"]
 
         message = {
-            'session_id': int(pos_session_id),
+            'session_id': pos_session_id,
             'payment_id': id,
             'status': payment_info["status"],
         }

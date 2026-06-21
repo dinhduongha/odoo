@@ -32,7 +32,7 @@ class WebsiteEventBoothController(WebsiteEventController):
 
         return request.redirect(('/event/%s/booth/register_form?' % event.id) + werkzeug.urls.url_encode({
             'booth_ids': ','.join(event_booth_ids),
-            'booth_category_id': int(booth_category_id),
+            'booth_category_id': booth_category_id,
         }))
 
     @http.route('/event/<model("event.event"):event>/booth/register_form',
@@ -182,8 +182,8 @@ class WebsiteEventBoothController(WebsiteEventController):
     @http.route(['/event/booth_category/get_available_booths'], type='jsonrpc', auth='public')
     def get_booth_category_available_booths(self, event_id, booth_category_id):
         booth_ids = request.env['event.booth'].sudo().search([
-            ('event_id', '=', int(event_id)),
-            ('booth_category_id', '=', int(booth_category_id)),
+            ('event_id', '=', event_id),
+            ('booth_category_id', '=', booth_category_id),
             ('state', '=', 'available')
         ])
 

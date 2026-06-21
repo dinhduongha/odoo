@@ -1048,7 +1048,7 @@ class WebsiteSlides(WebsiteProfile):
         if field not in ('image_128', 'image_256', 'image_512', 'image_1024', 'image_1920'):
             return werkzeug.exceptions.Forbidden()
 
-        slide = request.env['slide.slide'].search([('id', '=', int(slide_id))])
+        slide = request.env['slide.slide'].search([('id', '=', slide_id)])
         if not slide:
             raise werkzeug.exceptions.NotFound()
 
@@ -1230,7 +1230,7 @@ class WebsiteSlides(WebsiteProfile):
         if existing_question_id:
             request.env['slide.question'].search([
                 ('slide_id', '=', slide.id),
-                ('id', '=', int(existing_question_id))
+                ('id', '=', existing_question_id)
             ]).unlink()
 
         request.env['slide.slide.partner'].search([
@@ -1381,12 +1381,12 @@ class WebsiteSlides(WebsiteProfile):
         if slide_category == 'video':
             identical_video = request.env['slide.slide']
             existing_videos = Slide.search([
-                ('channel_id', '=', int(channel_id)),
+                ('channel_id', '=', channel_id),
                 ('slide_category', '=', 'video')
             ])
 
             slide = Slide.new({
-                'channel_id': int(channel_id),
+                'channel_id': channel_id,
                 'name': 'memory_record_for_computed_fields',
                 'slide_category': 'video',
                 'url': url
@@ -1409,7 +1409,7 @@ class WebsiteSlides(WebsiteProfile):
                 additional_values['info'] = _('This video already exists in this channel on the following content: %s', identical_video_name)
         elif slide_category in ['document', 'infographic']:
             slide = Slide.new({
-                'channel_id': int(channel_id),
+                'channel_id': channel_id,
                 'name': 'memory_record_for_computed_fields',
                 'slide_category': slide_category,
                 'source_type': 'external',

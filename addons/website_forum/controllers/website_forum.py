@@ -201,7 +201,7 @@ class WebsiteForum(WebsiteProfile):
     @http.route('/forum/get_tags', type='http', auth="public", methods=['GET'], website=True, sitemap=False, readonly=True)
     def tag_read(self, forum_id, query='', limit=25, **post):
         data = request.env['forum.tag'].search_read(
-            domain=[('forum_id', '=', int(forum_id)), ('name', '=ilike', (query or '') + "%")],
+            domain=[('forum_id', '=', forum_id), ('name', '=ilike', (query or '') + "%")],
             fields=['id', 'name'],
             limit=int(limit),
         )

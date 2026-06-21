@@ -471,8 +471,8 @@ class Survey(http.Controller):
         suggested_answer = False
         if int(question_id) in survey_sudo.question_ids.ids:
             suggested_answer = request.env['survey.question.answer'].sudo().search([
-                ('id', '=', int(suggested_answer_id)),
-                ('question_id', '=', int(question_id)),
+                ('id', '=', suggested_answer_id),
+                ('question_id', '=', question_id),
                 ('question_id.survey_id', '=', survey_sudo.id),
             ])
 

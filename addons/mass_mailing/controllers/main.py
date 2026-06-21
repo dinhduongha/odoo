@@ -154,7 +154,7 @@ class MassMailController(http.Controller):
             'hash_token': hash_token,
         })
         return request.render('mass_mailing.page_mailing_has_unsubscribed', {
-            'settings_url': f'/mailing/{int(mailing_id)}/unsubscribe?{url_params}',
+            'settings_url': f'/mailing/{mailing_id}/unsubscribe?{url_params}',
         })
 
     # todo: merge this route with /mail/mailing/confirm_unsubscribe on next minor version

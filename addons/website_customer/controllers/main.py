@@ -25,10 +25,10 @@ class WebsiteCustomer(GoogleMap):
         domain = [('assigned_partner_id', '!=', False)]
 
         if current_country and current_country != '0':
-            domain += [('country_id', '=', int(current_country))]
+            domain += [('country_id', '=', current_country)]
 
         if current_industry and current_industry != '0':
-            domain += [('industry_id', '=', int(current_industry))]
+            domain += [('industry_id', '=', current_industry)]
 
         return domain
 

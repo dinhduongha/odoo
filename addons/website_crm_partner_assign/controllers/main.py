@@ -199,10 +199,10 @@ class WebsiteCrmPartnerAssign(WebsitePartnerPage, GoogleMap):
             domain += [('grade_id.website_published', '=', True)]
 
         if current_country:
-            domain += [('country_id', '=', int(current_country))]
+            domain += [('country_id', '=', current_country)]
 
         if current_grade:
-            domain += [('grade_id', '=', int(current_grade))]
+            domain += [('grade_id', '=', current_grade)]
 
         return domain
 

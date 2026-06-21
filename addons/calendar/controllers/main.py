@@ -57,7 +57,7 @@ class CalendarController(http.Controller):
     def view_meeting(self, token, id, **kwargs):
         attendee = request.env['calendar.attendee'].sudo().search([
             ('access_token', '=', token),
-            ('event_id', '=', int(id))])
+            ('event_id', '=', id)])
         if not attendee:
             return request.not_found()
         timezone = attendee.partner_id.tz

@@ -113,7 +113,7 @@ class TimesheetCustomerPortal(CustomerPortal):
             domain &= self._get_search_domain(search_in, search)
 
         if parent_task_id := kw.get('parent_task_id'):
-            domain &= Domain('parent_task_id', '=', int(parent_task_id))
+            domain &= Domain('parent_task_id', '=', parent_task_id)
 
         timesheet_count = Timesheet_sudo.search_count(domain)
         # pager

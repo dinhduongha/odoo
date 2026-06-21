@@ -134,7 +134,7 @@ class RtcController(http.Controller):
         channel_member_sudo = member.sudo()
         if rtc_session_id:
             domain = [
-                ("id", "=", int(rtc_session_id)),
+                ("id", "=", rtc_session_id),
                 ("channel_member_id", "=", member.id),
             ]
             channel_member_sudo.channel_id.rtc_session_ids.filtered_domain(domain).write({})  # update write_date

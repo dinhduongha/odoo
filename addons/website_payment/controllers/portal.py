@@ -69,7 +69,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
             tx_sudo.update({
                 'partner_name': details['name'],
                 'partner_email': details['email'],
-                'partner_country_id': int(details['country_id']),
+                'partner_country_id': details['country_id'],
                 'partner_lang': request.env.lang,
             })
         elif not tx_sudo.partner_country_id:
