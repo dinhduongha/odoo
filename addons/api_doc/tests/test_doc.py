@@ -126,7 +126,7 @@ class TestDoc(HttpCaseWithUserDemo):
             'sortable': True,
             'store': True,
             'string': 'ID',
-            'type': 'integer',
+            'type': 'uuid',
         })
         self.assertGreater(set(methods), {'search', 'create_company'})
         self.assertEqual(methods['search'], {
@@ -193,7 +193,7 @@ class TestDoc(HttpCaseWithUserDemo):
         self.assertTrue(etag_demo)
         self.assertRegex(
             res.headers.get('Content-Disposition', ''),
-            r'odoo-doc-index-\w+-%s\.json' % etag_demo.strip('"'),
+            r'odoo-doc-index-[\w-]+-%s\.json' % etag_demo.strip('"'),
             "The document should have a unique name.",
         )
 
