@@ -104,7 +104,7 @@ class IrSequence(models.Model):
             elif seq.implementation != 'standard':
                 seq.number_next_actual = seq.number_next
             else:
-                seq_id = "%03d" % seq.id
+                seq_id = seq.id.hex
                 seq.number_next_actual = _predict_nextval(self, seq_id)
 
     def _set_number_next_actual(self):
@@ -159,11 +159,11 @@ class IrSequence(models.Model):
         seqs = super().create(vals_list)
         for seq in seqs:
             if seq.implementation == 'standard':
-                _create_sequence(self.env.cr, "ir_sequence_%03d" % seq.id, seq.number_increment or 1, seq.number_next or 1)
+                _create_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, seq.number_increment or 1, seq.number_next or 1)
         return seqs
 
     def unlink(self):
-        _drop_sequences(self.env.cr, ["ir_sequence_%03d" % x.id for x in self])
+        _drop_sequences(self.env.cr, ["ir_sequence_%s" % x.id.hex for x in self])
         return super(IrSequence, self).unlink()
 
     def write(self, vals):
@@ -177,21 +177,21 @@ class IrSequence(models.Model):
                     # Implementation has NOT changed.
                     # Only change sequence if really requested.
                     if vals.get('number_next'):
-                        _alter_sequence(self.env.cr, "ir_sequence_%03d" % seq.id, number_next=n)
+                        _alter_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, number_next=n)
                     if seq.number_increment != i:
-                        _alter_sequence(self.env.cr, "ir_sequence_%03d" % seq.id, number_increment=i)
+                        _alter_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, number_increment=i)
                         seq.date_range_ids._alter_sequence(number_increment=i)
                 else:
-                    _drop_sequences(self.env.cr, ["ir_sequence_%03d" % seq.id])
+                    _drop_sequences(self.env.cr, ["ir_sequence_%s" % seq.id.hex])
                     for sub_seq in seq.date_range_ids:
-                        _drop_sequences(self.env.cr, ["ir_sequence_%03d_%03d" % (seq.id, sub_seq.id)])
+                        _drop_sequences(self.env.cr, ["ir_sequence_%s" % sub_seq.id.hex])
             else:
                 if new_implementation in ('no_gap', None):
                     pass
                 else:
-                    _create_sequence(self.env.cr, "ir_sequence_%03d" % seq.id, i, n)
+                    _create_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, i, n)
                     for sub_seq in seq.date_range_ids:
-                        _create_sequence(self.env.cr, "ir_sequence_%03d_%03d" % (seq.id, sub_seq.id), i, n)
+                        _create_sequence(self.env.cr, "ir_sequence_%s" % sub_seq.id.hex, i, n)
         res = super().write(vals)
         # DLE P179
         self.flush_model(vals.keys())
@@ -199,7 +199,7 @@ class IrSequence(models.Model):
 
     def _next_do(self):
         if self.implementation == 'standard':
-            number_next = _select_nextval(self.env.cr, 'ir_sequence_%03d' % self.id)
+            number_next = _select_nextval(self.env.cr, 'ir_sequence_%s' % self.id.hex)
         else:
             number_next = _update_nogap(self, self.number_increment)
         return self.get_next_char(number_next)
@@ -310,7 +310,7 @@ class IrSequenceDate_Range(models.Model):
             if seq.sequence_id.implementation != 'standard':
                 seq.number_next_actual = seq.number_next
             else:
-                seq_id = "%03d_%03d" % (seq.sequence_id.id, seq.id)
+                seq_id = seq.id.hex
                 seq.number_next_actual = _predict_nextval(self, seq_id)
 
     def _set_number_next_actual(self):
@@ -335,14 +335,14 @@ class IrSequenceDate_Range(models.Model):
 
     def _next(self):
         if self.sequence_id.implementation == 'standard':
-            number_next = _select_nextval(self.env.cr, 'ir_sequence_%03d_%03d' % (self.sequence_id.id, self.id))
+            number_next = _select_nextval(self.env.cr, 'ir_sequence_%s' % self.id.hex)
         else:
             number_next = _update_nogap(self, self.sequence_id.number_increment)
         return self.sequence_id.get_next_char(number_next)
 
     def _alter_sequence(self, number_increment=None, number_next=None):
         for seq in self:
-            _alter_sequence(self.env.cr, "ir_sequence_%03d_%03d" % (seq.sequence_id.id, seq.id), number_increment=number_increment, number_next=number_next)
+            _alter_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, number_increment=number_increment, number_next=number_next)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -352,11 +352,11 @@ class IrSequenceDate_Range(models.Model):
         for seq in seqs:
             main_seq = seq.sequence_id
             if main_seq.implementation == 'standard':
-                _create_sequence(self.env.cr, "ir_sequence_%03d_%03d" % (main_seq.id, seq.id), main_seq.number_increment, seq.number_next_actual or 1)
+                _create_sequence(self.env.cr, "ir_sequence_%s" % seq.id.hex, main_seq.number_increment, seq.number_next_actual or 1)
         return seqs
 
     def unlink(self):
-        _drop_sequences(self.env.cr, ["ir_sequence_%03d_%03d" % (x.sequence_id.id, x.id) for x in self])
+        _drop_sequences(self.env.cr, ["ir_sequence_%s" % x.id.hex for x in self])
         return super().unlink()
 
     def write(self, vals):
