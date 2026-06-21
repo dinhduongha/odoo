@@ -4,6 +4,7 @@
 from collections import defaultdict
 from lxml import etree
 import logging
+import uuid
 
 from odoo import exceptions, Command
 from odoo.tests import Form, TransactionCase, tagged
@@ -41,14 +42,14 @@ class TestResConfig(TransactionCase):
         }
 
     def test_00_get_option_path(self):
-        """ The get_option_path() method should return a tuple containing a string and an integer """
+        """ The get_option_path() method should return a tuple containing a string and a record id """
         res = self.ResConfig.get_option_path(self.menu_xml_id)
 
         # Check types
         self.assertIsInstance(res, tuple)
         self.assertEqual(len(res), 2, "The result should contain 2 elements")
         self.assertIsInstance(res[0], str)
-        self.assertIsInstance(res[1], int)
+        self.assertIsInstance(res[1], uuid.UUID)
 
         # Check returned values
         self.assertEqual(res[0], self.expected_path)

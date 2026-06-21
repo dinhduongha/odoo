@@ -113,7 +113,7 @@ def check_identity(fn):
                 fn.__name__,
                 args,
                 kwargs
-            ])
+            ], default=str)  # ids are uuids under uuid PKs
         })
         return {
             'type': 'ir.actions.act_window',

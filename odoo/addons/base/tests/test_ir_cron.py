@@ -100,7 +100,7 @@ class TestIrCron(TransactionCase, CronMixinCase):
     def test_cron_direct_trigger(self):
         self.cron.code = textwrap.dedent(f"""\
             model.search(
-                [("id", "=", {self.partner.id})]
+                [("id", "=", "{self.partner.id}")]
             ).write(
                 {{"name": "You have been CRONWNED"}}
             )

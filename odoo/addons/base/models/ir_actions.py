@@ -7,6 +7,7 @@ import json
 import logging
 import pytz
 import re
+import uuid
 from collections import defaultdict
 from functools import reduce
 from operator import getitem
@@ -21,8 +22,18 @@ from odoo.tools import _, frozendict, get_lang
 from odoo.tools.float_utils import float_compare
 from odoo.tools.misc import get_diff, unquote
 from odoo.tools.safe_eval import safe_eval, test_python_expr
+from odoo.tools.uuid_utils import is_uuid
 
 _logger = logging.getLogger(__name__)
+
+
+def _parse_record_id(value):
+    """Parse a stored relation id (kept as text in ir.actions.server.value).
+    Record ids are uuids under uuid PKs, but may still be integers for models
+    using integer PKs, so handle both."""
+    if isinstance(value, str) and is_uuid(value):
+        return uuid.UUID(value)
+    return int(value)
 _server_action_logger = _logger.getChild("server_action_safe_eval")
 
 
@@ -1291,20 +1302,23 @@ class IrActionsServer(models.Model):
             elif action.update_field_id.ttype in ['one2many', 'many2many']:
                 operation = action.update_m2m_operation
                 if operation == 'add':
-                    expr = [Command.link(int(action.value))]
+                    expr = [Command.link(_parse_record_id(action.value))]
                 elif operation == 'remove':
-                    expr = [Command.unlink(int(action.value))]
+                    expr = [Command.unlink(_parse_record_id(action.value))]
                 elif operation == 'set':
-                    expr = [Command.set([int(action.value)])]
+                    expr = [Command.set([_parse_record_id(action.value)])]
                 elif operation == 'clear':
                     expr = [Command.clear()]
             elif action.update_field_id.ttype == 'boolean':
                 expr = action.update_boolean_value == 'true'
             elif action.update_field_id.ttype in ['many2one', 'integer']:
                 try:
-                    expr = int(action.value)
-                    if expr == 0 and action.update_field_id.ttype == 'many2one':
-                        expr = False
+                    if action.update_field_id.ttype == 'many2one':
+                        expr = _parse_record_id(action.value)
+                        if expr == 0:
+                            expr = False
+                    else:
+                        expr = int(action.value)
                 except Exception:
                     pass
             elif action.update_field_id.ttype == 'float':

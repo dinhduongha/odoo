@@ -97,8 +97,8 @@ class TestServerActions(TestServerActionsBase):
                 'ERROR:odoo.addons.base.models.ir_actions.server_action_safe_eval:This is a test error log',
 """ERROR:odoo.addons.base.models.ir_actions.server_action_safe_eval:This is a test exception log
 Traceback (most recent call last):
-  File "ir.actions.server(%d,)", line 6, in <module>
-ZeroDivisionError: division by zero""" % self.test_server_action.id
+  File "%s", line 6, in <module>
+ZeroDivisionError: division by zero""" % str(self.test_server_action)
             ])
 
     def test_00_action(self):
@@ -596,7 +596,7 @@ ZeroDivisionError: division by zero""" % self.test_server_action.id
                 'country_id': self.test_partner.country_id.id,
                 'id': self.test_partner.id,
                 'name': self.test_partner.name,
-            }))
+            }, sort_keys=True, default=str))
             num_requests += 1
             return response
 

@@ -278,6 +278,8 @@ class TestHasGroup(TransactionCase):
         group_user = self.env.ref('base.group_user')
         group_portal = self.env.ref('base.group_portal')
         group_no_one = self.env.ref('base.group_no_one')
+        # this build adds `group_multi_company implied_by group_user`
+        group_multi_company = self.env.ref('base.group_multi_company')
 
         group_A = G.create({"name": "A"})
         group_AA = G.create({"name": "AA", "implied_ids": [Command.set([group_A.id])]})
@@ -289,7 +291,7 @@ class TestHasGroup(TransactionCase):
         # By contrast, for a portal user we want implied groups not to be added
         # if and only if it would not give group_user (or group_public) privileges
         user_a = U.create({"name": "a", "login": "a", "group_ids": [Command.set([group_AA.id, group_user.id])]})
-        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_user + group_no_one))
+        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_user + group_multi_company + group_no_one))
         self.assertEqual(user_a.group_ids, (group_AA + group_user))
 
         user_b = U.create({"name": "b", "login": "b", "group_ids": [Command.set([group_portal.id, group_AA.id])]})

@@ -11,6 +11,7 @@ import io
 
 from odoo.exceptions import UserError
 from odoo.tools import sql
+from odoo.tools.uuid_utils import uuid7
 from odoo.tools.translate import _push, quote, unquote, xml_translate, html_translate, TranslationImporter, TranslationModuleReader, TranslationReader
 from odoo.tests.common import TransactionCase, BaseCase, new_test_user, tagged
 
@@ -1905,7 +1906,7 @@ class TestHTMLTranslation(TransactionCase):
 <h1>My First Heading</h1>
 <p>My first paragraph.</p>
 '''
-        company = self.env['res.company'].browse(9999)
+        company = self.env['res.company'].browse(uuid7())
         company.report_footer = html
         self.assertHTMLEqual(company.report_footer, html)
         # flushing on non-existing records does not break for scalar fields; the

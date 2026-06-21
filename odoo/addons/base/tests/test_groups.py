@@ -727,7 +727,9 @@ class TestGroupsOdoo(common.TransactionCase):
             ('base.group_system', 'base.group_user & base.group_sanitize_override & base.group_multi_currency', False),
             ('base.group_system,base.group_multi_currency', 'base.group_user & base.group_sanitize_override & base.group_multi_currency', True),
             ('base.group_user,base.group_sanitize_override,base.group_multi_currency', 'base.group_user & base.group_sanitize_override & base.group_multi_currency', True),
-            ('base.group_user', 'base.group_erp_manager | base.group_multi_company', False),
+            # this build adds `group_multi_company implied_by group_user`, so a
+            # plain internal user already matches `... | group_multi_company`
+            ('base.group_user', 'base.group_erp_manager | base.group_multi_company', True),
             ('base.group_user,base.group_erp_manager', 'base.group_erp_manager | base.group_multi_company', True),
         ]
         for user_groups, groups, result in tests:

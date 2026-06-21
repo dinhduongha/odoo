@@ -166,7 +166,10 @@ class ResCompany(models.Model):
     @api.depends('root_id')
     def _compute_color(self):
         for company in self:
-            company.color = company.root_id.partner_id.color or (company.root_id._origin.id % 12)
+            root_id = company.root_id._origin.id
+            # ids are uuids under uuid PKs; derive a stable color from the int form
+            color_seed = root_id.int if isinstance(root_id, uuid.UUID) else (root_id or 0)
+            company.color = company.root_id.partner_id.color or (color_seed % 12)
 
     def _inverse_color(self):
         for company in self:

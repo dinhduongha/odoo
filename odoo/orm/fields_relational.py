@@ -33,6 +33,27 @@ if typing.TYPE_CHECKING:
 _schema = logging.getLogger('odoo.schema')
 _logger = logging.getLogger('odoo.fields_relational')
 
+
+class _ReversibleUuidMap(Reversible):
+    """ Lazily coerce the ids of a Reversible (e.g. PrefetchMany2one /
+    PrefetchX2many) to uuids while preserving its reversibility.
+
+    Materializing the underlying Reversible into a plain list would lose the
+    prefetch-aware ``__reversed__`` semantics (reversing the *parent* prefetch
+    order while keeping each parent's children in order), so we wrap it instead.
+    """
+    __slots__ = ('_reversible',)
+
+    def __init__(self, reversible: Reversible):
+        self._reversible = reversible
+
+    def __iter__(self):
+        return (to_uuid(x) for x in self._reversible)
+
+    def __reversed__(self):
+        return (to_uuid(x) for x in reversed(self._reversible))
+
+
 class _Relational(Field[BaseModel]):
     """ Abstract class for relational fields. """
     relational: typing.Literal[True] = True
@@ -388,14 +409,12 @@ class Many2one(_Relational):
     def convert_to_record(self, value, record):
         # use registry to avoid creating a recordset for the model
         ids = () if value is None else (value,)
-        #prefetch_ids = PrefetchMany2one(record, self)
-        prefetch_ids = [to_uuid(x) for x in PrefetchMany2one(record, self)]
+        prefetch_ids = _ReversibleUuidMap(PrefetchMany2one(record, self))
         return record.pool[self.comodel_name](record.env, ids, prefetch_ids)
 
     def convert_to_record_multi(self, values, records):
         # return the ids as a recordset without duplicates
-        #prefetch_ids = PrefetchMany2one(records, self)
-        prefetch_ids = [to_uuid(x) for x in PrefetchMany2one(records, self)]
+        prefetch_ids = _ReversibleUuidMap(PrefetchMany2one(records, self))
         ids = tuple(unique(id_ for id_ in values if id_ is not None))
         return records.pool[self.comodel_name](records.env, ids, prefetch_ids)
 
@@ -695,8 +714,7 @@ class _RelationalMulti(_Relational):
 
     def convert_to_record(self, value, record):
         # use registry to avoid creating a recordset for the model
-        #prefetch_ids = PrefetchX2many(record, self)
-        prefetch_ids = [to_uuid(x) for x in PrefetchX2many(record, self)]
+        prefetch_ids = _ReversibleUuidMap(PrefetchX2many(record, self))
         if isinstance(value, (list, tuple)):
             value = tuple(to_uuid(v) for v in value)
         else:
@@ -727,7 +745,8 @@ class _RelationalMulti(_Relational):
         # Coerce ids/prefetch to uuid: cached x2many ids may be plain strings,
         # but field caches are keyed by uuid.UUID. Mismatched key types cause a
         # spurious MissingError when later fetching a field on these records.
-        prefetch_ids = [to_uuid(x) for x in PrefetchX2many(records, self)]
+        # Wrap (instead of materializing) to preserve reversibility.
+        prefetch_ids = _ReversibleUuidMap(PrefetchX2many(records, self))
         Comodel = records.pool[self.comodel_name]
         ids = tuple(unique(to_uuid(id_) for ids in values for id_ in ids))
         corecords = Comodel(records.env, ids, prefetch_ids)

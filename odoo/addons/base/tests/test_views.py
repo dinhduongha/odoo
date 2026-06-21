@@ -17,6 +17,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import common, tagged
 from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
 from odoo.tools import mute_logger, view_validation, safe_eval
+from odoo.tools.uuid_utils import uuid7
 from odoo.tools.cache import get_cache_key_counter
 from odoo.addons.base.models import ir_ui_view
 
@@ -3306,7 +3307,11 @@ class TestViews(ViewCase):
                 <button type="action" name="%s"/>
             </form>
         """
-        self.assertInvalid(arch % 0, 'Action 0 (id: 0) does not exist for button of type action.')
+        missing_action_id = uuid7()
+        self.assertInvalid(
+            arch % missing_action_id,
+            'Action %s (id: %s) does not exist for button of type action.' % (missing_action_id, missing_action_id),
+        )
         self.assertInvalid(arch % 'base.random_xmlid', 'Invalid xmlid base.random_xmlid for button of type action')
         self.assertInvalid('<form><button special="dummy"/></form>', "Invalid special 'dummy' in button")
         self.assertInvalid(arch % 'base.partner_root', "base.partner_root is of type res.partner, expected a subclass of ir.actions.actions")
