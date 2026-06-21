@@ -113,16 +113,16 @@ class ResCompany(models.Model):
 
     @api.model
     def create_missing_warehouse(self):
-        """ This hook is used to add a warehouse on the first company of the database
+        """ Add a warehouse to every company that does not have one yet (multi-company).
         """
-        existing_warehouses = self.env['stock.warehouse'].search([])
-        if len(existing_warehouses) == 0:
-            first_company = self.env['res.company'].search([], limit=1)
+        companies_with_warehouse = self.env['stock.warehouse'].search([]).company_id
+        companies = self.env['res.company'].search([]) - companies_with_warehouse
+        for company in companies:
             self.env['stock.warehouse'].create({
-                'name': first_company.name,
-                'code': first_company.name[:5],
-                'company_id': first_company.id,
-                'partner_id': first_company.partner_id.id,
+                'name': company.name,
+                'code': company.name[:5],
+                'company_id': company.id,
+                'partner_id': company.partner_id.id,
             })
 
     @api.model
