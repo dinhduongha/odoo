@@ -430,7 +430,7 @@ class TestLeadAssign(TestLeadAssignCommon):
             'crm_team_id': test_sales_team.id,
             'assignment_max': 150,
             'assignment_domain': False,
-            'assignment_domain_preferred': "[('tag_ids', 'in', %s)]" % preferred_tag.ids,
+            'assignment_domain_preferred': "[('tag_ids', 'in', %s)]" % [str(tag_id) for tag_id in preferred_tag.ids],
         })
         test_sales_team_m2 = self.env['crm.team.member'].create({
             'user_id': self.user_sales_leads.id,
