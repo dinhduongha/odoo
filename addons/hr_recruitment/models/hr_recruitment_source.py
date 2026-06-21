@@ -30,10 +30,12 @@ class HrRecruitmentSource(models.Model):
         for source in self.filtered(lambda s: not s.alias_id):
             vals = {
                 'alias_defaults': {
-                    'job_id': source.job_id.id,
-                    'campaign_id': campaign.id,
-                    'medium_id': medium.id,
-                    'source_id': source.source_id.id,
+                    # str() the uuid ids: a uuid in the stored dict serialises as its
+                    # repr (UUID('...')) which ast.literal_eval cannot read back.
+                    'job_id': str(source.job_id.id) if source.job_id else False,
+                    'campaign_id': str(campaign.id) if campaign else False,
+                    'medium_id': str(medium.id) if medium else False,
+                    'source_id': str(source.source_id.id) if source.source_id else False,
                 },
                 'alias_domain_id': source.job_id.company_id.alias_domain_id.id or self.env.company.alias_domain_id.id,
                 'alias_model_id': self.env['ir.model']._get_id('hr.applicant'),

@@ -276,11 +276,14 @@ class HrJob(models.Model):
         values['alias_model_id'] = self.env['ir.model']._get('hr.applicant').id
         if self.id:
             values['alias_defaults'] = defaults = ast.literal_eval(self.alias_defaults or "{}")
+            # store ids as strings: a uuid in the dict would be serialised as its repr
+            # (UUID('...')), which ast.literal_eval cannot read back.
+            company = self.department_id.company_id or self.company_id
             defaults.update({
-                'job_id': self.id,
-                'department_id': self.department_id.id,
-                'company_id': self.department_id.company_id.id or self.company_id.id,
-                'user_id': self.user_id.id,
+                'job_id': str(self.id) if self.id else False,
+                'department_id': str(self.department_id.id) if self.department_id else False,
+                'company_id': str(company.id) if company else False,
+                'user_id': str(self.user_id.id) if self.user_id else False,
             })
         return values
 

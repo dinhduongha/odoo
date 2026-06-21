@@ -11,6 +11,18 @@ from odoo.exceptions import ValidationError, UserError
 from odoo.fields import Domain
 from odoo.tools import is_html_empty, remove_accents
 
+# uuid PKs: ids in a stored python-literal dict (e.g. alias_defaults) are serialised as
+# their repr "UUID('019ee...')", which ast.literal_eval cannot read. Normalise to a quoted
+# string so the literal becomes parseable again.
+_UUID_REPR_RE = re.compile(r"UUID\((('[0-9a-fA-F-]+')|(\"[0-9a-fA-F-]+\"))\)")
+
+
+def _normalize_uuid_repr(value):
+    if value and isinstance(value, str) and 'UUID(' in value:
+        return _UUID_REPR_RE.sub(r"\1", value)
+    return value or "{}"
+
+
 # see rfc5322 section 3.2.3
 atext = r"[a-zA-Z0-9!#$%&'*+\-/=?^_`{|}~]"
 dot_atom_text = re.compile(r"^%s+(\.%s+)*$" % (atext, atext))
@@ -198,7 +210,10 @@ class MailAlias(models.Model):
     def _check_alias_defaults(self):
         for alias in self:
             try:
-                dict(ast.literal_eval(alias.alias_defaults))
+                # uuid PKs: alias_defaults may contain uuid ids serialised as their repr
+                # (UUID('...')), which ast.literal_eval cannot parse. Normalise to quoted
+                # strings before validating.
+                dict(ast.literal_eval(_normalize_uuid_repr(alias.alias_defaults)))
             except Exception as e:
                 raise ValidationError(
                     _('Invalid expression, it must be a literal python dictionary definition e.g. "{\'field\': \'value\'}"')
