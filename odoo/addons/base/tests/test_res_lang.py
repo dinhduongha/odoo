@@ -147,7 +147,7 @@ class test_res_lang(TransactionCase):
         # Now, special case if one day a lang receive a short code as default
         # `code`, it's not the case as of today but there is plan to make it
         # happen for `es_419`, the code is already ready for it.
-        self.env.cr.execute(f""" UPDATE res_lang SET code = 'es' where id = {es_419.id}""")
+        self.env.cr.execute("UPDATE res_lang SET code = 'es' where id = %s", (es_419.id,))
         self.env.invalidate_all()
         self.assertEqual(es_419.code, 'es')
         (es_419 + es_ES).write({'active': False})

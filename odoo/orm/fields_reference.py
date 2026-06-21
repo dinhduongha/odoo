@@ -100,16 +100,6 @@ class Many2oneReference(Field[uuid.UUID]):
             except Exception:
                 value_id = None
 
-        if value_id is None and record and self.model_field:
-            # fetch real value from DB
-            cr = record.env.cr
-            cr.execute(
-                "SELECT res_id FROM ir_model_data WHERE id=%s",
-                (record.id,)
-            )
-            row = cr.fetchone()
-            value_id = row[0] if row else None
-
         # empty relational value reads as False (ORM convention), not None
         return value_id or False
 

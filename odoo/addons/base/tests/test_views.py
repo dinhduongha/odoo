@@ -3970,10 +3970,10 @@ class TestViewTranslations(common.TransactionCase):
         })
 
         with self.assertRaises(ValidationError):
-            view.write({'group_ids': [1]})
+            view.write({'group_ids': [self.env.ref('base.group_system').id]})
 
         view.write({'mode': 'primary'})
-        view.write({'group_ids': [1]})
+        view.write({'group_ids': [self.env.ref('base.group_system').id]})
 
         with self.assertRaises(ValidationError):
             view.write({'mode': 'extension'})

@@ -8,8 +8,17 @@ Auto mode. Code reviewed externally by Antigravity + codex.
 Full all-module demo install: **227/227 modules, Registry loaded, EXIT 0, ZERO demo
 failures** (every module's demo data loads). Runtime-verified: login + web client (/odoo,
 /web = 200) + 4 companies switchable + demo data readable via web call_kw.
-- test_orm suite (2026-06-21): PRODUCT (install/demo/runtime) green, but the TEST SUITE
-  is not uuid-adapted. Run on uuid-19-swap:
+- test_orm suite (2026-06-21): ✅ GREEN — 0 fail / 0 err of 601 tests (585 + 16 timeit).
+  53 failures → 0 across 21 commits. Real product bugs fixed: Uuid.__get__ returned the
+  record's PK for every value field; Many2one.convert_to_cache dropped NewId; _inherits
+  delegate new-record virtualization was commented out; full Properties m2o/m2m jsonb
+  round-trip; jsonpath/read_group uuid casts; safe_eval/set_expression uuid; Command
+  placeholders; x2many/Many2one convert_to_write native UUID.
+  Note: this build adds `group_multi_company implied_by group_user` (multi-company forcing,
+  not upstream) → `erp & multi_company` collapses to erp_manager.
+- uuid-19 fast-forwarded to uuid-19-swap (dfc2d74b7) + pushed to fork
+  (origin = github.com/dinhduongha/odoo). Both branches kept.
+  - PRIOR run (pre-fix) for reference:
   - test_orm module: ~53 unit-test failures (test_fields 16, test_onchange 12, test_search 9,
     test_one 9, …) before an HttpCase/tour test hung headless (no browser). Causes:
     29 AssertionError, 17 TypeError, 6 `uuid = integer`.
