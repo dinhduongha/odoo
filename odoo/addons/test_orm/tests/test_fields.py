@@ -2628,12 +2628,13 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
             {'name': "category1"}, {'name': "category2"},
         ])
 
-        # assumption: category12 and category21 are in different order, but are
-        # in the same order when put in a set()
+        # category12 and category21 are in different order, but hold the same set
+        # of records (with uuid ids, set() iteration order is not insertion-stable,
+        # so compare as sets rather than list(set(...)))
         category12 = category1 + category2
         category21 = category2 + category1
         self.assertNotEqual(category12.ids, category21.ids)
-        self.assertEqual(list(set(category12.ids)), list(set(category21.ids)))
+        self.assertEqual(set(category12.ids), set(category21.ids))
 
         # make sure discussion1.categories is in cache; the write() below should
         # update the cache of discussion1.categories by appending category12.ids
