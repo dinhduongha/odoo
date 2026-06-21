@@ -165,12 +165,14 @@ insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-00
 insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('main_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000002');
 -- select setval('res_partner_id_seq', 1);
 
--- Secondary clean company = "YourCompany" (...0001) = base.your_company. Always present
--- as the 2nd company (force multi-company baseline); holds no demo data (pristine
--- production company alongside the demo one).
-insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'YourCompany', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+-- Secondary clean company = "Production Company" (...0001) = base.your_company. Always
+-- present as the 2nd company (force multi-company baseline); holds no demo data (pristine
+-- production company alongside the demo one). NB: the name must NOT be "YourCompany" — the
+-- base demo renames the *main* (demo) company to "YourCompany", and res_company has a
+-- unique-name constraint, so a clashing name here breaks demo install.
+insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'Production Company', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
 insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('your_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000001');
-insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'YourCompany', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', 'Production Company', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
 insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('your_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000001');
 
 insert into res_users (id, login, password, active, partner_id, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000001', '__system__', NULL, false, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', now() at time zone 'UTC');
