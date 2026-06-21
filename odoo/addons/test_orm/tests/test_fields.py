@@ -1,6 +1,7 @@
 import base64
 import io
 import threading
+import uuid
 from collections import OrderedDict
 from datetime import date, datetime
 from unittest.mock import patch
@@ -1563,7 +1564,7 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
         recs = record.create({}) + record + record
         self.env.invalidate_all()
         for rec in recs.with_user(user0):
-            self.assertIsInstance(rec.tag_id.id, int)
+            self.assertIsInstance(rec.tag_id.id, uuid.UUID)
 
         # unlink value of a many2one (tag2), and check again
         tag2.unlink()

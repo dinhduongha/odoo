@@ -9,6 +9,24 @@ if typing.TYPE_CHECKING:
     from collections.abc import Collection, Iterable
 
 
+def _literal_eval_uuid(expr: str):
+    """ Like ``ast.literal_eval`` but also accepts ``UUID('...')`` calls, which
+    appear in set-expression keys when leaf ids are ``uuid.UUID`` (their repr is
+    a constructor call that plain ``literal_eval`` rejects). The input is an
+    internally generated key, not user input.
+    """
+    def _convert(node):
+        if isinstance(node, (ast.Tuple, ast.List)):
+            seq = [_convert(elt) for elt in node.elts]
+            return tuple(seq) if isinstance(node, ast.Tuple) else seq
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) \
+                and node.func.id == 'UUID' and len(node.args) == 1:
+            return uuid.UUID(_convert(node.args[0]))
+        return ast.literal_eval(node)
+
+    return _convert(ast.parse(expr, mode='eval').body)
+
+
 class SetDefinitions:
     """ A collection of set definitions, where each set is defined by an id, a
     name, its supersets, and the sets that are disjoint with it.  This object
@@ -126,7 +144,9 @@ class SetDefinitions:
     def from_key(self, key: str) -> SetExpression:
         """ Return the set expression corresponding to the given key. """
         # union_tuple = tuple(tuple(tuple(leaf_id, negative), ...), ...)
-        union_tuple = ast.literal_eval(key)
+        # leaf ids may be uuid.UUID, which ast.literal_eval cannot parse from
+        # their repr (a UUID('...') call), so use a uuid-aware evaluator.
+        union_tuple = _literal_eval_uuid(key)
         return Union([
             Inter([
                 ~leaf if negative else leaf
