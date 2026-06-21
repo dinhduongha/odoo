@@ -88,8 +88,8 @@ class IrEmbeddedActions(models.Model):
                 if is_valid_method and (not action_groups or (action_groups & self.env.user.all_group_ids)):
                     domain_model = literal_eval(record.domain or '[]')
                     record.is_visible = (
-                        record.parent_res_id in (False, self.env.context.get('active_id', False))
-                        and record.user_id.id in (False, self.env.uid)
+                        (not record.parent_res_id or record.parent_res_id == self.env.context.get('active_id', False))
+                        and (not record.user_id or record.user_id.id == self.env.uid)
                         and active_model_record.filtered_domain(domain_model)
                     )
                 else:

@@ -9,6 +9,7 @@ import requests
 import subprocess
 import tempfile
 import typing
+import uuid
 import unittest
 from ast import literal_eval
 from collections import OrderedDict
@@ -668,7 +669,7 @@ class IrActionsReport(models.Model):
             - ir.actions.report report_name
         """
         ReportSudo = self.env['ir.actions.report'].sudo()
-        if isinstance(report_ref, int):
+        if isinstance(report_ref, (int, uuid.UUID)):
             return ReportSudo.browse(report_ref)
         if isinstance(report_ref, models.Model):
             if report_ref._name != self._name:
@@ -1019,7 +1020,7 @@ class IrActionsReport(models.Model):
     def _pre_render_qweb_pdf(self, report_ref, res_ids=None, data=None):
         if not data:
             data = {}
-        if isinstance(res_ids, int):
+        if isinstance(res_ids, (int, uuid.UUID)):
             res_ids = [res_ids]
         data.setdefault('report_type', 'pdf')
         # In case of test environment without enough workers to perform calls to wkhtmltopdf,
@@ -1033,7 +1034,7 @@ class IrActionsReport(models.Model):
     def _render_qweb_pdf(self, report_ref, res_ids=None, data=None):
         if not data:
             data = {}
-        if isinstance(res_ids, int):
+        if isinstance(res_ids, (int, uuid.UUID)):
             res_ids = [res_ids]
         data.setdefault('report_type', 'pdf')
 
@@ -1162,7 +1163,7 @@ class IrActionsReport(models.Model):
         if docids:
             if isinstance(docids, models.Model):
                 active_ids = docids.ids
-            elif isinstance(docids, int):
+            elif isinstance(docids, (int, uuid.UUID)):
                 active_ids = [docids]
             elif isinstance(docids, list):
                 active_ids = docids

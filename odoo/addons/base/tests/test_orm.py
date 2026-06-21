@@ -3,6 +3,7 @@
 from odoo.exceptions import AccessError, LockError
 from odoo.tests.common import TransactionCase, tagged
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import uuid7
 from odoo import Command
 
 
@@ -148,8 +149,8 @@ class TestORM(TransactionCase):
         recs = partner.new({})
         self.assertTrue(recs.exists())
 
-        # check that there is no record with id 0
-        recs = partner.browse([0])
+        # check that a non-existing record does not exist
+        recs = partner.browse([uuid7()])
         self.assertFalse(recs.exists())
 
     def test_lock_for_update(self):
