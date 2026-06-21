@@ -246,7 +246,7 @@ class WebsiteVisitor(models.Model):
                     %(query)s, %(url)s AS url, %(page_id)s AS page_id
                 ), track AS (
                     INSERT INTO website_track (visitor_id, url, page_id, visit_datetime)
-                    SELECT id, url, page_id::integer, now() at time zone 'UTC' FROM visitor
+                    SELECT id, url, page_id::uuid, now() at time zone 'UTC' FROM visitor
                 )
                 SELECT id, upsert from visitor;
                 """,
