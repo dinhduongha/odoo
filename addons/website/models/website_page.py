@@ -128,7 +128,7 @@ class WebsitePage(models.Model):
         """ Clone a page, given its identifier
             :param page_id : website.page identifier
         """
-        page = self.browse(int(page_id))
+        page = self.browse(to_uuid(page_id))
         copy_param = dict(name=page_name or page.name, website_id=self.env['website'].get_current_website().id)
         if page_name:
             url = '/' + self.env['ir.http']._slugify(page_name, max_length=1024, path=True)

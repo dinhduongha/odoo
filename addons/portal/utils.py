@@ -19,7 +19,7 @@ def validate_thread_with_token(thread, token):
 
 def get_portal_partner(thread, _hash, pid, token):
     if validate_thread_with_hash_pid(thread, _hash, pid):
-        return thread.env["res.partner"].sudo().browse(int(pid))
+        return thread.env["res.partner"].sudo().browse(to_uuid(pid))
     if validate_thread_with_token(thread, token):
         if partner := thread._mail_get_partners()[thread.id][:1]:
             return partner

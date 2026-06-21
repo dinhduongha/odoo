@@ -4,6 +4,7 @@ from ast import literal_eval
 from collections import defaultdict
 from lxml import html
 
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo import SUPERUSER_ID, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
@@ -88,10 +89,11 @@ class IrModel(models.Model):
                         definition_record_field = property_field['definition_record_field']
                         relation_field = fields_get[definition_record]
                         definition_model = self.env[relation_field['relation']]
-                        if not property_origins[definition_record].isdigit():
+                        origin_id = str(property_origins[definition_record])
+                        if not (origin_id.isdigit() or is_uuid(origin_id)):
                             # Do not fail on malformed forms.
                             continue
-                        definition_record = definition_model.browse(int(property_origins[definition_record]))
+                        definition_record = definition_model.browse(to_uuid(origin_id))
                         properties_definitions = definition_record[definition_record_field]
                         for property_definition in properties_definitions:
                             if ((
