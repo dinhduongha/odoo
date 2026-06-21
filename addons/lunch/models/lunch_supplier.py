@@ -149,7 +149,7 @@ class LunchSupplier(models.Model):
             cron.code = dedent(f"""\
                 # This cron is dynamically controlled by {self._description}.
                 # Do NOT modify this cron, modify the related record instead.
-                env['{self._name}'].browse([{supplier.id}])._send_auto_email()""")
+                env['{self._name}'].browse(['{supplier.id}'])._send_auto_email()""")
 
     @api.model_create_multi
     def create(self, vals_list):

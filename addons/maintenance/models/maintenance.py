@@ -453,5 +453,5 @@ class MaintenanceTeam(models.Model):
         values['alias_model_id'] = self.env['ir.model']._get('maintenance.request').id
         if self.id:
             values['alias_defaults'] = defaults = ast.literal_eval(self.alias_defaults or "{}")
-            defaults['maintenance_team_id'] = self.id
+            defaults['maintenance_team_id'] = str(self.id)
         return values

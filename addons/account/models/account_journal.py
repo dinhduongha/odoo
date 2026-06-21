@@ -837,7 +837,7 @@ class AccountJournal(models.Model):
                 'purchase': 'in_invoice',
                 'sale': 'out_invoice',
             }.get(self.type, 'entry')
-            defaults['journal_id'] = self.id
+            defaults['journal_id'] = str(self.id)
         return values
 
     @api.model

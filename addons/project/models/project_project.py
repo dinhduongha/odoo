@@ -758,7 +758,7 @@ class ProjectProject(models.Model):
         values['alias_model_id'] = self.env['ir.model']._get('project.task').id
         if self.id:
             values['alias_defaults'] = defaults = ast.literal_eval(self.alias_defaults or "{}")
-            defaults['project_id'] = self.id
+            defaults['project_id'] = str(self.id)
         return values
 
     @api.constrains('stage_id')
