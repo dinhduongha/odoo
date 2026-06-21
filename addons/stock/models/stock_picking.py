@@ -2,6 +2,7 @@
 
 import json
 import math
+import uuid
 import pytz
 from ast import literal_eval
 from datetime import date, timedelta
@@ -1102,7 +1103,7 @@ class StockPicking(models.Model):
         self.move_ids.location_id = self.location_id
         for move in self.move_ids.filtered(lambda m: m.move_orig_ids):
             for ml in move.move_line_ids:
-                parent_path = [int(loc_id) for loc_id in ml.location_id.parent_path.split('/')[:-1]]
+                parent_path = [uuid.UUID(loc_id) for loc_id in ml.location_id.parent_path.split('/')[:-1]]
                 if self.location_id.id not in parent_path:
                     return {'warning': {
                             'title': _("Warning: change source location"),

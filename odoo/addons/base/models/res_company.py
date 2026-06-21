@@ -2,6 +2,7 @@
 
 import base64
 import logging
+import uuid
 
 from odoo import api, fields, models, modules, tools
 from odoo.api import SUPERUSER_ID
@@ -115,7 +116,7 @@ class ResCompany(models.Model):
     @api.depends('parent_path')
     def _compute_parent_ids(self):
         for company in self.with_context(active_test=False):
-            company.parent_ids = self.browse(int(id) for id in company.parent_path.split('/') if id) if company.parent_path else company
+            company.parent_ids = self.browse(uuid.UUID(id) for id in company.parent_path.split('/') if id) if company.parent_path else company
             company.root_id = company.parent_ids[0]
 
     @api.depends(lambda self: [f'partner_id.{fname}' for fname in self._get_company_address_field_names()])

@@ -1,5 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import uuid
+
 from odoo import api, fields, models
 from odoo.fields import Domain
 from odoo.tools.sql import SQL
@@ -96,7 +98,7 @@ class ProductPublicCategory(models.Model):
     def _compute_parents_and_self(self):
         for category in self:
             if category.parent_path:
-                category.parents_and_self = self.env['product.public.category'].browse([int(p) for p in category.parent_path.split('/')[:-1]])
+                category.parents_and_self = self.env['product.public.category'].browse([uuid.UUID(p) for p in category.parent_path.split('/')[:-1]])
             else:
                 category.parents_and_self = category
 

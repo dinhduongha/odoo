@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import calendar
+import uuid
 
 from collections import defaultdict, OrderedDict
 from datetime import timedelta
@@ -165,7 +166,7 @@ class StockLocation(models.Model):
         for loc in self:
             if not loc.parent_path:
                 continue
-            path = set(int(loc_id) for loc_id in loc.parent_path.split('/')[:-1])
+            path = set(uuid.UUID(loc_id) for loc_id in loc.parent_path.split('/')[:-1])
             for view_location_id in view_by_wh:
                 if view_location_id in path:
                     loc.warehouse_id = view_by_wh[view_location_id]

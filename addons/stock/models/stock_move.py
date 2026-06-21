@@ -1,5 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import itertools
+import uuid
 from ast import literal_eval
 from collections import defaultdict
 from datetime import timedelta
@@ -245,7 +246,7 @@ class StockMove(models.Model):
 
     def _set_location_dest_id(self):
         for ml in self.move_line_ids:
-            parent_path = [int(loc_id) for loc_id in ml.location_dest_id.parent_path.split('/')[:-1]]
+            parent_path = [uuid.UUID(loc_id) for loc_id in ml.location_dest_id.parent_path.split('/')[:-1]]
             if ml.move_id.location_dest_id.id in parent_path:
                 continue
             loc_dest = ml.move_id.location_dest_id._get_putaway_strategy(ml.product_id, ml.quantity_product_uom)
@@ -810,7 +811,7 @@ Please change the quantity done or the rounding precision in your settings.""",
             move_to_recompute_state._recompute_state()
         if move_to_check_location:
             for ml in move_to_check_location.move_line_ids:
-                parent_path = [int(loc_id) for loc_id in ml.location_id.parent_path.split('/')[:-1]]
+                parent_path = [uuid.UUID(loc_id) for loc_id in ml.location_id.parent_path.split('/')[:-1]]
                 if move_to_check_location.location_id.id not in parent_path:
                     receipt_moves_to_reassign |= move_to_check_location
                     move_to_check_location.procure_method = 'make_to_stock'
