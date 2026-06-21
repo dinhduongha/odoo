@@ -931,7 +931,12 @@ class IrQweb(models.AbstractModel):
                 line_nb = int(line_function.split(',')[0])
                 break
 
-        source = [info.params.path_xml for info in stack if info.params.path_xml]
+        # path_xml[0] (the template ref) may be a uuid.UUID in some stack frames
+        # but a string in others; coerce to str so the "From:" lines are uniform.
+        source = [
+            (str(p[0]) if p[0] is not None else p[0], p[1], p[2])
+            for info in stack if (p := info.params.path_xml)
+        ]
         code_lines = (code or '').split('\n')
 
         found = False

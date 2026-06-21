@@ -7,6 +7,7 @@ import logging
 from odoo import exceptions
 from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
 from odoo.tests.common import TransactionCase, ADMIN_USER_ID, tagged
+from odoo.tools.uuid_utils import uuid7
 
 _logger = logging.getLogger(__name__)
 
@@ -133,6 +134,10 @@ class TestEmbeddedFilters(FiltersCase):
         super(FiltersCase, self).setUp()
         self.USER_NG = self.env['res.users'].name_search('demo')[0]
         self.USER_ID = self.USER_NG[0]
+        # embedded_parent_res_id is a Uuid field: use real uuids as the parent
+        # record ids (ints would be coerced to NULL under uuid PKs)
+        self.res_id_1 = uuid7()
+        self.res_id_2 = uuid7()
         self.parent_action = self.env['ir.actions.act_window'].create({
             'name': 'ParentAction',
             'res_model': 'res.partner',
@@ -162,7 +167,7 @@ class TestEmbeddedFilters(FiltersCase):
             'user_ids': [],
             'is_default': True,
             'embedded_action_id': self.embedded_action_1.id,
-            'embedded_parent_res_id': 1
+            'embedded_parent_res_id': self.res_id_1
         })
         Filters.create_filter({
             'name': 'b',
@@ -170,19 +175,19 @@ class TestEmbeddedFilters(FiltersCase):
             'user_ids': [self.USER_ID],
             'is_default': False,
             'embedded_action_id': self.embedded_action_2.id,
-            'embedded_parent_res_id': 1
+            'embedded_parent_res_id': self.res_id_1
         })
 
         # If embedded_action_id and embedded_parent_res_id are set, should return the corresponding filter
-        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=1)
+        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=self.res_id_1)
         self.assertItemsEqual(noid(filters), [dict(name='a', is_default=True, user_ids=[], domain='[]', context='{}', sort='[]')])
 
         # Check that the filter is correctly linked to one embedded_parent_res_id and is not returned if another one is set
-        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=2)
+        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=self.res_id_2)
         self.assertItemsEqual(noid(filters), [])
 
         # Check that a shared filter can be fetched with another user
-        filters = self.env['ir.filters'].with_user(ADMIN_USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=1)
+        filters = self.env['ir.filters'].with_user(ADMIN_USER_ID).get_filters('ir.filters', embedded_action_id=self.embedded_action_1.id, embedded_parent_res_id=self.res_id_1)
         self.assertItemsEqual(noid(filters), [dict(name='a', is_default=True, user_ids=[], domain='[]', context='{}', sort='[]')])
 
         # If embedded_action_id and embedded_parent_res_id are not set, should return no filters

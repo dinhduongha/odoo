@@ -300,7 +300,7 @@ class TestHasGroup(TransactionCase):
 
         # user_b is not an internal user, but giving it a new group just added a new group
         (user_a + user_b).write({"group_ids": [Command.link(group_BB.id)]})
-        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_BB + group_B + group_user + group_no_one))
+        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_BB + group_B + group_user + group_multi_company + group_no_one))
         self.assertEqual(user_b.all_group_ids, (group_AA + group_A + group_BB + group_B + group_portal))
         self.assertEqual(user_a.group_ids, (group_AA + group_BB + group_user))
         self.assertEqual(user_b.group_ids, (group_AA + group_BB + group_portal))
@@ -310,7 +310,7 @@ class TestHasGroup(TransactionCase):
         group_C = G.create({"name": "C", "implied_ids": [Command.set([group_user.id])]})
 
         user_a.write({"group_ids": [Command.link(group_C.id)]})
-        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_BB + group_B + group_C + group_user + group_no_one))
+        self.assertEqual(user_a.all_group_ids, (group_AA + group_A + group_BB + group_B + group_C + group_user + group_multi_company + group_no_one))
         self.assertEqual(user_a.group_ids, (group_AA + group_BB + group_C + group_user))
 
         with self.assertRaises(ValidationError):
