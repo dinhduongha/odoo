@@ -182,8 +182,8 @@ class MailFollowers(models.Model):
      UNION ALL
 
         SELECT res_partner.id AS pid,
-               0 AS fid,
-               0 AS res_id,
+               NULL AS fid,
+               NULL AS res_id,
                FALSE as is_follower,
                FALSE as subtype_follower,
                FALSE as internal
@@ -293,7 +293,7 @@ class MailFollowers(models.Model):
            COALESCE(sub_user.share, FALSE) as ushare,
            COALESCE(sub_user.notification_type, 'email') as notif,
            sub_user.groups as groups,
-           0 as res_id,
+           NULL as res_id,
            FALSE as is_follower
       FROM res_partner partner
  LEFT JOIN LATERAL (
