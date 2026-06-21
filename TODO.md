@@ -55,9 +55,10 @@ modules at once). Other classes: ir.default json uuid keys/values, create_column
 domain/code/xpath id quoting, -id negations in SQL views, mail.followers UNION NULL,
 purchase.bill.union, chart_template uuid xml_id, account journal alias_defaults.
 
-### Still TODO for install
-- **Install WITH demo** (`--without-demo` was used). Demo data will surface more uuid
-  issues (and ties into the Demo Company work below). Run without `--without-demo=all`.
+### Install WITH demo — ✅ DONE (217/217, EXIT 0)
+Full install WITH demo data also succeeds clean (db `uuiddemo`) — no demo-specific
+fixes were needed beyond the --without-demo set. Verified: login→/odoo 200, demo data
+present (product.template count=10). So both install modes (with/without demo) pass.
 
 ## FULL MODULE INSTALL (historical — superseded above)
 Driving `-i base,web,sale,account,stock,mrp,hr,website,project,mail,... --without-demo`
