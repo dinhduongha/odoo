@@ -6367,7 +6367,10 @@ class BaseModel(metaclass=MetaModel):
             # With company = None/False/0/[]/empty recordset: keep current environment
             return self
 
-        if isinstance(company, uuid.UUID):
+        if isinstance(company, BaseModel):
+            # the common case: a res.company recordset (e.g. self.env.company)
+            company_id = company.id
+        elif isinstance(company, uuid.UUID):
             company_id = company
         elif isinstance(company, (int, str)):
             company_id = uuid.UUID(str(company)) if isinstance(company, str) else company

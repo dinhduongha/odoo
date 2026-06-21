@@ -366,6 +366,12 @@ class Properties(Field):
             return {}
 
         container_id = values[self.definition_record]
+        if isinstance(container_id, str):
+            # default_get / write may provide the container id as a uuid string
+            try:
+                container_id = uuid.UUID(container_id)
+            except ValueError:
+                raise ValueError(f"Wrong container value {container_id!r}")
         if not isinstance(container_id, (uuid.UUID, BaseModel)):
             raise ValueError(f"Wrong container value {container_id!r}")
 
