@@ -5,6 +5,7 @@ import uuid
 
 from odoo import api, models
 from odoo.exceptions import AccessError
+from odoo.tools import Reverse
 
 
 class IrUiMenu(models.Model):
@@ -54,7 +55,7 @@ class IrUiMenu(models.Model):
 
             def _menu_sort_key(menu_action):
                 menu, action = menu_action
-                return 1 if action.path else 0, -menu.id
+                return 1 if action.path else 0, Reverse(menu.id)
 
             menu_sudo = max((
                 (menu, action) for menu in menus.sudo() for action in (menu.action,)

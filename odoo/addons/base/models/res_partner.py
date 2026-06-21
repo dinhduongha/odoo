@@ -434,7 +434,8 @@ class ResPartner(models.Model):
                 partner.main_user_id = self.env["ir.model.data"]._xmlid_to_res_id("base.user_root")
                 continue
             partner.main_user_id = users.sorted(
-                lambda u: (not u.share, -u.id), reverse=True,
+                # internal users first, then lowest id (was (not share, -id) reverse=True)
+                lambda u: (tools.Reverse(not u.share), u.id),
             )[:1]
 
     @api.depends('user_ids.share', 'user_ids.active')

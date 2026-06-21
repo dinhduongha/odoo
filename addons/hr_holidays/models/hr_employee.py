@@ -312,7 +312,9 @@ class HrEmployee(models.Model):
         employee_tz = pytz.timezone(self._get_tz() if self else self.env.user.tz or 'utc')
         public_holidays = self._get_public_holidays(date_start, date_end).sorted('date_from')
         return list(map(lambda bh: {
-            'id': -bh.id,
+            # uuidv7: virtual (non-editable) record marked by a negative id (the owl
+            # calendar tests `record.id < 0`); derive a deterministic negative int from the uuid.
+            'id': -int(str(bh.id).replace('-', '')[:12], 16),
             'colorIndex': 0,
             'end': datetime.combine(bh.date_to.astimezone(employee_tz), datetime.max.time()).isoformat(),
             'endType': "datetime",
@@ -366,7 +368,7 @@ class HrEmployee(models.Model):
 
         mandatory_days = self_with_context._get_mandatory_days(date_start, date_end).sorted('start_date')
         return [{
-            'id': -sd.id,
+            'id': -int(str(sd.id).replace('-', '')[:12], 16),
             'colorIndex': sd.color,
             'end': datetime.combine(sd.end_date, datetime.max.time()).isoformat(),
             'endType': "datetime",

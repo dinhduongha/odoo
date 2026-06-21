@@ -780,7 +780,7 @@ class ProductTemplate(models.Model):
         for tmpl_id in self:
             lines_without_no_variants = tmpl_id.valid_product_template_attribute_line_ids._without_no_variant_attributes()
 
-            all_variants = tmpl_id.with_context(active_test=False).product_variant_ids.sorted(lambda p: (p.active, -p.id))
+            all_variants = tmpl_id.with_context(active_test=False).product_variant_ids.sorted(lambda p: (p.active, tools.Reverse(p.id)))
 
             current_variants_to_create = []
             current_variants_to_activate = Product

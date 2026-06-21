@@ -11,7 +11,7 @@ from psycopg2 import Error
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
-from odoo.tools import SQL
+from odoo.tools import SQL, Reverse
 
 _logger = logging.getLogger(__name__)
 
@@ -787,7 +787,7 @@ class StockQuant(models.Model):
         else:
             res = self.search(domain, order=order)
         if removal_strategy == "closest":
-            res = res.sorted(lambda q: (q.location_id.complete_name, -q.id))
+            res = res.sorted(lambda q: (q.location_id.complete_name, Reverse(q.id)))
         return res.sorted(lambda q: not q.lot_id)
 
     def _get_available_quantity(self, product_id, location_id, lot_id=None, package_id=None, owner_id=None, strict=False, allow_negative=False):

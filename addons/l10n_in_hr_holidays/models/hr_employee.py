@@ -18,7 +18,7 @@ class HrEmployees(models.Model):
             ('company_id', 'in', self.env.companies.ids)
         ])
         return [{
-            'id': -optional_holiday.id,
+            'id': -int(str(optional_holiday.id).replace('-', '')[:12], 16),
             'title': optional_holiday.name,
             'isAllDay': True,
             'start': optional_holiday.date.isoformat(),
