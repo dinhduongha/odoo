@@ -195,7 +195,7 @@ class TestProjectSharingChatterAccess(TestProjectSharingCommon, HttpCase):
                     "pid": pid,
                     "hash": _hash,
                 },
-            }),
+            }, default=str),
             headers={'Content-Type': 'application/json'},
         )
         self.assertEqual(res.status_code, 200)

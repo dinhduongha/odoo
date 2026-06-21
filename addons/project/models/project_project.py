@@ -13,6 +13,7 @@ from odoo.exceptions import UserError
 from odoo.fields import Command, Domain
 from odoo.tools import get_lang, float_utils, formatLang, SQL, LazyTranslate
 from odoo.tools.misc import unquote
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.translate import _
 from .project_update import STATUS_COLOR
 from .project_task import CLOSED_STATES
@@ -564,14 +565,14 @@ class ProjectProject(models.Model):
                 if config_vals['embedded_actions_visibility']:
                     embedded_actions_visibility = [
                         shared_embedded_actions_mapping.get(action_id, action_id)
-                        for action_id in [False if x == 'false' else int(x) for x in config_vals['embedded_actions_visibility'].split(',')]
+                        for action_id in [False if x == 'false' else to_uuid(x) for x in config_vals['embedded_actions_visibility'].split(',')]
                         if action_id in valid_embedded_action_ids
                     ]
                     config_vals['embedded_actions_visibility'] = ','.join('false' if action_id is False else str(action_id) for action_id in embedded_actions_visibility)
                 if config_vals['embedded_actions_order']:
                     embedded_actions_order = [
                         shared_embedded_actions_mapping.get(action_id, action_id)
-                        for action_id in [False if x == 'false' else int(x) for x in config_vals['embedded_actions_order'].split(',')]
+                        for action_id in [False if x == 'false' else to_uuid(x) for x in config_vals['embedded_actions_order'].split(',')]
                         if action_id in valid_embedded_action_ids
                     ]
                     config_vals['embedded_actions_order'] = ','.join('false' if action_id is False else str(action_id) for action_id in embedded_actions_order)
@@ -882,11 +883,13 @@ class ProjectProject(models.Model):
     def action_project_task_burndown_chart_report(self):
         action = self.env['ir.actions.act_window']._for_xml_id('project.action_project_task_burndown_chart_report')
         action['display_name'] = _("%(name)s's Burndown Chart", name=self.name)
-        context = action['context'].replace('active_id', str(self.id))
+        # `active_id` is a uuid: quote it so the context string remains a valid
+        # python literal for `ast.literal_eval`.
+        context = action['context'].replace('active_id', repr(str(self.id)))
         context = ast.literal_eval(context)
         context.update({
             'stage_name_and_sequence_per_id': {
-                stage.id: {
+                str(stage.id): {
                     'sequence': stage.sequence,
                     'name': stage.name
                 } for stage in self.type_ids
@@ -1115,12 +1118,12 @@ class ProjectProject(models.Model):
                 'additional_context': json.dumps({
                     'active_id': self.id,
                     'stage_name_and_sequence_per_id': {
-                        stage.id: {
+                        str(stage.id): {
                             'sequence': stage.sequence,
                             'name': stage.name
                         } for stage in self.type_ids
                     },
-                }),
+                }, default=str),
                 'show': True,
                 'sequence': 60,
             })

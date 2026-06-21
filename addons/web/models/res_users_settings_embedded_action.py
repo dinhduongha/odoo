@@ -1,5 +1,6 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class ResUsersSettingsEmbeddedAction(models.Model):
@@ -42,10 +43,11 @@ class ResUsersSettingsEmbeddedAction(models.Model):
                     )
                 )
             for action_id in action_ids:
-                if not (action_id.isdigit() or action_id == 'false'):
+                # Action ids are uuids; "false" is the sentinel for the top bar.
+                if not (is_uuid(action_id) or action_id == 'false'):
                     raise ValidationError(
                         self.env._(
-                            'The ids in %(field_name)s must only be integers or "false": “%(action_ids)s”',
+                            'The ids in %(field_name)s must only be ids or "false": “%(action_ids)s”',
                             field_name=field_name,
                             action_ids=action_ids,
                         )
@@ -55,10 +57,10 @@ class ResUsersSettingsEmbeddedAction(models.Model):
         return {
             f'{setting.action_id.id}+{setting.res_id or ""}': {
                 'embedded_actions_order': [
-                    False if action_id == 'false' else int(action_id) for action_id in setting.embedded_actions_order.split(',')
+                    False if action_id == 'false' else to_uuid(action_id) for action_id in setting.embedded_actions_order.split(',')
                 ] if setting.embedded_actions_order else [],
                 'embedded_actions_visibility': [
-                    False if action_id == 'false' else int(action_id) for action_id in setting.embedded_actions_visibility.split(',')
+                    False if action_id == 'false' else to_uuid(action_id) for action_id in setting.embedded_actions_visibility.split(',')
                 ] if setting.embedded_actions_visibility else [],
                 'embedded_visibility': setting.embedded_visibility,
             }

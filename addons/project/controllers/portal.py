@@ -587,6 +587,6 @@ class ProjectCustomerPortal(CustomerPortal):
 
         attachment = IrAttachment.create(values)
         return request.make_response(
-            data=json.dumps(attachment.read(['id', 'name', 'mimetype', 'file_size', 'access_token'])[0]),
+            data=json.dumps(attachment.read(['id', 'name', 'mimetype', 'file_size', 'access_token'])[0], default=str),
             headers=[('Content-Type', 'application/json')]
         )

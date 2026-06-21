@@ -2612,12 +2612,18 @@ class HttpCase(TransactionCase):
         :raises requests.HTTPError: if one occurred
         :raises JsonRpcException: if the response contains an error
         """
-        response = self.opener.post(urljoin(self.base_url(), route), json={
+        # Serialize manually with default=str so uuid record ids passed in
+        # params (the norm with uuid primary keys) are JSON serializable.
+        body = json.dumps({
             'id': 0,
             'jsonrpc': '2.0',
             'method': 'call',
             'params': params or {},
-        }, headers=headers, cookies=cookies, timeout=timeout)
+        }, default=str)
+        headers = {'Content-Type': 'application/json', **(headers or {})}
+        response = self.opener.post(
+            urljoin(self.base_url(), route), data=body,
+            headers=headers, cookies=cookies, timeout=timeout)
         response.raise_for_status()
         decoded_response = response.json()
         if 'error' in decoded_response:

@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import re
+import uuid
 from pytz import UTC
 from collections import defaultdict
 from datetime import timedelta, datetime, time
@@ -12,6 +13,7 @@ from odoo.addons.rating.models import rating_data
 from odoo.addons.html_editor.tools import handle_history_divergence
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import format_list, SQL, LazyTranslate, html_sanitize
+from odoo.tools.uuid_utils import is_uuid
 from odoo.addons.resource.models.utils import filter_domain_leaf
 from odoo.addons.project.controllers.project_sharing_chatter import ProjectSharingChatter
 from odoo.addons.mail.tools.discuss import Store
@@ -1405,6 +1407,12 @@ class ProjectTask(models.Model):
             Returns:
                 False or recordset of the comodel given in parameter.
         """
+        # With uuid primary keys, record ids are uuid.UUID (or uuid strings)
+        # rather than int. This heuristic distinguishes an id value from a
+        # name value, so it must treat uuids as ids too.
+        def _is_id(val):
+            return isinstance(val, (int, uuid.UUID)) or (isinstance(val, str) and is_uuid(val))
+
         def _change_operator(domain):
             new_domain = []
             for dom in domain:
@@ -1412,15 +1420,15 @@ class ProjectTask(models.Model):
                     _, op, value = dom
                     if op in ("any", "not any"):
                         new_op = "in" if op == "any" else "not in"
-                        ids = [val[2] for val in value if isinstance(val, (tuple, list)) and isinstance(val[2], int)]
+                        ids = [val[2] for val in value if isinstance(val, (tuple, list)) and _is_id(val[2])]
                         new_domain.append(("id", new_op, ids))
                         continue
                     op = "ilike" if op == "child_of" else op
-                    if isinstance(value, list) and all(isinstance(val, int) for val in value):
+                    if isinstance(value, list) and value and all(_is_id(val) for val in value):
                         new_domain.append(("id", op, value))
-                    elif isinstance(value, str) or (isinstance(value, list) and not all(isinstance(val, str) for val in value)):
+                    elif isinstance(value, str) and not _is_id(value) or (isinstance(value, list) and not all(_is_id(val) for val in value)):
                         new_domain.append(("name", op, value))
-                    if isinstance(value, int):
+                    if _is_id(value) and not isinstance(value, list):
                         if op == "=":
                             op = "in"
                         if op == "!=":

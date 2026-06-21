@@ -178,7 +178,10 @@ class ProjectTaskBurndownChartReport(models.AbstractModel):
                         stage_id,
                         is_closed
               )
-              SELECT (project_id*10^13 + stage_id*10^7 + to_char(date, 'YYMMDD')::integer)::bigint as id,
+              -- Synthesize a deterministic uuid row id from the grouping
+              -- components. With uuid primary keys the previous integer-packing
+              -- (project_id*10^13 + stage_id*10^7 + ...) is no longer possible.
+              SELECT md5(COALESCE(project_id::text, '') || '-' || COALESCE(stage_id::text, '') || '-' || to_char(date, 'YYMMDD'))::uuid as id,
                      allocated_hours,
                      project_id,
                      stage_id,

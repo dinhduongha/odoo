@@ -698,7 +698,7 @@ class HTML_Editor(http.Controller):
             last_segment = words[-1]
 
             if not (
-                last_segment.isnumeric()
+                (last_segment.isnumeric() or is_uuid(last_segment))
                 and (
                     parsed_preview_url.path.startswith("/odoo")
                     or parsed_preview_url.path.startswith("/web")
@@ -712,7 +712,8 @@ class HTML_Editor(http.Controller):
                     result['description'] = link_preview_data['og_description']
                 return result
 
-            record_id = int(words.pop())
+            last = words.pop()
+            record_id = uuid.UUID(last) if is_uuid(last) else int(last)
             action_name = words.pop()
             if (action_name.startswith('m-') or '.' in action_name) and action_name in request.env and not request.env[action_name]._abstract:
                 # if path format is `odoo/<model>/<record_id>` so we use `action_name` as model name
