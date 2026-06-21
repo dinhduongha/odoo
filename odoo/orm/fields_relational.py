@@ -793,11 +793,9 @@ class _RelationalMulti(_Relational):
         - None / False → Command.clear()
         """
         def _get_id(val):
-            """Convert val to DB-friendly ID."""
+            """Return the native id of val (UUID kept as-is, not stringified)."""
             if val is None or val is False:
                 return None
-            if isinstance(val, uuid.UUID):
-                return str(val)
             if isinstance(val, BaseModel):
                 return _get_id(val.id)
             return val
