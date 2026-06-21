@@ -4,6 +4,26 @@ Branch `uuid`. Fork `c0d524a`. Target 19.0 tip `a5e0f8710`. DB postgres:18 (nati
 Run dir: `/home/ha/work/odoo-uuidv7-refactor` (compose `odoo-uuid`, ports 18069/18072).
 Auto mode. Code reviewed externally by Antigravity + codex.
 
+## ⭐ MILESTONE — branch `uuid-19-swap` (SWAP ROLES) — 2026-06-21
+Full all-module demo install: **227/227 modules, Registry loaded, EXIT 0.**
+- Built from `3327d6fce` (start of the abandoned option-2 "keep routing/fix check_company
+  per-module") + cherry-picked GENERIC uuid fixes (QWeb, Json, mail tracking, reference-o2m,
+  parse_res_ids, alias_defaults, website_visitor, analytic, survey domain, lunch/event/rating…)
+  + **Swap roles**. No per-module check_company hacks.
+- SWAP: `base.main_company` = ...0002 = PRIMARY = the demo company (demo loads into the
+  loading user's company, so it lands here naturally — NO allowed_company_ids redirection,
+  NO cross-company crossover). `base.your_company` = ...0001 = "Production Company", clean.
+  Secondary clean company must NOT be named "YourCompany" (base demo renames the main/demo
+  company to that; res_company has unique-name constraint).
+- Verified: demo in primary company (33 account moves); Production Company clean (0).
+- vs option-2 routing (branch `uuid-19-demo-routing`): swap removed the ENTIRE crossover
+  class — hr_expense price, mrp seq fallback, pos suffix, website_sale/survey guards,
+  models._check_company install_demo skip are all UNNEEDED.
+- KNOWN remaining (1, caught/non-fatal): `website_sale` demo — NewId-origin + pricelist/group
+  recursion on website_sale_order_9 (genuine uuid bug, only in full demo sequence; not
+  crossover). pos_restaurant fixed (json default=str, 1cb22d425).
+- Latent: `ir_sequence` %03d % seq.id at ~15 sites (standard impl) — uuid-unsafe PG seq names.
+
 ## DONE
 - [x] Scope branch diff: 123 files, +2495/-633, 2 commits (`base`,`addons`).
 - [x] Map UUID core mechanism: `fields_uuid.py`, `uuid_utils.py`, `Id`/`Many2one` col→uuid,
