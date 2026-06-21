@@ -1102,13 +1102,15 @@ class Registry(Mapping[str, type["BaseModel"]]):
         if self.registry_invalidated:
             _logger.info("Registry changed, signaling through the database")
             with self.cursor() as cr:
-                cr.execute("INSERT INTO orm_signaling_registry DEFAULT VALUES")
+                # Record the id of the inserted row so that the next
+                # check_signaling() on this same worker is a no-op (it compares
+                # in-memory sequence to the latest DB row id). Using a fresh
+                # uuid7() instead would never match the row's DEFAULT uuidv7().
+                cr.execute("INSERT INTO orm_signaling_registry DEFAULT VALUES RETURNING id")
                 # If another process concurrently updates the registry,
                 # self.registry_sequence will actually be out-of-date,
                 # and the next call to check_signaling() will detect that and trigger a registry reload.
-                # otherwise, self.registry_sequence should be equal to cr.fetchone()[0]
-                # self.registry_sequence += 1
-                self.registry_sequence = uuid7()
+                self.registry_sequence = cr.fetchone()[0]
 
         # no need to notify cache invalidation in case of registry invalidation,
         # because reloading the registry implies starting with an empty cache
@@ -1116,13 +1118,11 @@ class Registry(Mapping[str, type["BaseModel"]]):
             _logger.info("Caches invalidated, signaling through the database: %s", sorted(self.cache_invalidated))
             with self.cursor() as cr:
                 for cache_name in self.cache_invalidated:
-                    cr.execute(SQL("INSERT INTO %s DEFAULT VALUES", SQL.identifier(f'orm_signaling_{cache_name}')))
+                    cr.execute(SQL("INSERT INTO %s DEFAULT VALUES RETURNING id", SQL.identifier(f'orm_signaling_{cache_name}')))
                     # If another process concurrently updates the cache,
                     # self.cache_sequences[cache_name] will actually be out-of-date,
                     # and the next call to check_signaling() will detect that and trigger cache invalidation.
-                    # otherwise, self.cache_sequences[cache_name] should be equal to cr.fetchone()[0]
-                    # self.cache_sequences[cache_name] += 1
-                    self.cache_sequences[cache_name] = uuid7()
+                    self.cache_sequences[cache_name] = cr.fetchone()[0]
 
         self.registry_invalidated = False
         self.cache_invalidated.clear()
