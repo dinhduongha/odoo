@@ -93,7 +93,11 @@ class MailAlias(models.Model):
         ], compute='_compute_alias_status', store=True,
         help='Alias status assessed on the last message received.')
 
-    _name_domain_unique = models.UniqueIndex("(alias_name, alias_domain_id) NULLS NOT DISTINCT")
+    # Original used COALESCE(alias_domain_id, 0): only the domain's NULLs collide,
+    # while a NULL alias_name was exempt (NULLS DISTINCT on the name column). Reproduce
+    # that with NULLS NOT DISTINCT (domain NULLs equal) + a partial index excluding
+    # rows without an alias_name.
+    _name_domain_unique = models.UniqueIndex("(alias_name, alias_domain_id) NULLS NOT DISTINCT WHERE (alias_name IS NOT NULL)")
 
     @api.constrains('alias_domain_id', 'alias_force_thread_id', 'alias_parent_model_id',
                     'alias_parent_thread_id', 'alias_model_id')
