@@ -725,9 +725,12 @@ class _RelationalMulti(_Relational):
 
     def convert_to_record_multi(self, values, records):
         # return the list of ids as a recordset without duplicates
-        prefetch_ids = PrefetchX2many(records, self)
+        # Coerce ids/prefetch to uuid: cached x2many ids may be plain strings,
+        # but field caches are keyed by uuid.UUID. Mismatched key types cause a
+        # spurious MissingError when later fetching a field on these records.
+        prefetch_ids = [to_uuid(x) for x in PrefetchX2many(records, self)]
         Comodel = records.pool[self.comodel_name]
-        ids = tuple(unique(id_ for ids in values for id_ in ids))
+        ids = tuple(unique(to_uuid(id_) for ids in values for id_ in ids))
         corecords = Comodel(records.env, ids, prefetch_ids)
         if (
             Comodel._active_name

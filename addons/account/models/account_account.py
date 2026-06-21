@@ -1308,7 +1308,7 @@ class AccountAccount(models.Model):
                     SET %(account_column)s = (
                             %(new_account_id_by_company_id_json)s::jsonb->>
                             table_with_company_id.company_id::text
-                        )::int
+                        )::uuid
                    FROM (%(query_company_id)s) table_with_company_id
                   WHERE table_with_company_id.id = %(model_column)s
                     AND %(table)s.%(account_column)s = %(account_id)s
@@ -1329,9 +1329,9 @@ class AccountAccount(models.Model):
                 SET %(column)s = (
                     SELECT jsonb_object_agg(key,
                         CASE
-                            WHEN value::int = %(account_id)s AND %(new_account_id_by_company_id_json)s ? key
-                            THEN (%(new_account_id_by_company_id_json)s::jsonb->>key)::int
-                            ELSE value::int
+                            WHEN value::uuid = %(account_id)s AND %(new_account_id_by_company_id_json)s ? key
+                            THEN (%(new_account_id_by_company_id_json)s::jsonb->>key)::uuid
+                            ELSE value::uuid
                         END
                     )
                     FROM jsonb_each_text(%(column)s)
@@ -1386,7 +1386,7 @@ class AccountAccount(models.Model):
             self.env.cr.execute(SQL(
                 """
                  UPDATE %(table)s
-                    SET %(column)s = (%(new_account_id_by_company_id_json)s::jsonb->>table_with_company_id.company_id::text)::int
+                    SET %(column)s = (%(new_account_id_by_company_id_json)s::jsonb->>table_with_company_id.company_id::text)::uuid
                    FROM (%(query_company_id)s) table_with_company_id
                   WHERE table_with_company_id.id = %(table)s.id
                     AND %(column)s = %(account_id)s
@@ -1407,7 +1407,7 @@ class AccountAccount(models.Model):
         self.env.cr.execute(SQL(
             """
             WITH new_account_company AS (
-                SELECT key AS company_id, value::int AS account_id
+                SELECT key AS company_id, value::uuid AS account_id
                 FROM json_each_text(%(new_account_id_by_company_id_json)s)
             )
             UPDATE %(table)s new

@@ -629,8 +629,13 @@ class ResUsers(models.Model):
         for vals in vals_list:
             if not vals.get('company_id') and env_company:
                 vals['company_id'] = env_company.id
-            if not vals.get('company_ids') and env_company:
-                vals['company_ids'] = [(6, 0, [env_company.id])]
+            if not vals.get('company_ids'):
+                # Derive allowed companies from the record's own company_id so the
+                # company_id ∈ company_ids constraint always holds, even when demo
+                # data loads in a different env.company context (Demo Company).
+                cid = vals.get('company_id') or (env_company and env_company.id)
+                if cid:
+                    vals['company_ids'] = [(6, 0, [cid])]
 
         users = super().create(vals_list)
 	    # UUIDv7 Patched

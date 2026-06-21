@@ -98,9 +98,32 @@ config) or the minimal `-i <mods>` loop used this session (see handoff.md).
 - account ir_module auto-install loads the chart for base.demo_company too; stock
   create_missing_warehouse covers every company. Verified: both companies have 7
   journals + 1 warehouse + chart_template=generic_coa; demo install EXIT 0.
-- FOLLOW-UP: account demo *transactions* (invoices) = 0 rows for BOTH companies in this
-  module set (account_demo.xml `_install_demo` runs for chart'd companies but produces
-  no moves; no error). Separate account-demo investigation, not Demo-Company-specific.
+
+### Account demo transactions — ✅ DONE
+Demo install (`-i account --with-demo`) now loads accounting demo cleanly: EXIT 0,
+56 posted moves (18 out_invoice / 4 in_invoice / refunds), 20 statement lines, across
+YourCompany + the US demo company. Note Odoo 19 changed the flag: demo is OFF unless
+`--with-demo` is passed. Root-cause chain fixed (each was a distinct uuid bug):
+1. **odoo/orm/fields_relational.py `Many2many.convert_to_record_multi`** — did NOT
+   coerce ids to uuid (the single `convert_to_record` and the m2o multi path do). So
+   `recordset.x2many` over multiple records yielded **str** ids; field caches are keyed
+   by `uuid.UUID` → key mismatch → spurious MissingError on a later field read. THE key
+   fix; affects any multi-record m2m read, not just demo.
+2. account/models/account_move.py — `BOOL(uuid)` (`has_payment`/`has_st_line`) →
+   `<col> IS NOT NULL`. project_todo/res_users.py same `BOOL(project_id)`.
+3. account/models/account_account.py — account-merge remap `value::int` / `(...)::int`
+   on account ids → `::uuid` (5 sites).
+4. account/models/chart_template.py `_install_demo` — pin `with_company(company)` +
+   `allowed_company_ids=[company.id]` so the company's own taxes/accounts pass record
+   rules during validation.
+5. base/models/res_users.py create — derive `company_ids` from the record's own
+   `company_id` (not env.company) so company_id ∈ company_ids when demo loads in the
+   Demo-Company context (fixes user_demo ValidationError).
+6. mail/demo `new_message_separator` — `eval="ref('x') + 1"` (UUID+1) → `ref="x"`.
+7. mail/models/mail_thread.py + mail/tools/parser.py — `is_list_of(ids, int)` →
+   `uuid.UUID` (message_notify partner/attachment ids; parse_res_ids).
+8. account/models/account_bank_statement_line.py — `internal_index` `f'{id:0>10}'`
+   (UUID has no format spec) → `id.hex` (uuidv7 hex is lexicographically time-sortable).
 
 ## CUSTOM ADDONS uuid conversion — ✅ DONE (om_account_accountant suite)
 Installed clean with uuidv7 (56 modules incl deps, EXIT 0): om_account_accountant,

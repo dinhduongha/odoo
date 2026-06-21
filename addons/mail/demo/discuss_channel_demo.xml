@@ -224,14 +224,14 @@
             <field name="channel_id" ref="mail.troubleshooting_sub"/>
             <field name="fetched_message_id" ref="mail.troubleshooting_message_2"/>
             <field name="seen_message_id" ref="mail.troubleshooting_message_2"/>
-            <field name="new_message_separator" eval="ref('mail.troubleshooting_message_2') + 1"/>
+            <field name="new_message_separator" ref="mail.troubleshooting_message_2"/>
         </record>
         <record model="discuss.channel.member" id="mail.demo_member_troubleshooting">
             <field name="partner_id" ref="base.partner_demo"/>
             <field name="channel_id" ref="mail.troubleshooting_sub"/>
             <field name="fetched_message_id" ref="mail.troubleshooting_message_2"/>
             <field name="seen_message_id" ref="mail.troubleshooting_message_2"/>
-            <field name="new_message_separator" eval="ref('mail.troubleshooting_message_2') + 1"/>
+            <field name="new_message_separator" ref="mail.troubleshooting_message_2"/>
         </record>
     </data>
 </odoo>

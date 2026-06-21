@@ -277,7 +277,7 @@ class AccountBankStatementLine(models.Model):
         for st_line in self.filtered(lambda line: line._origin.id):
             st_line.internal_index = f'{st_line.date.strftime("%Y%m%d")}' \
                                       f'{MAXINT - st_line.sequence:0>10}' \
-                                      f'{st_line._origin.id:0>10}'
+                                      f'{st_line._origin.id.hex}'
 
     @api.depends('journal_id', 'currency_id', 'amount', 'foreign_currency_id', 'amount_currency',
                  'move_id.checked',

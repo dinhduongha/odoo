@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import ast
+import uuid
 
 from odoo.exceptions import ValidationError
 from odoo.tools import is_list_of
@@ -19,7 +20,7 @@ def parse_res_ids(res_ids, env):
 
     :return list: list of ids
     """
-    if is_list_of(res_ids, int) or not res_ids:
+    if is_list_of(res_ids, (uuid.UUID, str)) or not res_ids:
         return res_ids
     error_msg = env._(
         "Invalid res_ids %(res_ids_str)s (type %(res_ids_type)s)",
@@ -31,7 +32,7 @@ def parse_res_ids(res_ids, env):
     except Exception as e:
         raise ValidationError(error_msg) from e
 
-    if not is_list_of(res_ids, int):
+    if not is_list_of(res_ids, (uuid.UUID, str)):
         raise ValidationError(error_msg)
 
     return res_ids

@@ -260,8 +260,13 @@ class AccountChartTemplate(models.AbstractModel):
         if not isinstance(companies, models.BaseModel):
             companies = self.env['res.company'].browse(companies)
         for company in companies:
-            self.with_context(install_mode=True).sudo().with_context(skip_pdf_attachment_generation=True)._load_data(self._get_demo_data(company))
-            self.with_context(install_mode=True)._post_load_demo_data(company)
+            # Pin the env to the target company so its own accounts/taxes are visible
+            # under multi-company record rules (allowed_company_ids drives ir.rule on
+            # account.tax/account.account); otherwise demo moves referencing this
+            # company's taxes raise MissingError when validated.
+            company_self = self.with_company(company).with_context(allowed_company_ids=[company.id])
+            company_self.with_context(install_mode=True).sudo().with_context(skip_pdf_attachment_generation=True)._load_data(company_self._get_demo_data(company))
+            company_self.with_context(install_mode=True)._post_load_demo_data(company)
 
     def _pre_reload_data(self, company, template_data, data, force_create=True):
         """Pre-process the data in case of reloading the chart of accounts.

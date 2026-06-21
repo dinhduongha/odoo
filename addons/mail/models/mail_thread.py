@@ -6,6 +6,7 @@ import datetime
 import dateutil
 import email
 import email.policy
+import uuid
 import encodings
 import hashlib
 import hmac
@@ -2249,14 +2250,14 @@ class MailThread(models.AbstractModel):
                       aids=repr(attachment_ids),
                      )
                 )
-        if attachment_ids and not is_list_of(attachment_ids, int):
+        if attachment_ids and not is_list_of(attachment_ids, uuid.UUID):
             raise ValueError(
                 _('Posting a message should receive attachments records as a list of IDs (received %(aids)s)',
                   aids=repr(attachment_ids),
                  )
             )
         attachment_ids = list(attachment_ids or [])
-        if partner_ids and not is_list_of(partner_ids, int):
+        if partner_ids and not is_list_of(partner_ids, uuid.UUID):
             raise ValueError(
                 _('Posting a message should receive partners as a list of IDs (received %(pids)s)',
                   pids=repr(partner_ids),
@@ -2772,13 +2773,13 @@ class MailThread(models.AbstractModel):
                       aids=repr(attachment_ids),
                      )
                 )
-        if attachment_ids and not is_list_of(attachment_ids, int):
+        if attachment_ids and not is_list_of(attachment_ids, uuid.UUID):
             raise ValueError(
                 _('Notification should receive attachments records as a list of IDs (received %(aids)s)',
                   aids=repr(attachment_ids),
                  )
             )
-        if not is_list_of(partner_ids, int):
+        if not is_list_of(partner_ids, uuid.UUID):
             raise ValueError(
                 _('Notification should receive partners given as a list of IDs (received %(pids)s)',
                   pids=repr(partner_ids),

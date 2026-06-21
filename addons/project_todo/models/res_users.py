@@ -25,7 +25,7 @@ class ResUsers(models.Model):
         #    Counting max 1 activity per task
         query = """
             WITH task_states AS (
-                SELECT BOOL(t.project_id) AS is_task, act.res_id,
+                SELECT (t.project_id IS NOT NULL) AS is_task, act.res_id,
                     CASE
                         WHEN %(date)s - MIN(act.date_deadline)::date = 0 THEN 'today'
                         WHEN %(date)s - MIN(act.date_deadline)::date > 0 THEN 'overdue'
