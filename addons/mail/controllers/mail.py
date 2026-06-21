@@ -1,5 +1,6 @@
 import io
 import logging
+import re
 from math import floor
 from urllib.parse import parse_qsl, urlencode, urlparse
 
@@ -22,6 +23,9 @@ except ImportError:
     from .tools._vendor.send_file import send_file
 
 _logger = logging.getLogger(__name__)
+# Canonical uuid pattern, used to robustly parse the '-'-joined 'cids' cookie
+# (the separator also appears inside uuids).
+_UUID_RE = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
 
 
 class MailController(http.Controller):
@@ -111,8 +115,10 @@ class MailController(http.Controller):
                 # We need here to extend the "allowed_company_ids" to allow a redirection
                 # to any record that the user can access, regardless of currently visible
                 # records based on the "currently allowed companies".
+                # The 'cids' cookie joins company ids with '-', which also appears
+                # inside uuids; extract canonical uuids instead of naive split.
                 cids_str = request.cookies.get('cids', str(user.company_id.id))
-                cids = [to_uuid(cid) for cid in cids_str.split('-')]
+                cids = [to_uuid(cid) for cid in _UUID_RE.findall(cids_str)] or [user.company_id.id]
                 try:
                     record_sudo.with_user(uid).with_context(allowed_company_ids=cids).check_access('read')
                 except AccessError:

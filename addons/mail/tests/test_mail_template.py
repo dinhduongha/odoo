@@ -454,15 +454,20 @@ class TestMailTemplate(MailCommon):
         self.assertEqual(original_attachments.mapped('res_model'), [self.mail_template._name] * 2)
 
     def test_mail_template_parse_partner_to(self):
+        from uuid import UUID
+        id1 = UUID('019eeb00-0000-7000-8000-000000000001')
+        id2 = UUID('019eeb00-0000-7000-8000-000000000002')
+        id3 = UUID('019eeb00-0000-7000-8000-000000000003')
+        u1, u2, u3 = str(id1), str(id2), str(id3)
         for partner_to, expected in [
-            ('1', [1]),
-            ('1,2,3', [1, 2, 3]),
-            ('1, 2,  3', [1, 2, 3]),  # remove spaces
-            ('[1, 2, 3]', [1, 2, 3]),  # %r of a list
-            ('(1, 2, 3)', [1, 2, 3]),  # %r of a tuple
-            ('1,[],2,"3"', [1, 2, 3]),  # type tolerant
-            ('(1, "wrong", 2, "partner_name", "3")', [1, 2, 3]),  # fault tolerant
-            ('res.partner(1, 2, 3)', [2]),  # invalid input but avoid crash
+            (u1, [id1]),
+            (f'{u1},{u2},{u3}', [id1, id2, id3]),
+            (f'{u1}, {u2},  {u3}', [id1, id2, id3]),  # remove spaces
+            (f'["{u1}", "{u2}", "{u3}"]', [id1, id2, id3]),  # %r of a list
+            (f'("{u1}", "{u2}", "{u3}")', [id1, id2, id3]),  # %r of a tuple
+            (f'["{u1}", [], "{u2}", "{u3}"]', [id1, id2, id3]),  # type tolerant
+            (f'("{u1}", "wrong", "{u2}", "partner_name", "{u3}")', [id1, id2, id3]),  # fault tolerant
+            (f'res.partner({u1}, {u2}, {u3})', [id2]),  # invalid input but avoid crash
         ]:
             with self.subTest(partner_to=partner_to):
                 parsed = self.mail_template._parse_partner_to(partner_to)
