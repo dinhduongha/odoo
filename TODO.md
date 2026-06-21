@@ -85,7 +85,25 @@ Likely a CLASS (related+precompute company_id) — worth fixing centrally.
 pos, l10n if added). Re-run: `cd /home/ha/work/odoo-uuidv7-refactor && ./run.sh` (full
 config) or the minimal `-i <mods>` loop used this session (see handoff.md).
 
-## MULTI-COMPANY FORCING (after full install — user decisions 2026-06-21)
+## MULTI-COMPANY FORCING — ✅ IMPLEMENTED (2026-06-21)
+- Demo Company bootstrapped in base_data.sql, pinned `…0002` (xmlid base.demo_company);
+  main_company `…0001`. Always 2 companies present.
+- group_multi_company implied_by group_user → every internal user gets the switcher.
+- user_admin/user_root company_ids include both companies → can actually switch.
+- load_demo runs with allowed_company_ids=[demo_company,…] → demo records that default
+  their company land in Demo Company.
+- Verified: install (no demo) + demo install both EXIT 0; admin.company_ids = both.
+
+### Remaining nuance / optional
+- Demo Company has NO accounting/stock setup (chart, journals, warehouse) — those are
+  created only for the company that runs the chart template (main). So company-BOUND
+  demo (invoices, journals) can't fully populate Demo Company without setting it up
+  (load a chart template + warehouse for `…0002`). Company-shared demo (products) stays
+  NULL (correct); default-company demo (e.g. partners) goes to Demo Company.
+- If a richer demo in Demo Company is wanted: set up Demo Company (chart_template.try_loading
+  for demo_company) before/around demo load.
+
+## (original notes) MULTI-COMPANY FORCING (after full install — user decisions 2026-06-21)
 1. Force multi-company = on DB init auto-create a 2nd company + grant base.group_multi_company
    to internal users (so multi-company UI always shows).
 2. Demo data → a dedicated "Demo Company" (main_company stays clean); load demo with that
