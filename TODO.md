@@ -46,7 +46,20 @@ Root-caused via fresh core init (base,web,mail,contacts) + curl. Fixes:
 - [x] ORM via call_kw: search_read, domain `('id','in',[uuid])`, create (new uuid) → all OK.
 - [x] share correct: __system__/admin=False, portal/public=True.
 
-## FULL MODULE INSTALL (in progress — 69/217 modules)
+## FULL MODULE INSTALL — ✅ DONE (217/217, EXIT 0, --without-demo)
+All 217 modules of the etc/odoo.conf list (+deps=220) install clean on db `uuidfull`.
+Verified serving: login→303 /odoo, session_info (uuid uid, company …0001), GET /odoo→200.
+Got here via ~30 more fix commits past the login work (see git log). The single
+highest-leverage one: Integer column_type was int8→reverted to int4 (unblocked ~19
+modules at once). Other classes: ir.default json uuid keys/values, create_column int4→uuid,
+domain/code/xpath id quoting, -id negations in SQL views, mail.followers UNION NULL,
+purchase.bill.union, chart_template uuid xml_id, account journal alias_defaults.
+
+### Still TODO for install
+- **Install WITH demo** (`--without-demo` was used). Demo data will surface more uuid
+  issues (and ties into the Demo Company work below). Run without `--without-demo=all`.
+
+## FULL MODULE INSTALL (historical — superseded above)
 Driving `-i base,web,sale,account,stock,mrp,hr,website,project,mail,... --without-demo`
 to ground-truth addon-level uuid bugs. Fixed bug CLASSES (commits after `55028bf`):
 - parent_path int()→uuid (analytic, ir_ui_menu, hr_department, +earlier).
