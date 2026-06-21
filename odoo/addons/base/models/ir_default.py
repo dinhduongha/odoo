@@ -204,7 +204,7 @@ class IrDefault(models.Model):
     def discard_values(self, model_name, field_name, values):
         """ Discard all the defaults for any of the given values. """
         field = self.env['ir.model.fields']._get(model_name, field_name)
-        json_vals = [json.dumps(value, ensure_ascii=False) for value in values]
+        json_vals = [json.dumps(value, ensure_ascii=False, default=str) for value in values]
         domain = [('field_id', '=', field.id), ('json_value', 'in', json_vals)]
         return self.search(domain).unlink()
 
@@ -214,12 +214,12 @@ class IrDefault(models.Model):
         field = self.env[model_name]._fields[field_name]
         self_super = self.with_user(SUPERUSER_ID)
         return json.dumps({
-            id_: field.convert_to_column(
+            str(id_): field.convert_to_column(
                 self_super.with_company(id_)._get_model_defaults(model_name).get(field_name),
                 self_super.with_company(id_)
             )
             for id_ in company_ids
-        })
+        }, default=str)
 
     def _evaluate_condition_with_fallback(self, model_name, field_expr, operator, value):
         """
