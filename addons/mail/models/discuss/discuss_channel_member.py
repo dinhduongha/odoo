@@ -37,7 +37,10 @@ class DiscussChannelMember(models.Model):
     custom_channel_name = fields.Char('Custom channel name')
     fetched_message_id = fields.Many2one('mail.message', string='Last Fetched', index="btree_not_null")
     seen_message_id = fields.Many2one('mail.message', string='Last Seen', index="btree_not_null")
-    new_message_separator = fields.Integer(help="Message id before which the separator should be displayed", default=0, required=True)
+    # uuidv7: stores the id of the last read message; messages with a (time-ordered)
+    # uuid strictly greater than this are unread. The nil uuid means "nothing read yet"
+    # (everything unread). Replaces the former Integer "last read id + 1".
+    new_message_separator = fields.Uuid(help="Last read message id; messages after it are unread", default='00000000-0000-0000-0000-000000000000', required=True)
     message_unread_counter = fields.Integer('Unread Messages Counter', compute='_compute_message_unread', compute_sudo=True)
     custom_notifications = fields.Selection(
         [("all", "All Messages"), ("mentions", "Mentions Only"), ("no_notif", "Nothing")],
@@ -85,7 +88,7 @@ class DiscussChannelMember(models.Model):
                      FROM mail_message
                     WHERE mail_message.res_id = channel.id
                       AND mail_message.model = 'discuss.channel'
-                      AND mail_message.id >= member.new_message_separator
+                      AND mail_message.id > member.new_message_separator
                       AND mail_message.message_type NOT IN ('notification', 'user_notification')
                )
             """,
@@ -163,7 +166,7 @@ class DiscussChannelMember(models.Model):
                          ON discuss_channel_member.channel_id = mail_message.res_id
                       WHERE mail_message.model = 'discuss.channel'
                         AND mail_message.message_type NOT IN ('notification', 'user_notification')
-                        AND mail_message.id >= discuss_channel_member.new_message_separator
+                        AND mail_message.id > discuss_channel_member.new_message_separator
                         AND discuss_channel_member.id IN %(ids)s
                    GROUP BY discuss_channel_member.id
             """, {'ids': tuple(self.ids)})
@@ -629,7 +632,7 @@ class DiscussChannelMember(models.Model):
         if not last_message:
             return
         self._set_last_seen_message(last_message)
-        self._set_new_message_separator(last_message.id + 1)
+        self._set_new_message_separator(last_message.id)
 
     def _set_last_seen_message(self, message, notify=True):
         """
@@ -641,9 +644,9 @@ class DiscussChannelMember(models.Model):
         """
         self.ensure_one()
         bus_channel = self._bus_channel()
-        if self.seen_message_id.id < message.id:
+        if not self.seen_message_id or self.seen_message_id.id < message.id:
             self.write({
-                "fetched_message_id": max(self.fetched_message_id.id, message.id),
+                "fetched_message_id": max(self.fetched_message_id.id, message.id) if self.fetched_message_id else message.id,
                 "seen_message_id": message.id,
                 "last_seen_dt": fields.Datetime.now(),
             })

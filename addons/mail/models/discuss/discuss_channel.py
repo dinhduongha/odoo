@@ -1027,7 +1027,7 @@ class DiscussChannel(models.Model):
         # Automatically set the message posted by the current user as seen for themselves.
         if self.self_member_id and message.is_current_user_or_guest_author:
             self.self_member_id._set_last_seen_message(message, notify=False)
-            self.self_member_id._set_new_message_separator(message.id + 1)
+            self.self_member_id._set_new_message_separator(message.id)
         # Invite mentioned partners to sub-channel.
         if self.parent_channel_id and message.partner_ids:
             members = self.env["discuss.channel.member"].search([

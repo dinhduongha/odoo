@@ -109,8 +109,8 @@ class MailActivity(models.Model):
     # if model: valid res_id
     _check_res_id_is_set_if_model = models.Constraint(
         """CHECK(
-            (COALESCE(res_model, '') <> '' AND (res_id IS NOT NULL AND res_id != 0)) OR
-            (COALESCE(res_model, '') = '' AND (res_id IS NULL OR res_id = 0))
+            (COALESCE(res_model, '') <> '' AND res_id IS NOT NULL) OR
+            (COALESCE(res_model, '') = '' AND res_id IS NULL)
         )""",
         'Activities have to be linked to records with a not null res_id.',
     )
