@@ -46,6 +46,16 @@
             <value name="install_demo" eval="True"/>
         </function>
 
+        <!-- Dedicated multi-company Demo Company (base.demo_company, …0002): load the
+             generic chart + accounting demo into it explicitly. The no-country search
+             above is unreliable at demo-load time, so target it by xmlid like main_company. -->
+        <function model="account.chart.template" name="try_loading">
+            <value eval="[]"/>
+            <value>generic_coa</value>
+            <value model="res.company" eval="obj().env.ref('base.demo_company')"/>
+            <value name="install_demo" eval="True"/>
+        </function>
+
         <!-- Payment Terms -->
 
         <record id="account_payment_term_advance" model="account.payment.term">
