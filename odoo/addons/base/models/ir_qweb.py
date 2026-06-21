@@ -986,6 +986,10 @@ class IrQweb(models.AbstractModel):
 
     def _compile(self, template):
         ref = None
+        # a falsy template (False/None/"") is not a valid ref nor an etree;
+        # reject it early with a clear message (raised within IrQweb, so the
+        # render loop wraps it as a QWebError)
+        assert isinstance(template, etree._Element) or template, "template is required"
         if isinstance(template, str) and template.endswith('.xml'):
             module_path = Manifest.for_addon(Path(template).parts[0]).path
             if 'templates' not in Path(file_path(template)).relative_to(module_path).parts:

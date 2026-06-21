@@ -126,6 +126,11 @@ class TestOrmCache(TransactionCase):
         self.assertFalse(self._registry_patched)
         self.registry.cache_invalidated.clear()
         registry = self.registry
+        # other post_install tests may have signaled a registry change (a new
+        # orm_signaling_registry row), which would make check_signaling() below
+        # reload the registry. Sync to the DB registry sequence so this test
+        # only exercises *cache* signaling on the same worker.
+        registry.registry_sequence = registry.get_sequences(self.env.cr)[0]
         old_sequences = dict(registry.cache_sequences)
         with self.assertLogs('odoo.registry') as logs:
             registry.cache_invalidated.add('assets')
@@ -162,6 +167,9 @@ class TestOrmCache(TransactionCase):
         self.assertFalse(self._registry_patched)
         self.registry.cache_invalidated.clear()
         registry = self.registry
+        # see test_signaling_01_single: sync the registry sequence so this test
+        # only exercises *cache* signaling on the same worker.
+        registry.registry_sequence = registry.get_sequences(self.env.cr)[0]
         old_sequences = dict(registry.cache_sequences)
         with self.assertLogs('odoo.registry') as logs:
             registry.cache_invalidated.add('assets')

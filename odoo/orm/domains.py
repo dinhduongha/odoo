@@ -1456,6 +1456,39 @@ def _optimize_relational_name_search(condition, model):
     return domain
 
 
+@field_type_optimization(['uuid'])
+def _optimize_uuid_value(condition, model):
+    """Normalise uuid values to ``uuid.UUID``.
+
+    uuid ids may arrive as strings (e.g. from a stored ir.rule ``domain_force``,
+    JSON-RPC, or company-dependent jsonb) or as ``uuid.UUID`` objects (e.g. from
+    a recordset ``.ids``). If both forms coexist across conditions on the same
+    field, equality/membership checks during domain merging treat them as
+    different values and may incorrectly cancel each other. Coerce string-uuid
+    values to ``uuid.UUID`` so all uuid conditions use a consistent, comparable
+    type. Non-uuid strings and falsy values are left untouched.
+    """
+    operator = condition.operator
+    if operator not in ('in', 'not in', '=', '!=', '>', '<', '<=', '>='):
+        return condition
+    value = condition.value
+
+    def _coerce(v):
+        if isinstance(v, str) and is_uuid(v):
+            return uuid.UUID(v)
+        return v
+
+    if isinstance(value, COLLECTION_TYPES):
+        new_value = OrderedSet(_coerce(v) for v in value)
+        if list(new_value) == list(value):
+            return condition
+        return DomainCondition(condition.field_expr, operator, new_value)
+    new_value = _coerce(value)
+    if new_value is value:
+        return condition
+    return DomainCondition(condition.field_expr, operator, new_value)
+
+
 @field_type_optimization(['boolean'])
 def _optimize_boolean_in(condition, model):
     """b in boolean_values"""

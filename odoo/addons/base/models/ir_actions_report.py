@@ -28,6 +28,7 @@ from odoo.fields import Domain
 from odoo.service import security
 from odoo.http import request, root
 from odoo.tools import config, is_html_empty, parse_version, split_every
+from odoo.tools.uuid_utils import is_uuid
 from odoo.tools.barcode import check_barcode_encoding, createBarcodeDrawing, get_barcode_font
 from odoo.tools.misc import find_in_path
 from odoo.tools.pdf import PdfFileReader, PdfFileWriter, PdfReadError
@@ -431,7 +432,10 @@ class IrActionsReport(models.Model):
                 }, raise_if_not_found=False)
             bodies.append(body)
             if node.get('data-oe-model') == report_model:
-                res_ids.append(int(node.get('data-oe-id', 0)))
+                # data-oe-id is a uuid string under uuid PKs (may be an int for
+                # int-PK models); coerce to the matching id type.
+                oe_id = node.get('data-oe-id') or 0
+                res_ids.append(uuid.UUID(oe_id) if is_uuid(oe_id) else int(oe_id))
             else:
                 res_ids.append(None)
 
