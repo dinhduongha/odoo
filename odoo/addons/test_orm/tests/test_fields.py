@@ -4292,8 +4292,10 @@ class TestMany2oneReference(TransactionExpressionCase):
         reference = self.env['test_orm.model_many2one_reference'].create({'res_id': record.id})
         reference.res_model = record._name
 
-        # the model field 'res_model' is not in database yet
-        self.assertIn(record.id, self.env._field_dirty[reference._fields['res_model']])
+        # the model field 'res_model' is not in database yet (it is the
+        # reference record whose res_model write is pending; with integer ids
+        # reference.id coincided with record.id across tables, uuid does not)
+        self.assertIn(reference.id, self.env._field_dirty[reference._fields['res_model']])
 
         # searching on the one2many should flush the field 'res_model'
         records = record.search([('model_ids.create_date', '!=', False)])
