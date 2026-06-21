@@ -168,13 +168,16 @@ class TestViewGroups(ViewCase):
         self.assertTrue(nodes, "groupby should contains the missing field 'ab'")
 
     def test_related_field_and_groups(self):
-        # group from related
+        # group from related. NB: in this build group_user implies
+        # group_multi_company (multi-company is forced for all users), so
+        # 'erp_manager & multi_company' collapses to 'erp_manager' (erp_manager
+        # implies user implies multi_company); the warning reports just that group.
         self.assertWarning("""
                 <form>
                     <field name="g_id"/>
                 </form>
             """,
-            expected_message="&#39;base.group_erp_manager&#39; &amp; &#39;base.group_multi_company&#39;",
+            expected_message="&#39;base.group_erp_manager&#39;",
             model='test_orm.model2.some_access')
 
         # should not fail, the domain is not applied on xxx_sub_id

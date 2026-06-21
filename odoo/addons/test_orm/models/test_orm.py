@@ -2148,7 +2148,7 @@ class TestOrmPrecomputeMonetary(models.Model):
             record.amount = 12.333
 
     def _compute_currency_id(self):
-        self.currency_id = self.env.ref('base.EUR')  # EUR
+        self.currency_id = self.env.ref('base.EUR').id  # EUR
 
 
 class TestOrmPrefetch(models.Model):
