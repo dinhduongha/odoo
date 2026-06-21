@@ -8,6 +8,19 @@ Auto mode. Code reviewed externally by Antigravity + codex.
 Full all-module demo install: **227/227 modules, Registry loaded, EXIT 0, ZERO demo
 failures** (every module's demo data loads). Runtime-verified: login + web client (/odoo,
 /web = 200) + 4 companies switchable + demo data readable via web call_kw.
+- test_orm suite (2026-06-21): PRODUCT (install/demo/runtime) green, but the TEST SUITE
+  is not uuid-adapted. Run on uuid-19-swap:
+  - test_orm module: ~53 unit-test failures (test_fields 16, test_onchange 12, test_search 9,
+    test_one 9, …) before an HttpCase/tour test hung headless (no browser). Causes:
+    29 AssertionError, 17 TypeError, 6 `uuid = integer`.
+  - dep tests (base 977 tests: 19 fail/65 err; web 35: 4/11; …): dominated by `uuid = integer`
+    — fixtures hardcode int ids (999999999, 146, etc.) and compare to ints.
+  - These are mostly TEST-side int-id assumptions + a few likely real ORM edge cases; a
+    separate large effort to uuid-adapt the suite. HttpCase/tour need a browser.
+  - Run cmd: copy odoo/addons/test_orm into the container's /mnt/extra-addons (the
+    odoo/addons mount shadows odoo/odoo/addons/test_orm), then
+    `-i test_orm --test-enable --test-tags=/test_orm --http-port=8074 --stop-after-init`.
+- PUSH deferred: only remote is origin=github.com/odoo/odoo.git (upstream); no fork remote.
 - Final fixes that cleared the last failures:
   - `ir_sequence` standard-impl PG sequence names: `%03d % uuid` -> uuid hex (date-range
     sub keyed by its own id, <=63 char). Latent RUNTIME bug (order/invoice/picking numbering).
