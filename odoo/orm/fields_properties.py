@@ -480,7 +480,7 @@ class Properties(Field):
 
             property_type = property_definition.get('type')
 
-            if property_type == 'many2one' and has_list_types(property_value, [int, (str, NoneType)]):
+            if property_type == 'many2one' and has_list_types(property_value, [(int, uuid.UUID), (str, NoneType)]):
                 property_definition[value_key] = property_value[0]
 
             elif property_type == 'many2many':
