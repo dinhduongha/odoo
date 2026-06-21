@@ -82,7 +82,7 @@ class ResUsers(models.Model):
                 'domain': json.dumps([
                     ['active', 'in', [True, False]],
                     ['activity_ids.res_id', 'in', list(group['res_ids'])]
-                ])
+                ], default=str)
             })
         activity_groups.extend(list(user_activities.values()))
 
