@@ -413,15 +413,18 @@ class MailComposeMessage(models.TransientModel):
         rely on 'res_ids' field. When 'active_ids' is not present, fallback
         on 'active_id'. """
         for composer in self.filtered(lambda composer: not composer.res_ids):
+            # uuid PKs: serialise ids as strings (e.g. "['019ee...']") so the stored
+            # text round-trips through ast.literal_eval; f"{[UUID(...)]}" would produce
+            # "[UUID('...')]" which literal_eval cannot parse.
             if composer.parent_id and composer.composition_mode == 'comment':
-                composer.res_ids = f"{[composer.parent_id.res_id]}"
+                composer.res_ids = f"{[str(composer.parent_id.res_id)]}"
             else:
                 active_res_ids = parse_res_ids(self.env.context.get('active_ids'), self.env)
                 # beware, field is limited in storage, usage of active_ids in context still required
                 if active_res_ids and len(active_res_ids) <= 500:
-                    composer.res_ids = f"{self.env.context['active_ids']}"
+                    composer.res_ids = f"{[str(i) for i in self.env.context['active_ids']]}"
                 elif not active_res_ids and self.env.context.get('active_id'):
-                    composer.res_ids = f"{[self.env.context['active_id']]}"
+                    composer.res_ids = f"{[str(self.env.context['active_id'])]}"
 
     @api.depends('composition_mode', 'model', 'res_domain', 'res_ids')
     def _compute_record_environment(self):

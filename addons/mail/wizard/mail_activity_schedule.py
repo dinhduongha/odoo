@@ -24,9 +24,9 @@ class MailActivitySchedule(models.TransientModel):
         active_res_ids = parse_res_ids(context.get('active_ids'), self.env)
         if 'res_ids' in fields:
             if active_res_ids and len(active_res_ids) <= self._batch_size:
-                res['res_ids'] = f"{context['active_ids']}"
+                res['res_ids'] = f"{[str(i) for i in context['active_ids']]}"
             elif not active_res_ids and context.get('active_id'):
-                res['res_ids'] = f"{[context['active_id']]}"
+                res['res_ids'] = f"{[str(context['active_id'])]}"
         res_model = context.get('active_model') or context.get('params', {}).get('active_model', False)
         if 'res_model' in fields:
             res['res_model'] = res_model
@@ -96,9 +96,9 @@ class MailActivitySchedule(models.TransientModel):
         for scheduler in self.filtered(lambda scheduler: not scheduler.res_ids):
             active_res_ids = parse_res_ids(context.get('active_ids'), self.env)
             if active_res_ids and len(active_res_ids) <= self._batch_size:
-                scheduler.res_ids = f"{context['active_ids']}"
+                scheduler.res_ids = f"{[str(i) for i in context['active_ids']]}"
             elif not active_res_ids and context.get('active_id'):
-                scheduler.res_ids = f"{[context['active_id']]}"
+                scheduler.res_ids = f"{[str(context['active_id'])]}"
 
     @api.depends('res_model_id', 'res_ids')
     def _compute_company_id(self):
