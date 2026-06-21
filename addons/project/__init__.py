@@ -30,7 +30,7 @@ def _project_post_init(env):
         make_identifier('mail_tracking_value_mail_message_id_old_value_integer_task_stage'),
         env['mail.tracking.value']._table,
         ['mail_message_id', 'old_value_integer'],
-        where=f'field_id={project_task_stage_field_id}'
+        where=f"field_id='{project_task_stage_field_id}'"
     )
 
     # Create analytic plan fields on project model for existing plans
