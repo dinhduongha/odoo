@@ -832,7 +832,7 @@ class AccountJournal(models.Model):
         if self.id:
             values['alias_name'] = self._alias_prepare_alias_name(self.alias_name, self.name, self.code, self.type, self.company_id)
             values['alias_defaults'] = defaults = literal_eval(self.alias_defaults or "{}")
-            defaults['company_id'] = self.company_id.id
+            defaults['company_id'] = str(self.company_id.id)
             defaults['move_type'] = {
                 'purchase': 'in_invoice',
                 'sale': 'out_invoice',
