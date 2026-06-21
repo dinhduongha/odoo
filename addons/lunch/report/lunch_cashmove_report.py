@@ -36,7 +36,7 @@ class LunchCashmoveReport(models.Model):
                 FROM lunch_cashmove lc
                 UNION ALL
                 SELECT
-                    -lol.id as id,
+                    lol.id as id,
                     -lol.price as amount,
                     lol.date as date,
                     lol.currency_id as currency_id,

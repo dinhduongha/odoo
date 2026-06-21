@@ -211,7 +211,7 @@ class SaleOrder(models.Model):
         store=True, readonly=False, precompute=True, index=True,
         tracking=2,
         domain=lambda self: "[('all_group_ids', 'in', {}), ('share', '=', False), ('company_ids', '=', company_id)]".format(
-            self.env.ref("sales_team.group_sale_salesman").ids
+            [str(i) for i in self.env.ref("sales_team.group_sale_salesman").ids]
         ))
     team_id = fields.Many2one(
         comodel_name='crm.team',
