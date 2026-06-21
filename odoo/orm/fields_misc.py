@@ -22,6 +22,20 @@ from . import fields_numeric  # noqa: F401
 
 _logger = logging.getLogger('odoo.fields_mics')
 
+
+def _stringify_uuid_keys(value):
+    """Recursively convert uuid.UUID dict keys to strings so the value is JSON-safe
+    (json.dumps rejects non-str/int/float/bool/None keys)."""
+    if isinstance(value, dict):
+        return {
+            (str(k) if isinstance(k, uuid.UUID) else k): _stringify_uuid_keys(v)
+            for k, v in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_stringify_uuid_keys(v) for v in value]
+    return value
+
+
 class Boolean(Field[bool]):
     """ Encapsulates a :class:`bool`. """
     type = 'boolean'
@@ -82,7 +96,10 @@ class Json(Field):
         #     )
         if not value:
             return None
-        return json.loads(json.dumps(value, ensure_ascii=False, default=json_default))
+        # uuid PKs: a jsonb value may hold uuid ids as dict KEYS (e.g. company-dependent
+        # maps keyed by id). json.dumps' `default` only handles values, not keys, and
+        # rejects UUID keys ("keys must be str ..."). Stringify uuid keys first.
+        return json.loads(json.dumps(_stringify_uuid_keys(value), ensure_ascii=False, default=json_default))
 
     def convert_to_column(self, value, record, values=None, validate=True):
         if validate:
