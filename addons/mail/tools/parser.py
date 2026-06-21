@@ -7,6 +7,7 @@ import uuid
 
 from odoo.exceptions import ValidationError
 from odoo.tools import is_list_of
+from odoo.tools.uuid_utils import to_uuid
 
 # uuid PKs: a list of uuid ids assigned to a Char/Text field is stored via repr,
 # e.g. "[UUID('019ee...'), ...]". ast.literal_eval cannot parse UUID(...) (a call),
@@ -26,8 +27,12 @@ def parse_res_ids(res_ids, env):
 
     :return list: list of ids
     """
-    if is_list_of(res_ids, (uuid.UUID, str)) or not res_ids:
+    if not res_ids:
         return res_ids
+    # Return uuid objects (not strings) so res_ids match record-id keys used as dict
+    # keys throughout the ORM/template rendering (str vs UUID would miss).
+    if is_list_of(res_ids, (uuid.UUID, str)):
+        return [to_uuid(r) for r in res_ids]
     error_msg = env._(
         "Invalid res_ids %(res_ids_str)s (type %(res_ids_type)s)",
         res_ids_str=res_ids,
@@ -47,4 +52,4 @@ def parse_res_ids(res_ids, env):
     if not is_list_of(res_ids, (uuid.UUID, str)):
         raise ValidationError(error_msg)
 
-    return res_ids
+    return [to_uuid(r) for r in res_ids]
