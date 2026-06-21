@@ -3,6 +3,7 @@
 from odoo import models
 from odoo.http import request, SessionExpiredException
 from odoo.tools.misc import OrderedSet
+from odoo.tools.uuid_utils import to_uuid
 from odoo.service import security
 from ..models.bus import dispatch
 from ..websocket import wsrequest
@@ -56,7 +57,12 @@ class IrWebsocket(models.AbstractModel):
         if not all(isinstance(c, str) for c in channels):
             raise ValueError("bus.Bus only string channels are allowed.")
         # sudo - bus.bus: reading non-sensitive last bus id.
-        last = 0 if last > self.env["bus.bus"].sudo()._bus_last_id() else last
+        # last may be 0 (fresh client) or a uuid (string); bus ids are uuid. Only
+        # reset when last is comparable to the current last id and ahead of it.
+        last = to_uuid(last)
+        current_last = self.env["bus.bus"].sudo()._bus_last_id()
+        if type(last) is type(current_last) and last > current_last:
+            last = 0
         return {"channels": OrderedSet(self._build_bus_channel_list(list(channels))), "last": last}
 
     def _after_subscribe_data(self, data):

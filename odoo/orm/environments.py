@@ -21,6 +21,7 @@ from odoo.sql_db import BaseCursor
 from odoo.tools import clean_context, frozendict, reset_cached_properties, OrderedSet, Query, SQL
 from odoo.tools.translate import get_translation, get_translated_module, LazyGettext
 from odoo.tools.misc import StackMap, SENTINEL
+from odoo.tools.uuid_utils import to_uuid
 from odoo.models import BaseModel
 
 from .registry import Registry
@@ -246,7 +247,8 @@ class Environment(Mapping[str, "BaseModel"]):
             even if the current user doesn't have access to
             the targeted company.
         """
-        company_ids = self.context.get('allowed_company_ids', [])
+        # allowed_company_ids may arrive from the web client as uuid strings
+        company_ids = [to_uuid(c) for c in self.context.get('allowed_company_ids', [])]
         if company_ids:
             if not self.su:
                 user_company_ids = self.user._get_company_ids()
@@ -276,7 +278,8 @@ class Environment(Mapping[str, "BaseModel"]):
             even if the current user doesn't have access to
             the targeted company.
         """
-        company_ids = self.context.get('allowed_company_ids', [])
+        # allowed_company_ids may arrive from the web client as uuid strings
+        company_ids = [to_uuid(c) for c in self.context.get('allowed_company_ids', [])]
         user_company_ids = self.user._get_company_ids()
         if company_ids:
             if not self.su:
