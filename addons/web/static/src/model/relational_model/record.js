@@ -577,7 +577,8 @@ export class Record extends DataPoint {
             } else if (field.type === "one2many" || field.type === "many2many") {
                 x2manyDataContext.withVirtualIds[fieldName] = value.currentIds;
                 x2manyDataContext.withoutVirtualIds[fieldName] = value.currentIds.filter(
-                    (id) => typeof id === "number"
+                    // real ids (int or uuid string), excluding virtual ids ("virtual_N")
+                    (id) => typeof id === "number" || !String(id).startsWith("virtual")
                 );
             } else if (value && field.type === "date") {
                 dataContext[fieldName] = serializeDate(value);
@@ -903,7 +904,8 @@ export class Record extends DataPoint {
                 valueIsCommandList = value.length > 0 && Array.isArray(value[0]);
                 if (!staticList) {
                     let data = valueIsCommandList ? [] : value;
-                    if (data.length > 0 && typeof data[0] === "number") {
+                    // a list of plain ids (number, or uuid string) -> wrap into {id}
+                    if (data.length > 0 && typeof data[0] !== "object") {
                         data = data.map((resId) => ({ id: resId }));
                     }
                     staticList = this._createStaticListDatapoint(data, fieldName, { orderBys });
@@ -957,8 +959,8 @@ export class Record extends DataPoint {
             .map(async ([fieldName, value]) => {
                 if (!value) {
                     changes[fieldName] = false;
-                } else if (typeof value === "number") {
-                    // Many2OneReferenceInteger field only manipulates the id
+                } else if (typeof value !== "object") {
+                    // many2one_reference manipulates only the id (number or uuid string)
                     changes[fieldName] = { resId: value };
                 } else {
                     const relation = this.data[this.fields[fieldName].model_field];

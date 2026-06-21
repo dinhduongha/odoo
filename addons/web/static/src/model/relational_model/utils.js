@@ -505,8 +505,9 @@ export function parseServerValue(field, value) {
                 // unset many2one_reference fields' value is 0
                 return false;
             }
-            if (typeof value === "number") {
-                // many2one_reference fetched without "fields" key in spec -> only returns the id
+            if (typeof value !== "object") {
+                // many2one_reference fetched without "fields" key in spec -> only
+                // returns the id (a number, or a uuid string)
                 return { resId: value };
             }
             return {
