@@ -116,7 +116,7 @@ class MailingTrace(models.Model):
     links_click_datetime = fields.Datetime('Clicked On', help='Stores last click datetime in case of multi clicks.')
 
     _check_res_id_is_set = models.Constraint(
-        'CHECK(res_id IS NOT NULL AND res_id !=0 )',
+        'CHECK(res_id IS NOT NULL)',
         'Traces have to be linked to records with a not null res_id.',
     )
 
