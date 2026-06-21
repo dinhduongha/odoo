@@ -47,6 +47,8 @@
 
         <record model="res.groups" id="group_multi_company">
             <field name="name">Multi Companies</field>
+            <!-- Force multi-company: every internal user gets the multi-company switcher -->
+            <field name="implied_by_ids" eval="[Command.link(ref('group_user'))]"/>
         </record>
 
         <record model="res.groups" id="group_multi_currency">
