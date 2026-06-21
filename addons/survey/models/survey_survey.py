@@ -1235,7 +1235,7 @@ class SurveySurvey(models.Model):
         goal = self.env['gamification.goal.definition'].create({
             'name': self.title,
             'description': _("%s certification passed", self.title),
-            'domain': "['&', ('survey_id', '=', %s), ('scoring_success', '=', True)]" % self.id,
+            'domain': "['&', ('survey_id', '=', '%s'), ('scoring_success', '=', True)]" % self.id,
             'computation_mode': 'count',
             'display_mode': 'boolean',
             'model_id': self.env.ref('survey.model_survey_user_input').id,
