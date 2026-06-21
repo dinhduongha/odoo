@@ -1424,9 +1424,9 @@ class ProjectTask(models.Model):
                         new_domain.append(("id", new_op, ids))
                         continue
                     op = "ilike" if op == "child_of" else op
-                    if isinstance(value, list) and value and all(_is_id(val) for val in value):
+                    if isinstance(value, list) and all(_is_id(val) for val in value):
                         new_domain.append(("id", op, value))
-                    elif isinstance(value, str) and not _is_id(value) or (isinstance(value, list) and not all(_is_id(val) for val in value)):
+                    elif (isinstance(value, str) and not _is_id(value)) or (isinstance(value, list) and not all(_is_id(val) for val in value)):
                         new_domain.append(("name", op, value))
                     if _is_id(value) and not isinstance(value, list):
                         if op == "=":

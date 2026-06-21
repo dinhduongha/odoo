@@ -1,3 +1,5 @@
+from odoo.tools.uuid_utils import uuid7
+
 from .test_project_base import TestProjectCommon
 
 
@@ -10,6 +12,9 @@ class TestProjectConfig(TestProjectCommon):
         cls.Settings = cls.env["res.config.settings"]
         cls.user_settings_project_manager = cls.env['res.users.settings']._find_or_create_for_user(cls.user_projectmanager)
         cls.user_settings_project_user = cls.env['res.users.settings']._find_or_create_for_user(cls.user_projectuser)
+        # Embedded action ids are uuids; use placeholder uuids in the
+        # comma-separated order/visibility values instead of integers.
+        cls.ea_1, cls.ea_2, cls.ea_3 = uuid7(), uuid7(), uuid7()
 
     def test_project_stages_feature_enable_views(self):
         """Check that the Gantt, Calendar and Activities views are
@@ -40,8 +45,8 @@ class TestProjectConfig(TestProjectCommon):
             'action_id': project_action.id,
             'res_model': 'project.project',
             'res_id': project.id,
-            'embedded_actions_order': 'false,3,2,1',
-            'embedded_actions_visibility': '1,2,3',
+            'embedded_actions_order': f'false,{self.ea_3},{self.ea_2},{self.ea_1}',
+            'embedded_actions_visibility': f'{self.ea_1},{self.ea_2},{self.ea_3}',
             'embedded_visibility': True,
         })
 
@@ -55,8 +60,8 @@ class TestProjectConfig(TestProjectCommon):
         self.assertDictEqual(
             project_user_config[f'{project_action.id}+{project.id}'],
             {
-                'embedded_actions_order': [False, 3, 2, 1],
-                'embedded_actions_visibility': [1, 2, 3],
+                'embedded_actions_order': [False, self.ea_3, self.ea_2, self.ea_1],
+                'embedded_actions_visibility': [self.ea_1, self.ea_2, self.ea_3],
                 'embedded_visibility': True,
             },
         )
@@ -90,8 +95,8 @@ class TestProjectConfig(TestProjectCommon):
             'action_id': project_action.id,
             'res_model': 'project.project',
             'res_id': project.id,
-            'embedded_actions_order': 'false,3,2,1',
-            'embedded_actions_visibility': '1,2,3',
+            'embedded_actions_order': f'false,{self.ea_3},{self.ea_2},{self.ea_1}',
+            'embedded_actions_visibility': f'{self.ea_1},{self.ea_2},{self.ea_3}',
             'embedded_visibility': True,
         })
         # The project user already has a personal configuration
@@ -100,8 +105,8 @@ class TestProjectConfig(TestProjectCommon):
             'action_id': project_action.id,
             'res_model': 'project.project',
             'res_id': project.id,
-            'embedded_actions_order': 'false,1,2,3',
-            'embedded_actions_visibility': '2,3',
+            'embedded_actions_order': f'false,{self.ea_1},{self.ea_2},{self.ea_3}',
+            'embedded_actions_visibility': f'{self.ea_2},{self.ea_3}',
             'embedded_visibility': False,
         })
         self.assertEqual(len(self.user_settings_project_user.embedded_actions_config_ids), 1)
@@ -114,8 +119,8 @@ class TestProjectConfig(TestProjectCommon):
         self.assertDictEqual(
             project_user_config[f'{project_action.id}+{project.id}'],
             {
-                'embedded_actions_order': [False, 1, 2, 3],
-                'embedded_actions_visibility': [2, 3],
+                'embedded_actions_order': [False, self.ea_1, self.ea_2, self.ea_3],
+                'embedded_actions_visibility': [self.ea_2, self.ea_3],
                 'embedded_visibility': False,
             },
         )
