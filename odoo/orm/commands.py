@@ -124,7 +124,9 @@ class Command(enum.IntEnum):
 
         Return the command triple :samp:`(SET, 0, {ids})`
         """
-        return (cls.SET, uuid.UUID('00000000-0000-0000-0000-000000000000'), ids)
+        # 2nd element is an unused placeholder for SET (only ids matter); keep it 0 as in
+        # stock — making it a uuid breaks code/tests that expect the (SET, 0, ids) shape.
+        return (cls.SET, 0, ids)
 
 
 if typing.TYPE_CHECKING:

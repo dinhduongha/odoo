@@ -33,12 +33,20 @@ class NewId:
         return self.__hash
 
     def __lt__(self, other):
-        """Ordering support: NewId < int or NewId < UUID?"""
-        o = getattr(other, 'origin', other)
+        """Ordering support (int or uuid.UUID origins).
+
+        A NewId(origin=o) sorts just AFTER the real id o; a NewId(origin=None) has
+        no anchor and sorts LAST (greater than everything).
+        """
+        other_origin = other.origin if isinstance(other, NewId) else other
         if self.origin is None:
-            return True
-        if isinstance(self.origin, (int, uuid.UUID)) and isinstance(o, type(self.origin)):
-            return self.origin < o
+            # origin-less NewId is the largest: never less than anything
+            return False
+        if other_origin is None:
+            # other is an origin-less NewId (largest) -> self is less
+            return isinstance(other, NewId)
+        if isinstance(other_origin, type(self.origin)):
+            return self.origin < other_origin
         return NotImplemented
 
     def __repr__(self):

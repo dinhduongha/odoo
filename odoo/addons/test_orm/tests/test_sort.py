@@ -3,6 +3,7 @@
 from odoo.api import NewId
 from odoo.fields import Command
 from odoo.tests import TransactionCase
+from odoo.tools import Reverse
 
 
 class TestSort(TransactionCase):
@@ -39,7 +40,7 @@ class TestSort(TransactionCase):
     def test_stable(self):
         self.assertEqual(
             self.cities.sorted('name', reverse=True).sorted('country_id.id'),
-            self.cities.sorted(lambda c: (-c.country_id.id, c.name), reverse=True),
+            self.cities.sorted(lambda c: (Reverse(c.country_id.id), c.name), reverse=True),
         )
 
     def test_basic_m2o(self):
