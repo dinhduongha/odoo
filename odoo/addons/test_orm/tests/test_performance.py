@@ -5,6 +5,7 @@ import logging
 from odoo.addons.base.tests.common import SavepointCaseWithUserDemo
 from odoo.tests.common import TransactionCase, users, warmup, tagged
 from odoo.tools import mute_logger, sql
+from odoo.tools.uuid_utils import to_uuid
 from odoo import Command
 
 _logger = logging.getLogger(__name__)
@@ -685,7 +686,8 @@ class TestIrPropertyOptimizations(TransactionCase):
         eggs = self.Eggs.create({})
         self.env['ir.default'].set("test_performance.bacon", "property_eggs", eggs.id)
 
-        self.assertEqual(eggs.id, self.env['ir.default']._get('test_performance.bacon', 'property_eggs'))
+        # ir.default stores values as JSON, so a uuid id round-trips as a string
+        self.assertEqual(eggs.id, to_uuid(self.env['ir.default']._get('test_performance.bacon', 'property_eggs')))
 
         # warmup
         self.Bacon.create({})
