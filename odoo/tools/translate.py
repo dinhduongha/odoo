@@ -519,9 +519,6 @@ def _get_uid(frame) -> uuid.UUID | None:
     if (local_self := frame.f_locals.get('self')) is not None:
         if hasattr(local_self, 'env') and (uid := local_self.env.uid):
             return uid
-    if hasattr(uid, 'id'):
-        uid = uid.id
-        return uid
     return None
 
 
