@@ -2,10 +2,16 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import ast
+import re
 import uuid
 
 from odoo.exceptions import ValidationError
 from odoo.tools import is_list_of
+
+# uuid PKs: a list of uuid ids assigned to a Char/Text field is stored via repr,
+# e.g. "[UUID('019ee...'), ...]". ast.literal_eval cannot parse UUID(...) (a call),
+# so normalise it to quoted strings "['019ee...', ...]" before evaluating.
+_UUID_REPR_RE = re.compile(r"UUID\((('[0-9a-fA-F-]+')|(\"[0-9a-fA-F-]+\"))\)")
 
 
 def parse_res_ids(res_ids, env):
@@ -30,7 +36,13 @@ def parse_res_ids(res_ids, env):
     try:
         res_ids = ast.literal_eval(res_ids)
     except Exception as e:
-        raise ValidationError(error_msg) from e
+        if isinstance(res_ids, str) and 'UUID(' in res_ids:
+            try:
+                res_ids = ast.literal_eval(_UUID_REPR_RE.sub(r"\1", res_ids))
+            except Exception:
+                raise ValidationError(error_msg) from e
+        else:
+            raise ValidationError(error_msg) from e
 
     if not is_list_of(res_ids, (uuid.UUID, str)):
         raise ValidationError(error_msg)
