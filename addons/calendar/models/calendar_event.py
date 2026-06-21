@@ -1025,8 +1025,8 @@ class CalendarEvent(models.Model):
         removed_partner_ids = []
         added_partner_ids = []
 
-        # if commands are just integers, assume they are ids with the intent to `Command.set`
-        if partner_commands and isinstance(partner_commands[0], int):
+        # if commands are just ids (int or UUID), assume they are ids with the intent to `Command.set`
+        if partner_commands and isinstance(partner_commands[0], (int, uuid.UUID)):
             partner_commands = [Command.set(partner_commands)]
 
         for command in partner_commands:
