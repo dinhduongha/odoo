@@ -522,9 +522,9 @@ class WebsiteSlides(WebsiteProfile):
         return {'status': status, 'slide': slide, 'channel_id': slide.sudo().channel_id.id}
 
     @http.route([
-        '/slides/<int:channel_id>',
-        '/slides/<int:channel_id>/category/<int:category_id>',
-        '/slides/<int:channel_id>/category/<int:category_id>/page/<int:page>',
+        '/slides/<string:channel_id>',
+        '/slides/<string:channel_id>/category/<string:category_id>',
+        '/slides/<string:channel_id>/category/<string:category_id>/page/<int:page>',
         '/slides/<model("slide.channel"):channel>',
         '/slides/<model("slide.channel"):channel>/page/<int:page>',
         '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>',
@@ -800,7 +800,7 @@ class WebsiteSlides(WebsiteProfile):
 
         return values
 
-    @http.route('/slides/<int:channel_id>/invite', type='http', auth='public', website=True, sitemap=False)
+    @http.route('/slides/<string:channel_id>/invite', type='http', auth='public', website=True, sitemap=False)
     def slide_channel_invite(self, channel_id, invite_partner_id, invite_hash):
         """ This route is included in the invitation link in email to join / check out the course. It is
         the main entry point on the attendee's side when sharing or inviting them. As rule of thumb, this will
@@ -854,7 +854,7 @@ class WebsiteSlides(WebsiteProfile):
         # Pending invitation. A banner will allow partner to login / signup on the course page.
         return request.redirect(f'{redirect_url}?invite_partner_id={invite_partner_id}&invite_hash={invite_hash}')
 
-    @http.route(['/slides/<int:channel_id>/identify'], type='http', auth='public', website=True, sitemap=False)
+    @http.route(['/slides/<string:channel_id>/identify'], type='http', auth='public', website=True, sitemap=False)
     def slide_channel_identify_from_invite(self, channel_id, invite_partner_id, invite_hash):
         """ This route redirects invited partners when they click on the login / signup button, when they are
         asked to login / signup as invited to a course as public user on the course page preview. """
@@ -1016,7 +1016,7 @@ class WebsiteSlides(WebsiteProfile):
         values.pop('channel', None)
         return request.render("website_slides.slide_main", values)
 
-    @http.route('/slides/slide/<int:slide_id>/share', type='http', auth="public", website=True, sitemap=False)
+    @http.route('/slides/slide/<string:slide_id>/share', type='http', auth="public", website=True, sitemap=False)
     def slide_shared_view(self, slide_id, **kwargs):
         user_slide_authorization = self._get_user_slide_authorization(slide_id)
         status = user_slide_authorization['status']
@@ -1042,7 +1042,7 @@ class WebsiteSlides(WebsiteProfile):
         response.mimetype = 'application/pdf'
         return response
 
-    @http.route('/slides/slide/<int:slide_id>/get_image', type='http', auth="public", website=True, sitemap=False)
+    @http.route('/slides/slide/<string:slide_id>/get_image', type='http', auth="public", website=True, sitemap=False)
     def slide_get_image(self, slide_id, field='image_128', width=0, height=0, crop=False):
         # Protect infographics by limiting access to 256px (large) images
         if field not in ('image_128', 'image_256', 'image_512', 'image_1024', 'image_1920'):
@@ -1512,11 +1512,11 @@ class WebsiteSlides(WebsiteProfile):
     # EMBED IN THIRD PARTY WEBSITES
     # --------------------------------------------------
 
-    @http.route('/slides/embed/<int:slide_id>', type='http', auth='public', website=True, sitemap=False)
+    @http.route('/slides/embed/<string:slide_id>', type='http', auth='public', website=True, sitemap=False)
     def slides_embed(self, slide_id, page="1", **kw):
         return self._slide_embed(slide_id, page=page, is_external_embed=False, **kw)
 
-    @http.route('/slides/embed_external/<int:slide_id>', type='http', auth='public', website=True, sitemap=False)
+    @http.route('/slides/embed_external/<string:slide_id>', type='http', auth='public', website=True, sitemap=False)
     def slides_embed_external(self, slide_id, page="1", **kw):
         return self._slide_embed(slide_id, page=page, is_external_embed=True, **kw)
 

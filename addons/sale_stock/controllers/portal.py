@@ -20,7 +20,7 @@ class SaleStockPortal(CustomerPortal):
                 raise
         return picking_sudo
 
-    @route(['/my/picking/pdf/<int:picking_id>'], type='http', auth="public", website=True)
+    @route(['/my/picking/pdf/<string:picking_id>'], type='http', auth="public", website=True)
     def portal_my_picking_report(self, picking_id, access_token=None, **kw):
         """ Print delivery slip for customer, using either access rights or access token
         to be sure customer has access """
@@ -37,7 +37,7 @@ class SaleStockPortal(CustomerPortal):
         ]
         return request.make_response(pdf, headers=pdfhttpheaders)
 
-    @route(['/my/picking/return/pdf/<int:picking_id>'], type='http', auth="public", website=True)
+    @route(['/my/picking/return/pdf/<string:picking_id>'], type='http', auth="public", website=True)
     def portal_my_picking_return_report(self, picking_id, access_token=None, **kw):
         """ Print return label for customer, using either access rights or access token
         to be sure customer has access """

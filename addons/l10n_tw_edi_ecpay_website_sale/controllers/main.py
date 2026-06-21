@@ -142,7 +142,7 @@ class WebsiteSaleL10nTW(WebsiteSale):
         values.update(request.website._get_checkout_step_values())
         return request.render('l10n_tw_edi_ecpay_website_sale.l10n_tw_edi_invoicing_info', values)
 
-    @http.route("/payment/ecpay/check_mobile_barcode/<int:sale_order_id>", type="jsonrpc", auth="public")
+    @http.route("/payment/ecpay/check_mobile_barcode/<string:sale_order_id>", type="jsonrpc", auth="public")
     def check_mobile_barcode(self, sale_order_id, **kwargs):
         try:
             order = CustomerPortal._document_check_access(self, 'sale.order', sale_order_id, kwargs.get("access_token"))
@@ -151,7 +151,7 @@ class WebsiteSaleL10nTW(WebsiteSale):
 
         return self._is_valid_mobile_barcode(kwargs.get("carrier_number", False), order)
 
-    @http.route("/payment/ecpay/check_love_code/<int:sale_order_id>", type="jsonrpc", auth="public")
+    @http.route("/payment/ecpay/check_love_code/<string:sale_order_id>", type="jsonrpc", auth="public")
     def check_love_code(self, sale_order_id, **kwargs):
         try:
             order = CustomerPortal._document_check_access(self, 'sale.order', sale_order_id, kwargs.get("access_token"))

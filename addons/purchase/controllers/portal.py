@@ -140,7 +140,7 @@ class CustomerPortal(portal.CustomerPortal):
             'orders'
         )
 
-    @http.route(['/my/purchase/<int:order_id>'], type='http', auth="public", website=True)
+    @http.route(['/my/purchase/<string:order_id>'], type='http', auth="public", website=True)
     def portal_my_purchase_order(self, order_id=None, access_token=None, **kw):
         try:
             order_sudo = self._document_check_access('purchase.order', order_id, access_token=access_token)
@@ -163,7 +163,7 @@ class CustomerPortal(portal.CustomerPortal):
             return request.render("purchase.portal_my_purchase_order_update_date", values)
         return request.render("purchase.portal_my_purchase_order", values)
 
-    @http.route(['/my/purchase/<int:order_id>/update'], type='jsonrpc', auth="public", website=True)
+    @http.route(['/my/purchase/<string:order_id>/update'], type='jsonrpc', auth="public", website=True)
     def portal_my_purchase_order_update_dates(self, order_id=None, access_token=None, **kw):
         """User update scheduled date on purchase order line.
         """
@@ -193,7 +193,7 @@ class CustomerPortal(portal.CustomerPortal):
             order_sudo._update_date_planned_for_lines(updated_dates)
         return Response(status=204)
 
-    @http.route(['/my/purchase/<int:order_id>/download_edi'], auth="public", website=True)
+    @http.route(['/my/purchase/<string:order_id>/download_edi'], auth="public", website=True)
     def portal_my_purchase_order_download_edi(self, order_id=None, access_token=None, **kw):
         """An endpoint to download EDI file representation.
         """

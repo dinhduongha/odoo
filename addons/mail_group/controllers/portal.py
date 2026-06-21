@@ -215,7 +215,7 @@ class PortalMailGroup(http.Controller):
     # ------------------------------------------------------------
 
     # csrf is disabled here because it will be called by the MUA with unpredictable session at that time
-    @http.route('/group/<int:group_id>/unsubscribe_oneclick', website=True, type='http', auth='public',
+    @http.route('/group/<string:group_id>/unsubscribe_oneclick', website=True, type='http', auth='public',
            methods=['POST'], csrf=False)
     def group_unsubscribe_oneclick(self, group_id, token, email):
         """ Unsubscribe a given user from a given group. One-click unsubscribe

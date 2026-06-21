@@ -264,7 +264,7 @@ class WebsiteEventController(http.Controller):
             'current_limit_per_order': tickets_limits.get(tid, next(iter(tickets_limits.values()))),  # next is used if the ticket id isn't known (alone event case)
         } for tid, count in ticket_order.items() if count]
 
-    @http.route(['/event/<model("event.event"):event>/registration/slot/<int:slot_id>/tickets'], type='jsonrpc', auth="public", methods=['POST'], website=True)
+    @http.route(['/event/<model("event.event"):event>/registration/slot/<string:slot_id>/tickets'], type='jsonrpc', auth="public", methods=['POST'], website=True)
     def registration_tickets(self, event, slot_id):
         """ After slot selection, render ticket selection modal.
         To restrict the selectable number of tickets, give the slot seats available and

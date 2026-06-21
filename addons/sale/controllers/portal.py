@@ -122,7 +122,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
     def _sale_order_get_page_view_values(self, order_sudo, access_token, values, history_session_key, **kwargs):
         return self._get_page_view_values(order_sudo, access_token, values, history_session_key, False, **kwargs)
 
-    @http.route(['/my/orders/<int:order_id>'], type='http', auth="public", website=True)
+    @http.route(['/my/orders/<string:order_id>'], type='http', auth="public", website=True)
     def portal_order_page(
         self,
         order_id,
@@ -310,7 +310,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
             **self._get_extra_payment_form_values(**kwargs),
         }
 
-    @http.route(['/my/orders/<int:order_id>/accept'], type='jsonrpc', auth="public", website=True)
+    @http.route(['/my/orders/<string:order_id>/accept'], type='jsonrpc', auth="public", website=True)
     def portal_quote_accept(self, order_id, access_token=None, name=None, signature=None):
         # get from query string if not on json param
         access_token = access_token or request.httprequest.args.get('access_token')
@@ -360,7 +360,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
             'redirect_url': order_sudo.get_portal_url(query_string=query_string),
         }
 
-    @http.route(['/my/orders/<int:order_id>/decline'], type='http', auth="public", methods=['POST'], website=True)
+    @http.route(['/my/orders/<string:order_id>/decline'], type='http', auth="public", methods=['POST'], website=True)
     def portal_quote_decline(self, order_id, access_token=None, decline_message=None, **kwargs):
         try:
             order_sudo = self._document_check_access('sale.order', order_id, access_token=access_token)
@@ -392,7 +392,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
 
         return request.redirect(redirect_url)
 
-    @http.route('/my/orders/<int:order_id>/document/<int:document_id>', type='http', auth='public', readonly=True)
+    @http.route('/my/orders/<string:order_id>/document/<string:document_id>', type='http', auth='public', readonly=True)
     def portal_quote_document(self, order_id, document_id, access_token):
         try:
             order_sudo = self._document_check_access('sale.order', order_id, access_token=access_token)
@@ -410,7 +410,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
             document.ir_attachment_id,
         ).get_response(as_attachment=True)
 
-    @http.route(['/my/orders/<int:order_id>/download_edi'], auth="public", website=True)
+    @http.route(['/my/orders/<string:order_id>/download_edi'], auth="public", website=True)
     def portal_my_sale_order_download_edi(self, order_id=None, access_token=None, **kw):
         """ An endpoint to download EDI file representation."""
         try:
@@ -440,7 +440,7 @@ class CustomerPortal(payment_portal.PaymentPortal):
 
 class PaymentPortal(payment_portal.PaymentPortal):
 
-    @http.route('/my/orders/<int:order_id>/transaction', type='jsonrpc', auth='public')
+    @http.route('/my/orders/<string:order_id>/transaction', type='jsonrpc', auth='public')
     def portal_order_transaction(self, order_id, access_token, **kwargs):
         """ Create a draft transaction and return its processing values.
 

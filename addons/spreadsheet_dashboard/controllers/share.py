@@ -3,7 +3,7 @@ from odoo.http import request
 from odoo.exceptions import UserError
 
 class DashboardShareRoute(http.Controller):
-    @http.route(['/dashboard/share/<int:share_id>/<token>'], type='http', auth='public')
+    @http.route(['/dashboard/share/<string:share_id>/<token>'], type='http', auth='public')
     def share_portal(self, share_id=None, token=None):
         share = request.env["spreadsheet.dashboard.share"].sudo().browse(share_id).exists()
         if not share:
@@ -27,7 +27,7 @@ class DashboardShareRoute(http.Controller):
             },
         )
 
-    @http.route(["/dashboard/download/<int:share_id>/<token>"],
+    @http.route(["/dashboard/download/<string:share_id>/<token>"],
                 type='http', auth='user', readonly=True)
     def download(self, token=None, share_id=None):
         share = request.env["spreadsheet.dashboard.share"].sudo().browse(share_id)
@@ -40,7 +40,7 @@ class DashboardShareRoute(http.Controller):
         return stream.get_response()
 
     @http.route(
-        ["/dashboard/data/<int:share_id>/<token>"],
+        ["/dashboard/data/<string:share_id>/<token>"],
         type="http",
         auth="public",
         methods=["GET"],

@@ -150,7 +150,7 @@ class PortalAccount(CustomerPortal):
         })
         return values
 
-    @http.route(['/my/invoices/<int:invoice_id>'], type='http', auth="public", website=True)
+    @http.route(['/my/invoices/<string:invoice_id>'], type='http', auth="public", website=True)
     def portal_my_invoice_detail(self, invoice_id, access_token=None, report_type=None, download=False, **kw):
         try:
             invoice_sudo = self._document_check_access('account.move', invoice_id, access_token)
@@ -184,7 +184,7 @@ class PortalAccount(CustomerPortal):
         values = self._invoice_get_page_view_values(invoice_sudo, access_token, **kw)
         return request.render("account.portal_invoice_page", values)
 
-    @http.route(['/my/journal/<int:journal_id>/unsubscribe'], type='http', auth="public", methods=['GET', 'POST'], website=True)
+    @http.route(['/my/journal/<string:journal_id>/unsubscribe'], type='http', auth="public", methods=['GET', 'POST'], website=True)
     def portal_my_journal_unsubscribe(self, journal_id, **kw):
         def _render(ctx, status=200):
             return request.render('account.portal_my_journal_mail_notifications', ctx, status=status)

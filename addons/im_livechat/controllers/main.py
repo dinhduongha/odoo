@@ -60,12 +60,12 @@ class LivechatController(http.Controller):
         stream = request.env['ir.binary']._get_stream_from(asset.js())
         return stream.get_response()
 
-    @http.route('/im_livechat/support/<int:channel_id>', type='http', auth='public')
+    @http.route('/im_livechat/support/<string:channel_id>', type='http', auth='public')
     def support_page(self, channel_id, **kwargs):
         channel = request.env['im_livechat.channel'].sudo().browse(channel_id)
         return request.render('im_livechat.support_page', {'channel': channel})
 
-    @http.route('/im_livechat/loader/<int:channel_id>', type='http', auth='public')
+    @http.route('/im_livechat/loader/<string:channel_id>', type='http', auth='public')
     def loader(self, channel_id, **kwargs):
         username = kwargs.get("username", _("Visitor"))
         channel = request.env['im_livechat.channel'].sudo().browse(channel_id)
@@ -250,7 +250,7 @@ class LivechatController(http.Controller):
         if channel := request.env["discuss.channel"].search([("id", "=", channel_id)]):
             channel._email_livechat_transcript(email)
 
-    @http.route("/im_livechat/download_transcript/<int:channel_id>", type="http", auth="public")
+    @http.route("/im_livechat/download_transcript/<string:channel_id>", type="http", auth="public")
     @add_guest_to_context
     def download_livechat_transcript(self, channel_id):
         channel = request.env["discuss.channel"].search([("id", "=", channel_id)])

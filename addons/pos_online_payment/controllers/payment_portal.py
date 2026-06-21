@@ -78,7 +78,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
             url_params['tx_id'] = tx_id
         return f'/pos/pay/confirmation/{pos_order_id}?' + url_encode(url_params)
 
-    @http.route('/pos/pay/<int:pos_order_id>', type='http', methods=['GET'], auth='public', website=True, sitemap=False)
+    @http.route('/pos/pay/<string:pos_order_id>', type='http', methods=['GET'], auth='public', website=True, sitemap=False)
     def pos_order_pay(self, pos_order_id, access_token=None, exit_route=None):
         """ Behaves like payment.PaymentPortal.payment_pay but for POS online payment.
 
@@ -158,7 +158,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
     def _render_pay(self, rendering_context):
         return request.render('pos_online_payment.pay', rendering_context)
 
-    @http.route('/pos/pay/transaction/<int:pos_order_id>', type='jsonrpc', auth='public', website=True, sitemap=False)
+    @http.route('/pos/pay/transaction/<string:pos_order_id>', type='jsonrpc', auth='public', website=True, sitemap=False)
     def pos_order_pay_transaction(self, pos_order_id, access_token=None, **kwargs):
         """ Behaves like payment.PaymentPortal.payment_transaction but for POS online payment.
 
@@ -243,7 +243,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
 
         return tx_sudo._get_processing_values()
 
-    @http.route('/pos/pay/confirmation/<int:pos_order_id>', type='http', methods=['GET'], auth='public', website=True, sitemap=False)
+    @http.route('/pos/pay/confirmation/<string:pos_order_id>', type='http', methods=['GET'], auth='public', website=True, sitemap=False)
     def pos_order_pay_confirmation(self, pos_order_id, tx_id=None, access_token=None, exit_route=None, **kwargs):
         """ Behaves like payment.PaymentPortal.payment_confirm but for POS online payment.
 

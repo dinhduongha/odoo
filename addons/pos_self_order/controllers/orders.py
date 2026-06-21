@@ -123,7 +123,7 @@ class PosSelfOrderController(http.Controller):
             pos_config._notify('REMOVE_ORDERS', {'deleted_order_tokens': deleted_order_tokens})
         return self._generate_return_values(orders, pos_config) if orders else {}
 
-    @http.route('/kiosk/payment/<int:pos_config_id>/<device_type>', auth='public', type='jsonrpc', website=True)
+    @http.route('/kiosk/payment/<string:pos_config_id>/<device_type>', auth='public', type='jsonrpc', website=True)
     def pos_self_order_kiosk_payment(self, pos_config_id, order, payment_method_id, access_token, device_type):
         pos_config = self._verify_pos_config(access_token)
         results = self.process_order(order, access_token, None, device_type)

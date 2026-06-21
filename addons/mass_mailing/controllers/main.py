@@ -97,13 +97,13 @@ class MassMailController(http.Controller):
         )
 
     # csrf is disabled here because it will be called by the MUA with unpredictable session at that time
-    @http.route(['/mailing/<int:mailing_id>/unsubscribe_oneclick'], type='http', website=True, auth='public',
+    @http.route(['/mailing/<string:mailing_id>/unsubscribe_oneclick'], type='http', website=True, auth='public',
                 methods=["POST"], csrf=False)
     def mailing_unsubscribe_oneclick(self, mailing_id, document_id=None, email=None, hash_token=None, **post):
         self.mailing_unsubscribe(mailing_id, document_id=document_id, email=email, hash_token=hash_token, **post)
         return Response(status=200)
 
-    @http.route('/mailing/<int:mailing_id>/confirm_unsubscribe', type='http', website=True, auth='public')
+    @http.route('/mailing/<string:mailing_id>/confirm_unsubscribe', type='http', website=True, auth='public')
     def mailing_confirm_unsubscribe(self, mailing_id, document_id=None, email=None, hash_token=None):
         mailing = request.env['mailing.mailing'].sudo().browse(mailing_id)
         # check that mailing exists/has access
@@ -158,7 +158,7 @@ class MassMailController(http.Controller):
         })
 
     # todo: merge this route with /mail/mailing/confirm_unsubscribe on next minor version
-    @http.route(['/mailing/<int:mailing_id>/unsubscribe'], type='http', website=True, auth='public')
+    @http.route(['/mailing/<string:mailing_id>/unsubscribe'], type='http', website=True, auth='public')
     def mailing_unsubscribe(self, mailing_id, document_id=None, email=None, hash_token=None):
         email_found, hash_token_found = self._fetch_user_information(email, hash_token)
         try:
@@ -394,7 +394,7 @@ class MassMailController(http.Controller):
     # TRACKING
     # ------------------------------------------------------------
 
-    @http.route('/mail/track/<int:mail_id>/<string:token>/blank.gif', type='http', auth='public')
+    @http.route('/mail/track/<string:mail_id>/<string:token>/blank.gif', type='http', auth='public')
     def track_mail_open(self, mail_id, token, **post):
         """ Email tracking. """
         expected_token = request.env['mail.mail']._generate_mail_recipient_token(mail_id)
@@ -408,7 +408,7 @@ class MassMailController(http.Controller):
 
         return response
 
-    @http.route('/r/<string:code>/m/<int:mailing_trace_id>', type='http', auth="public")
+    @http.route('/r/<string:code>/m/<string:mailing_trace_id>', type='http', auth="public")
     def full_url_redirect(self, code, mailing_trace_id, **post):
         request.env['link.tracker.click'].sudo().add_click(
             code,
@@ -440,7 +440,7 @@ class MassMailController(http.Controller):
             render_vals = {'menu_id': request.env.ref('mass_mailing.menu_mass_mailing_global_settings').id}
         return request.render('mass_mailing.mailing_report_deactivated', render_vals)
 
-    @http.route(['/mailing/<int:mailing_id>/view'], type='http', website=True, auth='public')
+    @http.route(['/mailing/<string:mailing_id>/view'], type='http', website=True, auth='public')
     def mailing_view_in_browser(self, mailing_id, email=None, document_id=None, hash_token=None, **kwargs):
         # backward compatibility: temporary for mailings sent before migation to 17
         document_id = document_id or kwargs.get('res_id')

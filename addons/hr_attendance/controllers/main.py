@@ -74,7 +74,7 @@ class HrAttendance(http.Controller):
 
         return response
 
-    @http.route('/hr_attendance/kiosk_mode_menu/<int:company_id>', auth='user', type='http')
+    @http.route('/hr_attendance/kiosk_mode_menu/<string:company_id>', auth='user', type='http')
     def kiosk_menu_item_action(self, company_id):
         if request.env.user.has_group("hr_attendance.group_hr_attendance_user"):
             # Auto log out will prevent users from forgetting to log out of their session

@@ -861,7 +861,7 @@ class EventEvent(models.Model):
         return result
 
     def _get_tickets_access_hash(self, registration_ids):
-        """ Returns the ground truth hash for accessing the tickets in route /event/<int:event_id>/my_tickets.
+        """ Returns the ground truth hash for accessing the tickets in route /event/<string:event_id>/my_tickets.
         The dl links are always made event-dependant, hence the method linked to the record in self.
         """
         self.ensure_one()

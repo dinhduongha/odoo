@@ -8,7 +8,7 @@ from odoo.exceptions import AccessError, MissingError
 
 
 class EcpayInvoiceController(http.Controller):
-    @http.route("/invoice/ecpay/agreed_invoice_allowance/<int:invoice_id>", type="http", methods=['POST'], auth="public", csrf=False)
+    @http.route("/invoice/ecpay/agreed_invoice_allowance/<string:invoice_id>", type="http", methods=['POST'], auth="public", csrf=False)
     def agreed_invoice_allowance(self, invoice_id, access_token=None, **kwargs):
         try:
             invoice = CustomerPortal._document_check_access(self, 'account.move', invoice_id, access_token)

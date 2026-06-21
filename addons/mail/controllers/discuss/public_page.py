@@ -39,7 +39,7 @@ class PublicPageController(http.Controller):
             create_token=create_token, channel_name=channel_name, default_display_mode="video_full_screen"
         )
 
-    @http.route("/chat/<int:channel_id>/<string:invitation_token>", methods=["GET"], type="http", auth="public")
+    @http.route("/chat/<string:channel_id>/<string:invitation_token>", methods=["GET"], type="http", auth="public")
     @add_guest_to_context
     def discuss_channel_invitation(self, channel_id, invitation_token, email_token=None):
         guest_email = email_token and verify_hash_signed(
@@ -53,7 +53,7 @@ class PublicPageController(http.Controller):
         store = Store().add_global_values(isChannelTokenSecret=True)
         return self._response_discuss_channel_invitation(store, channel, guest_email)
 
-    @http.route("/discuss/channel/<int:channel_id>", methods=["GET"], type="http", auth="public")
+    @http.route("/discuss/channel/<string:channel_id>", methods=["GET"], type="http", auth="public")
     @add_guest_to_context
     def discuss_channel(self, channel_id, *, highlight_message_id=None):
         # highlight_message_id is used JS side by parsing the query string

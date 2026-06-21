@@ -38,8 +38,8 @@ class CustomerPortalLoyalty(CustomerPortal):
 
     @route(
         [
-            '/my/loyalty_card/<int:card_id>/history',
-            '/my/loyalty_card/<int:card_id>/history/page/<int:page>',
+            '/my/loyalty_card/<string:card_id>/history',
+            '/my/loyalty_card/<string:card_id>/history/page/<int:page>',
         ],
         type='http',
         auth='user',
@@ -58,7 +58,7 @@ class CustomerPortalLoyalty(CustomerPortal):
         order = searchbar_sortings[sortby]['order']
         lines_count = LoyaltyHistorySudo.search_count([('card_id', '=', card_id)])
         pager = portal_pager(
-            url='/my/loyalty_card/<int:card_id>/history',
+            url='/my/loyalty_card/<string:card_id>/history',
             url_args={'sortby': sortby, 'card_id': card_id},
             total=lines_count,
             page=page,
@@ -83,7 +83,7 @@ class CustomerPortalLoyalty(CustomerPortal):
 
         return request.render('loyalty.loyalty_card_history_template', values)
 
-    @route('/my/loyalty_card/<int:card_id>/values', type='jsonrpc', auth='user')
+    @route('/my/loyalty_card/<string:card_id>/values', type='jsonrpc', auth='user')
     def portal_get_card_history_values(self, card_id):
         """Retrieve card history values for portal card dialog.
 

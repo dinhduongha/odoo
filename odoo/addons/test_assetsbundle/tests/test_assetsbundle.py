@@ -760,7 +760,7 @@ class TestAssetsBundleInBrowser(HttpCase):
     # Review point @al: is this really what we want people to do ?
     def test_03_js_interpretation_recommended_new_method(self):
         """ Checks the feature of test_02 is still produceable, but in another way
-        '/web/content/<int:id>/<string: filename.js>',
+        '/web/content/<string:id>/<string: filename.js>',
         """
         code = b'const d = 4;'
         attach = self.env['ir.attachment'].create({

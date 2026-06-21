@@ -108,7 +108,7 @@ class AttachmentController(ThreadController):
         return self._make_zip(zip_name, attachments)
 
     @http.route(
-        "/mail/attachment/pdf_first_page/<int:attachment_id>",
+        "/mail/attachment/pdf_first_page/<string:attachment_id>",
         auth="public",
         methods=["GET"],
         readonly=True,

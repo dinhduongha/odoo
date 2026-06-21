@@ -81,7 +81,7 @@ class WebsiteProfile(http.Controller):
         }
 
     @http.route([
-        '/profile/avatar/<int:user_id>',
+        '/profile/avatar/<string:user_id>',
     ], type='http', auth="public", website=True, sitemap=False, readonly=True)
     def get_user_profile_avatar(self, user_id, field='avatar_256', width=0, height=0, crop=False, **post):
         if field not in ('image_128', 'image_256', 'avatar_128', 'avatar_256'):
@@ -110,7 +110,7 @@ class WebsiteProfile(http.Controller):
                 ), void_from_url)
         return void_from_url
 
-    @http.route('/profile/user/<int:user_id>', type='http', auth='public', website=True, readonly=True)
+    @http.route('/profile/user/<string:user_id>', type='http', auth='public', website=True, readonly=True)
     def view_user_profile(self, user_id, **post):
         user_sudo, denial_reason = self._check_user_profile_access(user_id)
         if denial_reason:

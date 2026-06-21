@@ -27,7 +27,7 @@ class MailingSMSController(http.Controller):
             return {'error': 'trace_error'}
         return {'trace': trace}
 
-    @http.route(['/sms/<int:mailing_id>/<string:trace_code>'], type='http', website=True, auth='public')
+    @http.route(['/sms/<string:mailing_id>/<string:trace_code>'], type='http', website=True, auth='public')
     def blacklist_page(self, mailing_id, trace_code, **post):
         """ Main entry point for unsubscribe links. Verify trace code (should
         match mailing and trace), then check number can be sanitized. """
@@ -80,7 +80,7 @@ class MailingSMSController(http.Controller):
         })
 
 
-    @http.route(['/sms/<int:mailing_id>/unsubscribe/<string:trace_code>'], type='http', website=True, auth='public')
+    @http.route(['/sms/<string:mailing_id>/unsubscribe/<string:trace_code>'], type='http', website=True, auth='public')
     def blacklist_number(self, mailing_id, trace_code, **post):
         """ Effectively opt-out or enter number in block list. """
         check_res = self._check_trace(mailing_id, trace_code)
@@ -122,7 +122,7 @@ class MailingSMSController(http.Controller):
             'lists_optout': lists_optout,
         })
 
-    @http.route('/r/<string:code>/s/<int:sms_id_int>', type='http', auth="public")
+    @http.route('/r/<string:code>/s/<string:sms_id_int>', type='http', auth="public")
     def sms_short_link_redirect(self, code, sms_id_int, **post):
         if sms_id_int:
             trace_id = request.env['mailing.trace'].sudo().search([('sms_id_int', '=', sms_id_int)]).id

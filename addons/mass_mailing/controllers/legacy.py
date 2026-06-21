@@ -10,7 +10,7 @@ from odoo.http import request
 class MailingLegacy(http.Controller):
     """ Retro compatibility layer for legacy endpoint"""
 
-    @http.route(['/mail/mailing/<int:mailing_id>/unsubscribe'], type='http', website=True, auth='public')
+    @http.route(['/mail/mailing/<string:mailing_id>/unsubscribe'], type='http', website=True, auth='public')
     def mailing_unsubscribe(self, mailing_id, email=None, res_id=None, token="", **post):
         """ Old route, using mail/mailing prefix, and outdated parameter names """
         params = werkzeug.urls.url_encode(

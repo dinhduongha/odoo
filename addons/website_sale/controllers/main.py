@@ -603,7 +603,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         )
 
     @route(
-        '/shop/<model("product.template"):product_template>/document/<int:document_id>',
+        '/shop/<model("product.template"):product_template>/document/<string:document_id>',
         type='http',
         auth='public',
         website=True,

@@ -11,7 +11,7 @@ from odoo.addons.payment.controllers import portal as payment_portal
 
 class PaymentPortal(payment_portal.PaymentPortal):
 
-    @route('/invoice/transaction/<int:invoice_id>', type='jsonrpc', auth='public')
+    @route('/invoice/transaction/<string:invoice_id>', type='jsonrpc', auth='public')
     def invoice_transaction(self, invoice_id, access_token, **kwargs):
         """ Create a draft transaction and return its processing values.
 

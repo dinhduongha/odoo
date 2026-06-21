@@ -15,7 +15,7 @@ URL_ANAF_TOKEN = 'https://logincert.anaf.ro/anaf-oauth2/v1/token'
 
 class L10nRoEdiController(http.Controller):
 
-    @http.route('/l10n_ro_edi/authorize/<int:company_id>', auth="user")
+    @http.route('/l10n_ro_edi/authorize/<string:company_id>', auth="user")
     def authorize(self, company_id, **kw):
         """ Generate Authorization Token to acquire access_key for requesting Access Token """
         company = http.request.env['res.company'].browse(company_id)
@@ -31,7 +31,7 @@ class L10nRoEdiController(http.Controller):
         auth_url = f'{URL_ANAF_AUTHORIZE}?{auth_url_params}'
         return request.redirect(auth_url, code=302, local=False)
 
-    @http.route('/l10n_ro_edi/callback/<int:company_id>', type='http', auth="user")
+    @http.route('/l10n_ro_edi/callback/<string:company_id>', type='http', auth="user")
     def callback(self, company_id, **kw):
         """ Use the acquired access_key to request access & refresh token from ANAF """
         company = http.request.env['res.company'].browse(company_id)

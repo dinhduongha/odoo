@@ -10,7 +10,7 @@ from odoo.addons.portal.utils import get_portal_partner
 
 class PortalChatter(ThreadController):
 
-    @http.route('/mail/avatar/mail.message/<int:res_id>/author_avatar/<int:width>x<int:height>', type='http', auth='public')
+    @http.route('/mail/avatar/mail.message/<string:res_id>/author_avatar/<int:width>x<int:height>', type='http', auth='public')
     def portal_avatar(self, res_id=None, height=50, width=50, access_token=None, _hash=None, pid=None):
         """Get the avatar image in the chatter of the portal"""
         if access_token or (_hash and pid):

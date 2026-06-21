@@ -649,7 +649,7 @@ class WebsiteForum(WebsiteProfile):
 
     # User
     # --------------------------------------------------
-    @http.route(['/forum/<model("forum.forum"):forum>/partner/<int:partner_id>'], type='http', auth="public", website=True)
+    @http.route(['/forum/<model("forum.forum"):forum>/partner/<string:partner_id>'], type='http', auth="public", website=True)
     def open_partner(self, forum, partner_id=0, **post):
         slug = request.env['ir.http']._slug
         if partner_id:

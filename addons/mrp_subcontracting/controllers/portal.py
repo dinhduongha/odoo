@@ -73,7 +73,7 @@ class CustomerPortal(portal.CustomerPortal):
 
         return http.request.render("mrp_subcontracting.portal_my_productions", values)
 
-    @http.route("/my/productions/<int:picking_id>", type="http", auth="user", methods=['GET'], website=True)
+    @http.route("/my/productions/<string:picking_id>", type="http", auth="user", methods=['GET'], website=True)
     def portal_my_production(self, picking_id):
         try:
             self._document_check_access('stock.picking', picking_id)
@@ -82,7 +82,7 @@ class CustomerPortal(portal.CustomerPortal):
         picking = request.env['stock.picking'].browse(picking_id)
         return request.render("mrp_subcontracting.subcontracting_portal", {'picking': picking})
 
-    @http.route("/my/productions/<int:picking_id>/subcontracting_portal", type="http", auth="user", methods=['GET'])
+    @http.route("/my/productions/<string:picking_id>/subcontracting_portal", type="http", auth="user", methods=['GET'])
     def render_production_backend_view(self, picking_id):
         try:
             picking = self._document_check_access('stock.picking', picking_id)

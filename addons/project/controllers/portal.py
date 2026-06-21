@@ -107,7 +107,7 @@ class ProjectCustomerPortal(CustomerPortal):
         })
         return request.render("project.portal_my_projects", values)
 
-    @http.route(['/my/projects/<int:project_id>', '/my/projects/<int:project_id>/page/<int:page>'], type='http', auth="public", website=True)
+    @http.route(['/my/projects/<string:project_id>', '/my/projects/<string:project_id>/page/<int:page>'], type='http', auth="public", website=True)
     def portal_my_project(self, project_id=None, access_token=None, page=1, date_begin=None, date_end=None, sortby=None, search=None, search_in='content', groupby=None, task_id=None, **kw):
         try:
             project_sudo = self._document_check_access('project.project', project_id, access_token)
@@ -160,7 +160,7 @@ class ProjectCustomerPortal(CustomerPortal):
         })
         return session_info
 
-    @http.route(['/my/projects/<int:project_id>/project_sharing', '/my/projects/<int:project_id>/project_sharing/<path:subpath>'], type='http', auth='user', methods=['GET'])
+    @http.route(['/my/projects/<string:project_id>/project_sharing', '/my/projects/<string:project_id>/project_sharing/<path:subpath>'], type='http', auth='user', methods=['GET'])
     def render_project_backend_view(self, project_id, subpath=None):
         project = request.env['project.project'].sudo().browse(project_id)
         if not (
@@ -173,7 +173,7 @@ class ProjectCustomerPortal(CustomerPortal):
             {'session_info': self._prepare_project_sharing_session_info(project)},
         )
 
-    @http.route('/my/projects/<int:project_id>/task/<int:task_id>', type='http', auth='public', website=True)
+    @http.route('/my/projects/<string:project_id>/task/<string:task_id>', type='http', auth='public', website=True)
     def portal_my_project_task(self, project_id=None, task_id=None, access_token=None, **kw):
         try:
             project_sudo = self._document_check_access('project.project', project_id, access_token)
@@ -188,7 +188,7 @@ class ProjectCustomerPortal(CustomerPortal):
         values['project'] = project_sudo
         return request.render("project.portal_my_task", values)
 
-    @http.route('/my/projects/<int:project_id>/task/<int:task_id>/subtasks', type='http', auth='user', methods=['GET'], website=True)
+    @http.route('/my/projects/<string:project_id>/task/<string:task_id>/subtasks', type='http', auth='user', methods=['GET'], website=True)
     def portal_my_project_subtasks(self, project_id, task_id, page=1, date_begin=None, date_end=None, sortby=None, filterby=None, search=None, search_in='content', groupby=None, **kw):
         try:
             project_sudo = self._document_check_access('project.project', project_id)
@@ -222,7 +222,7 @@ class ProjectCustomerPortal(CustomerPortal):
         except (AccessError, MissingError):
             return request.not_found()
 
-    @http.route('/my/projects/<int:project_id>/task/<int:task_id>/recurrent_tasks', type='http', auth='user', methods=['GET'], website=True)
+    @http.route('/my/projects/<string:project_id>/task/<string:task_id>/recurrent_tasks', type='http', auth='user', methods=['GET'], website=True)
     def portal_my_project_recurrent_tasks(self, project_id, task_id, page=1, date_begin=None, date_end=None, sortby=None, filterby=None, search=None, search_in='content', groupby=None, **kw):
         try:
             project_sudo = self._document_check_access('project.project', project_id)
@@ -532,7 +532,7 @@ class ProjectCustomerPortal(CustomerPortal):
         # The route should not be called if at least hr_timesheet is not installed
         raise MissingError(_('There is nothing to report.'))
 
-    @http.route(['/my/tasks/<int:task_id>'], type='http', auth="public", website=True)
+    @http.route(['/my/tasks/<string:task_id>'], type='http', auth="public", website=True)
     def portal_my_task(self, task_id, report_type=None, access_token=None, project_sharing=False, **kw):
         try:
             task_sudo = self._document_check_access('project.task', task_id, access_token)

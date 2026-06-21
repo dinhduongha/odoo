@@ -446,7 +446,7 @@ class Survey(http.Controller):
             survey_sudo, 'background_image'
         ).get_response()
 
-    @http.route('/survey/<string:survey_token>/<int:section_id>/get_background_image',
+    @http.route('/survey/<string:survey_token>/<string:section_id>/get_background_image',
                 type='http', auth="public", website=True, sitemap=False)
     def survey_section_get_background(self, survey_token, section_id):
         survey_sudo, dummy = self._fetch_from_access_token(survey_token, False)
@@ -460,7 +460,7 @@ class Survey(http.Controller):
             section, 'background_image'
         ).get_response()
 
-    @http.route('/survey/get_question_image/<string:survey_token>/<string:answer_token>/<int:question_id>/<int:suggested_answer_id>', type='http', auth="public", website=True, sitemap=False)
+    @http.route('/survey/get_question_image/<string:survey_token>/<string:answer_token>/<string:question_id>/<string:suggested_answer_id>', type='http', auth="public", website=True, sitemap=False)
     def survey_get_question_image(self, survey_token, answer_token, question_id, suggested_answer_id):
         access_data = self._get_access_data(survey_token, answer_token, ensure_token=True)
         if access_data['validity_code'] is not True:
@@ -701,7 +701,7 @@ class Survey(http.Controller):
         fake_user_input.sudo().unlink()
         return response
 
-    @http.route(['/survey/<int:survey_id>/get_certification'], type='http', auth='user', methods=['GET'], website=True)
+    @http.route(['/survey/<string:survey_id>/get_certification'], type='http', auth='user', methods=['GET'], website=True)
     def survey_get_certification(self, survey_id, **kwargs):
         """ The certification document can be downloaded as long as the user has succeeded the certification """
         survey = request.env['survey.survey'].sudo().search([

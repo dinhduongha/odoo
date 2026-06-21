@@ -11,7 +11,7 @@ from odoo.tools import consteq
 class DigestController(Controller):
 
     # csrf is disabled here because it will be called by the MUA with unpredictable session at that time
-    @route('/digest/<int:digest_id>/unsubscribe_oneclik', type='http', website=True, auth='public',
+    @route('/digest/<string:digest_id>/unsubscribe_oneclik', type='http', website=True, auth='public',
            methods=['POST'], csrf=False)
     def digest_unsubscribe_oneclick(self, digest_id, token=None, user_id=None):
         """ Propose a one click button to the user to unsubscribe as defined in
@@ -22,7 +22,7 @@ class DigestController(Controller):
         self.digest_unsubscribe(digest_id, token=token, user_id=user_id)
         return Response(status=200)
 
-    @route('/digest/<int:digest_id>/unsubscribe', type='http', website=True, auth='public', methods=['GET', 'POST'])
+    @route('/digest/<string:digest_id>/unsubscribe', type='http', website=True, auth='public', methods=['GET', 'POST'])
     def digest_unsubscribe(self, digest_id, token=None, user_id=None, one_click=None):
         """ Unsubscribe a given user from a given digest
 
@@ -59,7 +59,7 @@ class DigestController(Controller):
             'digest': digest_sudo,
         })
 
-    @route('/digest/<int:digest_id>/set_periodicity', type='http', website=True, auth='user')
+    @route('/digest/<string:digest_id>/set_periodicity', type='http', website=True, auth='user')
     def digest_set_periodicity(self, digest_id, periodicity='weekly'):
         if not request.env.user.has_group('base.group_erp_manager'):
             raise Forbidden()

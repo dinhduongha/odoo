@@ -28,7 +28,7 @@ class EventController(Controller):
             ('Content-Disposition', content_disposition('%s.ics' % event.name))
         ])
 
-    @route(['/event/<int:event_id>/my_tickets'], type='http', auth='public')
+    @route(['/event/<string:event_id>/my_tickets'], type='http', auth='public')
     def event_my_tickets(self, event_id, registration_ids, tickets_hash, badge_mode=False, responsive_html=False):
         """ Returns a pdf response, containing all tickets for attendees in registration_ids for event_id.
 

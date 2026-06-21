@@ -242,7 +242,7 @@ class MailController(http.Controller):
             'access_url': record._notify_get_action_link('view', model=model, res_id=res_id) if display_link else False,
         })
 
-    @http.route('/mail/message/<int:message_id>', type='http', auth='public')
+    @http.route('/mail/message/<string:message_id>', type='http', auth='public')
     @add_guest_to_context
     def mail_thread_message_redirect(self, message_id, **kwargs):
         message = request.env['mail.message'].search([('id', '=', message_id)])

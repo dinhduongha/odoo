@@ -21,7 +21,7 @@ class CorsLivechatController(LivechatController):
         force_guest_env(guest_token)
         return self.history_pages(pid, channel_id, page_history)
 
-    @route("/im_livechat/cors/download_transcript/<int:channel_id>", type="http", auth="public", cors="*")
+    @route("/im_livechat/cors/download_transcript/<string:channel_id>", type="http", auth="public", cors="*")
     def cors_download_livechat_transcript(self, guest_token, channel_id):
         force_guest_env(guest_token)
         return self.download_livechat_transcript(channel_id)

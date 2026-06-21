@@ -8,7 +8,7 @@ from odoo.addons.sale.controllers import portal
 
 class CustomerPortal(portal.CustomerPortal):
 
-    @route(['/my/orders/<int:order_id>/update_line_dict'], type='jsonrpc', auth="public", website=True)
+    @route(['/my/orders/<string:order_id>/update_line_dict'], type='jsonrpc', auth="public", website=True)
     def portal_quote_option_update(self, order_id, line_id, access_token=None, remove=False, input_quantity=False, **kwargs):
         """ Update the quantity of an optional SOline from a SO.
 

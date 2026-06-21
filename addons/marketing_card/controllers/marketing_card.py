@@ -45,7 +45,7 @@ class MarketingCardController(Controller):
 
     @route([
         '/cards/<string:card_slug>/card.jpg',
-        '/cards/<int:card_id>/card.jpg',
+        '/cards/<string:card_id>/card.jpg',
     ], type='http', auth='public', sitemap=False, website=True)
     def card_campaign_image(self, card_id=None, card_slug=None):
         card = _get_card_from_url(card_id, card_slug)
@@ -63,7 +63,7 @@ class MarketingCardController(Controller):
 
     @route([
         '/cards/<string:card_slug>/preview',
-        '/cards/<int:card_id>/preview',
+        '/cards/<string:card_id>/preview',
     ], type='http', auth='public', sitemap=False, website=True)
     def card_campaign_preview(self, card_id=None, card_slug=None):
         """Route for users to preview their card and share it on their social platforms."""
@@ -80,7 +80,7 @@ class MarketingCardController(Controller):
 
     @route([
         '/cards/<string:card_slug>/redirect',
-        '/cards/<int:card_id>/redirect',
+        '/cards/<string:card_id>/redirect',
     ], type='http', auth='public', sitemap=False, website=True)
     def card_campaign_redirect(self, card_id=None, card_slug=None):
         """Route to redirect users to the target url, or display the opengraph embed text for web crawlers.
