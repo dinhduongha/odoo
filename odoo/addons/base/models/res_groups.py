@@ -331,7 +331,7 @@ class ResGroups(models.Model):
     def _get_view_group_hierarchy(self):
         return {
             'groups': {
-                group.id: {
+                str(group.id): {
                     'id': group.id,
                     'name': group.name,
                     'comment': group.comment,
@@ -344,7 +344,7 @@ class ResGroups(models.Model):
                 for group in self.search([])
             },
             'privileges': {
-                privilege.id: {
+                str(privilege.id): {
                     'id': privilege.id,
                     'name': privilege.name,
                     'category_id': privilege.category_id.id,

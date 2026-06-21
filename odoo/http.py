@@ -139,6 +139,7 @@ import hmac
 import importlib.metadata
 import inspect
 import json
+import uuid
 import logging
 import mimetypes
 import os
@@ -2081,7 +2082,22 @@ class Request:
         :param collections.abc.Mapping cookies: cookies to set on the client
         :rtype: :class:`~odoo.http.Response`
         """
-        data = json.dumps(data, ensure_ascii=False, default=json_default)
+        # uuidv7: JSON object keys must be strings. json.dumps auto-coerces
+        # int/float/bool/None keys but raises on uuid.UUID keys. Many response
+        # payloads are keyed by record id (now a uuid), so normalize uuid keys to
+        # str — mirroring the implicit "ids become string keys" contract that held
+        # when ids were integers.
+        def _stringify_uuid_keys(value):
+            if isinstance(value, dict):
+                return {
+                    (str(k) if isinstance(k, uuid.UUID) else k): _stringify_uuid_keys(v)
+                    for k, v in value.items()
+                }
+            if isinstance(value, (list, tuple)):
+                return [_stringify_uuid_keys(v) for v in value]
+            return value
+
+        data = json.dumps(_stringify_uuid_keys(data), ensure_ascii=False, default=json_default)
 
         headers = werkzeug.datastructures.Headers(headers)
         headers['Content-Length'] = len(data)

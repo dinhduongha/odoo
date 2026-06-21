@@ -1820,7 +1820,7 @@ def hash_sign(env, scope, message_values, expiration=None, expiration_hours=None
         if isinstance(expiration, datetime.timedelta):
             expiration = datetime.datetime.now() + expiration
     expiration_timestamp = 0 if not expiration else int(expiration.timestamp())
-    message_strings = json.dumps(message_values)
+    message_strings = json.dumps(message_values, default=str)
     hash_value = hmac(env, scope, f'1:{message_strings}:{expiration_timestamp}', hash_function=hashlib.sha256)
     token = b"\x01" + expiration_timestamp.to_bytes(8, 'little') + bytes.fromhex(hash_value) + message_strings.encode()
     return base64.urlsafe_b64encode(token).decode().rstrip('=')

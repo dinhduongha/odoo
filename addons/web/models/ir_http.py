@@ -146,7 +146,7 @@ class IrHttp(models.AbstractModel):
                 "user_companies": {
                     'current_company': user.company_id.id,
                     'allowed_companies': {
-                        comp.id: {
+                        str(comp.id): {
                             'id': comp.id,
                             'name': comp.name,
                             'sequence': comp.sequence,
@@ -156,7 +156,7 @@ class IrHttp(models.AbstractModel):
                         } for comp in user_companies
                     },
                     'disallowed_ancestor_companies': {
-                        comp.id: {
+                        str(comp.id): {
                             'id': comp.id,
                             'name': comp.name,
                             'sequence': comp.sequence,
