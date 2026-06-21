@@ -770,7 +770,9 @@ class MailActivity(models.Model):
             user_assigned_ids = ongoing.user_id.ids
             attachments = [attachments_by_id[attach.id] for attach in completed.attachment_ids]
 
-            grouped_activities[res_id][activity_type_id.id] = {
+            # JSON object keys must be strings; uuid res_id / activity_type_id
+            # are stringified (the client looks them up by the str uuid)
+            grouped_activities[str(res_id)][str(activity_type_id.id)] = {
                 'count_by_state': dict(Counter(
                     self._compute_state_from_date(act.date_deadline, user_tz) if act.active else 'done'
                     for act in activities)),
@@ -782,7 +784,7 @@ class MailActivity(models.Model):
             }
             if attachments:
                 most_recent_attachment = max(attachments, key=lambda a: (a['create_date'], a['id']))
-                grouped_activities[res_id][activity_type_id.id]['attachments_info'] = {
+                grouped_activities[str(res_id)][str(activity_type_id.id)]['attachments_info'] = {
                     'most_recent_id': most_recent_attachment['id'],
                     'most_recent_name': most_recent_attachment['name'],
                     'count': len(attachments),
