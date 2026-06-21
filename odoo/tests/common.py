@@ -1043,10 +1043,13 @@ class TransactionCase(BaseCase):
                 return
             if cls.registry.registry_invalidated or cls.registry.cache_invalidated:
                 _logger.info('Simulating signal changes during tests')
+            # registry_sequence / cache_sequences are uuid ids of signaling rows
+            # (see Registry.signal_changes). Simulate a new signal by assigning a
+            # fresh monotonic uuid7 rather than the int-era "+= 1".
             if cls.registry.registry_invalidated:
-                cls.registry.registry_sequence += 1
+                cls.registry.registry_sequence = uuid7()
             for cache_name in cls.registry.cache_invalidated or ():
-                cls.registry.cache_sequences[cache_name] += 1
+                cls.registry.cache_sequences[cache_name] = uuid7()
             cls.registry.registry_invalidated = False
             cls.registry.cache_invalidated.clear()
 
