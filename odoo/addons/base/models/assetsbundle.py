@@ -214,9 +214,8 @@ class AssetsBundle(object):
             unique=unique,
             extension=extension,
         )
-	# UUIDv7 Patch
         query = """
-             SELECT max(id::text)::uuid
+             SELECT max(id)
                FROM ir_attachment
               WHERE create_uid = %s
                 AND url like %s

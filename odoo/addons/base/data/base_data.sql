@@ -2,6 +2,35 @@
 -- Pure SQL
 -------------------------------------------------------------------------
 
+-------------------------------------------------------------------------
+-- UUIDv7 primary keys
+--
+-- PostgreSQL has no built-in max()/min() aggregate for the uuid type.
+-- Define them here with a sort operator (sortop) so that the planner can
+-- still satisfy max(id)/min(id) with the primary-key btree index
+-- (Index Scan Backward) instead of falling back to a sequential scan or
+-- an index-defeating max(id::text) cast.
+-------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION _uuid_larger(uuid, uuid) RETURNS uuid
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE AS
+$$ SELECT CASE WHEN $1 IS NULL THEN $2 WHEN $2 IS NULL THEN $1 WHEN $1 > $2 THEN $1 ELSE $2 END $$;
+
+CREATE OR REPLACE FUNCTION _uuid_smaller(uuid, uuid) RETURNS uuid
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE AS
+$$ SELECT CASE WHEN $1 IS NULL THEN $2 WHEN $2 IS NULL THEN $1 WHEN $1 < $2 THEN $1 ELSE $2 END $$;
+
+DROP AGGREGATE IF EXISTS max(uuid);
+DROP AGGREGATE IF EXISTS min(uuid);
+
+CREATE AGGREGATE max(uuid) (
+    sfunc = _uuid_larger, stype = uuid, combinefunc = _uuid_larger,
+    parallel = safe, sortop = OPERATOR(>)
+);
+CREATE AGGREGATE min(uuid) (
+    sfunc = _uuid_smaller, stype = uuid, combinefunc = _uuid_smaller,
+    parallel = safe, sortop = OPERATOR(<)
+);
+
 CREATE TABLE ir_actions (
   id uuid NOT NULL DEFAULT uuidv7(),
   primary key(id)

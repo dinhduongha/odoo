@@ -2557,9 +2557,8 @@ actual arch.
         """Validate architecture of custom views (= without xml id) for a given model.
             This method is called at the end of registry update.
         """
-	# UUIDv7 Patched
         rec = self.browse(id_ for id_, in self.env.execute_query(SQL("""
-                   SELECT max(v.id::text)::uuid
+                   SELECT max(v.id)
                      FROM ir_ui_view v
                 LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
                     WHERE md.module IN (SELECT name FROM ir_module_module) IS NOT TRUE

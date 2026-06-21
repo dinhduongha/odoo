@@ -14,7 +14,7 @@ class IrUiView(models.Model):
         result = super(IrUiView, self)._validate_custom_views(model)
 
         self.env.cr.execute("""
-            SELECT max(v.id::text)::uuid
+            SELECT max(v.id)
                FROM ir_ui_view v
           LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
           LEFT JOIN ir_module_module m ON (m.name = md.module)
