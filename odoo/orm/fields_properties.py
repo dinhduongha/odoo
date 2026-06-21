@@ -163,6 +163,18 @@ class Properties(Field):
         else:
             raise TypeError(f"Wrong property type {type(value)!r}")
 
+        # uuid PKs: many2one/many2many ids are stored in jsonb as strings; coerce
+        # any uuid-looking string back to uuid.UUID so the cache holds the native
+        # id type. to_uuid leaves non-uuid strings (char/selection/tags) untouched.
+        for property_name, property_value in value.items():
+            if isinstance(property_value, str):
+                value[property_name] = to_uuid(property_value)
+            elif isinstance(property_value, list):
+                value[property_name] = [
+                    to_uuid(v) if isinstance(v, str) else v
+                    for v in property_value
+                ]
+
         if validate:
             # Sanitize `_html` flagged properties
             for property_name, property_value in value.items():
@@ -929,7 +941,7 @@ class PropertiesDefinition(Field):
 
             self._validate_properties_definition(value, record.env)
 
-        return json.dumps(record._convert_to_cache_properties_definition(value))
+        return json.dumps(record._convert_to_cache_properties_definition(value), default=str)
 
     def convert_to_cache(self, value, record, validate=True):
         # any format -> cache format (list of dicts or None)
@@ -939,7 +951,7 @@ class PropertiesDefinition(Field):
         if isinstance(value, list):
             # avoid accidental side effects from shared mutable data, and make
             # the value strict with respect to JSON (tuple -> list, etc)
-            value = json.dumps(value)
+            value = json.dumps(value, default=str)
 
         if isinstance(value, str):
             value = json.loads(value)

@@ -10,6 +10,7 @@ from odoo.addons.base.tests.test_expression import TransactionExpressionCase
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Command, Domain
 from odoo.tests import Form, TransactionCase, users
+from odoo.tools.uuid_utils import to_uuid, uuid7
 from odoo.tools import get_lang, mute_logger
 
 
@@ -93,7 +94,17 @@ class TestPropertiesMixin(TransactionCase):
         )
         value = self.env.cr.fetchone()
         self.assertTrue(value)
-        return value[0]
+        # raw jsonb stores relational ids as strings; coerce uuid-looking
+        # strings back to uuid.UUID so assertions can compare against .id/.ids
+        def _coerce(v):
+            if isinstance(v, str):
+                return to_uuid(v)
+            if isinstance(v, list):
+                return [to_uuid(x) if isinstance(x, str) else x for x in v]
+            return v
+        if not value[0]:
+            return value[0]
+        return {k: _coerce(val) for k, val in value[0].items()}
 
     def _get_sql_definition(self, discussion):
         self.env.flush_all()
@@ -2465,8 +2476,8 @@ class PropertiesGroupByCase(TestPropertiesMixin):
         cls.messages = cls.message_1 | cls.message_2 | cls.message_3 | cls.message_4
         cls.env['test_orm.message'].search([('id', 'not in', cls.messages.ids)]).unlink()
 
-        cls.wrong_discussion_id = cls.env['test_orm.discussion'].search(
-            [], order="id DESC", limit=1).id + 1000
+        # a fresh, non-existent discussion id (uuid has no "+1" successor)
+        cls.wrong_discussion_id = uuid7()
 
     @mute_logger('odoo.fields')
     def test_properties_field_read_group_basic(self):
