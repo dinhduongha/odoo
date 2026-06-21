@@ -10,6 +10,7 @@ from odoo.exceptions import ValidationError, UserError
 from odoo.fields import Domain
 from odoo.tools import is_html_empty
 from odoo.tools.safe_eval import safe_eval, time
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -660,8 +661,8 @@ class MailTemplate(models.Model):
         if not isinstance(partner_to, (list, tuple)):
             partner_to = [partner_to]
         return [
-            int(pid.strip()) if isinstance(pid, str) else int(pid) for pid in partner_to
-            if (isinstance(pid, str) and pid.strip().isdigit()) or (pid and not isinstance(pid, str))
+            to_uuid(pid.strip()) if isinstance(pid, str) else pid for pid in partner_to
+            if (isinstance(pid, str) and is_uuid(pid.strip())) or (pid and not isinstance(pid, str))
         ]
 
     # ------------------------------------------------------------

@@ -1,12 +1,13 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.tools import consteq
+from odoo.tools.uuid_utils import to_uuid
 
 
 def validate_thread_with_hash_pid(thread, _hash, pid):
     if not _hash or not pid:
         return False
-    pid = int(pid)
+    pid = to_uuid(pid)
     if consteq(_hash, thread._sign_token(pid)):
         return True
     parent_sign_token = thread._portal_get_parent_hash_token(pid)

@@ -12,6 +12,7 @@ from odoo.exceptions import AccessError
 from odoo.http import STATIC_CACHE, Response, request
 from odoo.tools import consteq
 from odoo.tools.misc import file_open
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.mail.tools.discuss import add_guest_to_context
 
@@ -111,7 +112,7 @@ class MailController(http.Controller):
                 # to any record that the user can access, regardless of currently visible
                 # records based on the "currently allowed companies".
                 cids_str = request.cookies.get('cids', str(user.company_id.id))
-                cids = [int(cid) for cid in cids_str.split('-')]
+                cids = [to_uuid(cid) for cid in cids_str.split('-')]
                 try:
                     record_sudo.with_user(uid).with_context(allowed_company_ids=cids).check_access('read')
                 except AccessError:
