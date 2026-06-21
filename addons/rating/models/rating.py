@@ -92,8 +92,11 @@ class RatingRating(models.Model):
         for rating in self:
             name = False
             if rating.parent_res_model and rating.parent_res_id:
-                name = self.env[rating.parent_res_model].sudo().browse(rating.parent_res_id).display_name
-                name = name or f'{rating.parent_res_model}/{rating.parent_res_id}'
+                # parent_res_id is a soft reference; the target may not exist (e.g. demo
+                # data partially rolled back). Guard with exists() to avoid MissingError
+                # during recompute.
+                parent = self.env[rating.parent_res_model].sudo().browse(rating.parent_res_id).exists()
+                name = (parent.display_name if parent else False) or f'{rating.parent_res_model}/{rating.parent_res_id}'
             rating.parent_res_name = name
 
     def _get_rating_image_filename(self):

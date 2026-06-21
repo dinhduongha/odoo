@@ -116,7 +116,7 @@ class ProjectTaskBurndownChartReport(models.AbstractModel):
                                             CASE WHEN mtv.id IS NOT NULL THEN mm.date
                                                 ELSE (now() at time zone 'utc')::date + INTERVAL '%(interval)s'
                                             END as date_end,
-                                            CASE WHEN mtv.id IS NOT NULL THEN mtv.old_value_integer
+                                            CASE WHEN mtv.id IS NOT NULL THEN mtv.old_value_uuid
                                                ELSE pt.stage_id
                                             END as stage_id,
                                             CASE
@@ -132,7 +132,7 @@ class ProjectTaskBurndownChartReport(models.AbstractModel):
                                                                                      AND mtv.field_id = %(field_id)s
                                                                                      AND mm.model='project.task'
                                                                                      AND mm.message_type = 'notification'
-                                                        JOIN project_task_type ptt ON ptt.id = mtv.old_value_integer
+                                                        JOIN project_task_type ptt ON ptt.id = mtv.old_value_uuid
                                                 ) ON mm.res_id = pt.id
                                       WHERE pt.active=true AND pt.id IN (SELECT id from task_ids)
                                    ) task_stage_id_history

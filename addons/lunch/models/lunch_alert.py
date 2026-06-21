@@ -111,7 +111,7 @@ class LunchAlert(models.Model):
             cron.code = dedent(f"""\
                 # This cron is dynamically controlled by {self._description}.
                 # Do NOT modify this cron, modify the related record instead.
-                env['{self._name}'].browse([{alert.id}])._notify_chat()""")
+                env['{self._name}'].browse(['{alert.id}'])._notify_chat()""")
 
     @api.model_create_multi
     def create(self, vals_list):

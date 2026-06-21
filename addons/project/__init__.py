@@ -27,9 +27,9 @@ def _project_post_init(env):
     project_task_stage_field_id = env['ir.model.fields']._get_ids('project.task').get('stage_id')
     create_index(
         env.cr,
-        make_identifier('mail_tracking_value_mail_message_id_old_value_integer_task_stage'),
+        make_identifier('mail_tracking_value_mail_message_id_old_value_uuid_task_stage'),
         env['mail.tracking.value']._table,
-        ['mail_message_id', 'old_value_integer'],
+        ['mail_message_id', 'old_value_uuid'],
         where=f"field_id='{project_task_stage_field_id}'"
     )
 

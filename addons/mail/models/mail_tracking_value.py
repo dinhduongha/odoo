@@ -18,12 +18,15 @@ class MailTrackingValue(models.Model):
     field_info = fields.Json('Removed field information')
 
     old_value_integer = fields.Integer('Old Value Integer', readonly=True)
+    # uuid PKs: many2one tracked ids no longer fit in an integer column, store them here
+    old_value_uuid = fields.Uuid('Old Value Uuid', readonly=True)
     old_value_float = fields.Float('Old Value Float', readonly=True)
     old_value_char = fields.Char('Old Value Char', readonly=True)
     old_value_text = fields.Text('Old Value Text', readonly=True)
     old_value_datetime = fields.Datetime('Old Value DateTime', readonly=True)
 
     new_value_integer = fields.Integer('New Value Integer', readonly=True)
+    new_value_uuid = fields.Uuid('New Value Uuid', readonly=True)
     new_value_float = fields.Float('New Value Float', readonly=True)
     new_value_char = fields.Char('New Value Char', readonly=True)
     new_value_text = fields.Text('New Value Text', readonly=True)
@@ -118,18 +121,19 @@ class MailTrackingValue(models.Model):
             # - recordset, in case of standard field
             # - (id, display name), in case of properties (read format)
             if not initial_value:
-                initial_value = (0, '')
+                initial_value = (False, '')
             elif isinstance(initial_value, models.BaseModel):
                 initial_value = (initial_value.id, initial_value.display_name)
 
             if not new_value:
-                new_value = (0, '')
+                new_value = (False, '')
             elif isinstance(new_value, models.BaseModel):
                 new_value = (new_value.id, new_value.display_name)
 
+            # uuid PKs: store the many2one id in the uuid column (it overflows int)
             values.update({
-                'old_value_integer': initial_value[0],
-                'new_value_integer': new_value[0],
+                'old_value_uuid': initial_value[0] or False,
+                'new_value_uuid': new_value[0] or False,
                 'old_value_char': initial_value[1],
                 'new_value_char': new_value[1]
             })
