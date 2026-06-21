@@ -4455,7 +4455,7 @@ class BaseModel(metaclass=MetaModel):
             if (many2one_fields := self.env.registry.many2one_company_dependents[self._name]) and not self.env.context.get(MODULE_UNINSTALL_FLAG):
                 IrModelFields = self.env["ir.model.fields"]
                 field_ids = tuple(IrModelFields._get_ids(field.model_name).get(field.name) for field in many2one_fields)
-                sub_ids_json_text = tuple(json.dumps(id_) for id_ in sub_ids)
+                sub_ids_json_text = tuple(json.dumps(id_, default=str) for id_ in sub_ids)
                 if default := Defaults.search([('field_id', 'in', field_ids), ('json_value', 'in', sub_ids_json_text)], limit=1, order='id desc'):
                     ir_field = default.field_id.sudo()
                     field = self.env[ir_field.model]._fields[ir_field.name]
@@ -7283,12 +7283,6 @@ class BaseModel(metaclass=MetaModel):
                     records = model.search([(field.name, 'in', real_records.ids)], order='id')
                 if new_records:
                     field_cache = field._get_cache(model.env)
-                    if fetched._name == "res.company":
-                        _logger.warning(
-                            "[UUID DEBUG] [_fetch_query:post-insert] model=%s field=%s cache_now=%s",
-                            fetched._name, field.name,
-                            {str(k): v for k, v in fcache.items() if k in fetched._ids}
-                        )
                     cache_records = model.browse(field_cache)
                     new_ids = set(self._ids)
                     records |= cache_records.filtered(lambda r: not set(r[field.name]._ids).isdisjoint(new_ids))

@@ -20,6 +20,7 @@ import logging
 import sys
 import types
 import typing
+import uuid
 from opcode import opmap, opname
 from types import CodeType
 
@@ -352,6 +353,8 @@ _BUILTINS = {
     'xrange': range,
     'zip': zip,
     'Exception': Exception,
+    # uuid PKs: ids repr'd into domain/eval strings appear as UUID('...')
+    'UUID': uuid.UUID,
 }
 
 

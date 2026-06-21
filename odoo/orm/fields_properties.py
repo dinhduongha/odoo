@@ -128,7 +128,8 @@ class Properties(Field):
             return None
 
         value = self.convert_to_cache(value, record, validate=validate)
-        return json.dumps(value)
+        # uuid PKs: many2one property values are UUIDs -> serialize as strings
+        return json.dumps(value, default=str)
 
     def convert_to_cache(self, value, record, validate=True):
         #any format -> cache format {name: value} or None        

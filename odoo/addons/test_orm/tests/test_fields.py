@@ -14,6 +14,7 @@ from odoo.fields import Domain
 from odoo.tests import Form, TransactionCase, tagged, users
 from odoo.tools import float_repr, mute_logger
 from odoo.tools.image import image_data_uri
+from odoo.tools.uuid_utils import uuid7
 
 from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
 from odoo.addons.base.tests.test_expression import TransactionExpressionCase
@@ -4274,10 +4275,8 @@ class TestMany2oneReference(TransactionExpressionCase):
 
     def test_delete_m2o_reference_records(self):
         m = self.env['test_orm.model_many2one_reference']
-        self.env.cr.execute("SELECT max(id) FROM test_orm_model_many2one_reference")
-        ids = self.env.cr.fetchone()
         # fake record to emulate the unlink of a non-existant record
-        foo = m.browse(1 if not ids[0] else (ids[0] + 1))
+        foo = m.browse(uuid7())
         self.assertTrue(foo.unlink())
 
     def test_search_inverse_one2many_bypass_search_access(self):
