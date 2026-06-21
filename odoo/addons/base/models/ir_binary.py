@@ -204,7 +204,9 @@ class IrBinary(models.AbstractModel):
                 record, field_name, filename, filename_field, mimetype,
                 default_mimetype
             )
-        except UserError:
+        except (UserError, MissingError, FileNotFoundError):
+            # image record/attachment missing, inaccessible, or its filestore
+            # file is gone -> fall back to the placeholder (unless downloading)
             if request.params.get('download'):
                 raise
 
