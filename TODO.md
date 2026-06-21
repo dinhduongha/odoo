@@ -77,11 +77,28 @@ config) or the minimal `-i <mods>` loop used this session (see handoff.md).
 2. Demo data → a dedicated "Demo Company" (main_company stays clean); load demo with that
    company as the active/default company.
 3. Do AFTER uuid full install is stable.
+4. PINNED company ids: main_company = '00000000-0000-0000-0000-000000000001'
+   (already set via base_data.sql bootstrap line 155-156). Demo Company =
+   '00000000-0000-0000-0000-000000000002' — ALSO pin in base_data.sql bootstrap
+   (mirror main_company). Ready-to-add block (insert after the main_partner block,
+   ~line 160; reuse currency …0001):
+     insert into res_partner (id, name, company_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', now() at time zone 'UTC');
+     insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('demo_partner', 'base', 'res.partner', true, '00000000-0000-0000-0000-000000000002');
+     insert into res_company (id, name, partner_id, currency_id, create_date) VALUES ('00000000-0000-0000-0000-000000000002', 'Demo Company', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', now() at time zone 'UTC');
+     insert into ir_model_data (name, module, model, noupdate, res_id) VALUES ('demo_company', 'base', 'res.company', true, '00000000-0000-0000-0000-000000000002');
+   NOTE: a 2nd company always present = the "force multi-company" baseline. Deferred to
+   the multi-company phase to avoid compounding single-company install failures now.
 Implementation sketch: post_init hook (or base data) to create the 2nd/Demo company + add
 group; for demo, load demo data under with_company(demo_company) / default_company_id context.
 Also relevant: gen_company_id_backfill_sql.py for child company_id.
 
 ## NOT DONE / FOLLOW-UP
+- **Controller `browse(int(url_param))` class (RUNTIME, not install-blocking)**: many web
+  controllers cast a url/kwarg id with int() before browse — breaks on uuid at request
+  time. Drop the int() (browse accepts str uuid). Sites: website_slides/controllers/main.py
+  (many), website_blog, website_sale_loyalty, payment_stripe, website_event_booth_sale,
+  html_editor (ir_ui_view, ir_qweb_fields), mass_mailing/controllers, website/website_form.
+  Sweep: grep -rnE "browse\(int\(" addons (exclude real-int params like *_iterations/_limit).
 - Python `-id` negations (runtime, not install-blocking): virtual-record dicts/sorts in
   hr_holidays/l10n_in_hr_holidays/mail ir_ui_menu/product_template/stock — `-uuid` will
   TypeError when hit; need a non-arithmetic unique-id / reverse-sort scheme.
