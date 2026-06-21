@@ -151,7 +151,7 @@ class PasskeyTest(HttpCaseWithUserDemo):
                     'args': args,
                     'kwargs': kwargs,
                 },
-            })).json()
+            }, default=str)).json()
 
     @contextmanager
     def patch_start_auth(self, challenge):
