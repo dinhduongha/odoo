@@ -11,6 +11,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Command, Domain
 from odoo.http import request
 from odoo.tools import SQL, OrderedSet, float_is_zero, format_amount, is_html_empty
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.mail import html_keep_url
 from odoo.tools.misc import str2bool
 
@@ -1147,7 +1148,7 @@ class SaleOrder(models.Model):
             'sale.default_confirmation_template'
         )
         default_confirmation_template = default_confirmation_template_id \
-            and self.env['mail.template'].browse(int(default_confirmation_template_id)).exists()
+            and self.env['mail.template'].browse(default_confirmation_template_id).exists()
         if default_confirmation_template:
             return default_confirmation_template
         else:
@@ -2166,6 +2167,8 @@ class SaleOrder(models.Model):
         return res
 
     def _get_product_catalog_record_lines(self, product_ids, *, section_id=None, **kwargs):
+        product_ids = [to_uuid(product_id) for product_id in product_ids]
+        section_id = to_uuid(section_id)
         grouped_lines = defaultdict(lambda: self.env['sale.order.line'])
         if section_id is None:
             section_id = (
@@ -2199,6 +2202,8 @@ class SaleOrder(models.Model):
         :rtype: float
         """
         request.update_context(catalog_skip_tracking=True)
+        product_id = to_uuid(product_id)
+        section_id = to_uuid(section_id)
         sol = self.order_line.filtered(
             lambda l: l.product_id.id == product_id
             and l.get_parent_section_line().id == section_id,

@@ -162,7 +162,7 @@ class PaymentTransaction(models.Model):
                 .get_param('sale.default_invoice_email_template', False)
             )
             if default_template_param:
-                mail_template = self.env['mail.template'].sudo().browse(int(default_template_param))
+                mail_template = self.env['mail.template'].sudo().browse(default_template_param)
                 if mail_template.exists():
                     send_context['mail_template'] = mail_template
 

@@ -29,8 +29,8 @@ class TestProductCatalog(HttpCase, SaleCommon):
             json={
                 'params': {
                     'res_model': self.res_model,
-                    'order_id': self.res_id,
-                    'product_ids': products.ids,
+                    'order_id': str(self.res_id),
+                    'product_ids': [str(product_id) for product_id in products.ids],
                     **kwargs,
                 },
             }
@@ -43,8 +43,8 @@ class TestProductCatalog(HttpCase, SaleCommon):
             json={
                 'params': {
                     'res_model': self.res_model,
-                    'order_id': self.res_id,
-                    'product_id': product.id,
+                    'order_id': str(self.res_id),
+                    'product_id': str(product.id),
                     'quantity': quantity,
                     **kwargs,
                 },
@@ -190,8 +190,8 @@ class TestProductCatalog(HttpCase, SaleCommon):
             'display_type': 'line_section',
             'name': 'Our section',
         })
-        self.request_update_order_line_info(product=self.product, section_id=section.id)
-        self.request_update_order_line_info(product=self.service_product, section_id=section.id)
+        self.request_update_order_line_info(product=self.product, section_id=str(section.id))
+        self.request_update_order_line_info(product=self.service_product, section_id=str(section.id))
         other_products = self.env['product.product'].create([
             {'name': 'product #3'}, {'name': 'product #4'}
         ])
@@ -201,8 +201,8 @@ class TestProductCatalog(HttpCase, SaleCommon):
             'name': 'Other section',
             'sequence': 1000,
         })
-        self.request_update_order_line_info(product=other_products[0], section_id=section.id)
-        self.request_update_order_line_info(product=other_products[1], section_id=section.id)
+        self.request_update_order_line_info(product=other_products[0], section_id=str(section.id))
+        self.request_update_order_line_info(product=other_products[1], section_id=str(section.id))
         ordered_lines = self.empty_order.order_line.sorted('sequence')
         self.assertEqual(ordered_lines[0].display_type, 'line_section')
         self.assertEqual(ordered_lines[-1].display_type, 'line_section')

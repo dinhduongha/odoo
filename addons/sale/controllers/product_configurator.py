@@ -46,7 +46,7 @@ class SaleProductConfiguratorController(Controller):
         combination = request.env['product.template.attribute.value']
         if ptav_ids:
             combination = request.env['product.template.attribute.value'].browse(ptav_ids).filtered(
-                lambda ptav: ptav.product_tmpl_id.id == product_template_id
+                lambda ptav: ptav.product_tmpl_id == product_template
             )
             # Set missing attributes (unsaved no_variant attributes, or new attribute on existing product)
             unconfigured_ptals = (

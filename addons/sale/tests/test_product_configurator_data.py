@@ -17,14 +17,14 @@ class TestProductConfiguratorData(HttpCaseWithUserDemo, ProductVariantsCommon, S
             url=base_url + '/sale/product_configurator/get_values',
             json={
                 'params': {
-                    'product_template_id': product_template.id,
+                    'product_template_id': str(product_template.id),
                     'quantity': 1.0,
-                    'currency_id': 1,
+                    'currency_id': str(self.env.company.currency_id.id),
                     'so_date': str(self.env.cr.now()),
                     'product_uom_id': None,
                     'company_id': None,
                     'pricelist_id': None,
-                    'ptav_ids': ptav_ids,
+                    'ptav_ids': [str(ptav_id) for ptav_id in ptav_ids] if ptav_ids else ptav_ids,
                     'only_main_product': False,
                 },
             }
