@@ -10,6 +10,7 @@ from odoo.fields import Command
 from odoo.http import _request_stack
 from odoo.tests import Form, TransactionCase, new_test_user, tagged, HttpCase, users, warmup
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import uuid7
 
 
 class UsersCommonCase(TransactionCase):
@@ -298,8 +299,7 @@ class TestUsers(UsersCommonCase):
         Test to check the invalidation of session bound to non existing (or deleted) users.
         """
         User = self.env['res.users']
-        last_user_id = User.with_context(active_test=False).search([], limit=1, order="id desc")
-        non_existing_user = User.browse(last_user_id.id + 1)
+        non_existing_user = User.browse(uuid7())
         self.assertFalse(non_existing_user._compute_session_token('session_id'))
 
 @tagged('post_install', '-at_install', 'groups')
@@ -450,15 +450,15 @@ class TestUsers2(UsersCommonCase):
 
         view_group_hierarchy_en = self.env['res.groups']._get_view_group_hierarchy()
         view_group_hierarchy_fr = self.env['res.groups'].with_context(lang='fr_FR')._get_view_group_hierarchy()
-        self.assertNotEqual(view_group_hierarchy_en['groups'][group_system.id]['name'], 'Administrateur')
-        self.assertEqual(view_group_hierarchy_fr['groups'][group_system.id]['name'], 'Administrateur')
+        self.assertNotEqual(view_group_hierarchy_en['groups'][str(group_system.id)]['name'], 'Administrateur')
+        self.assertEqual(view_group_hierarchy_fr['groups'][str(group_system.id)]['name'], 'Administrateur')
 
         # Should work the other way around too
         self.env.registry.clear_cache('groups')
         view_group_hierarchy_fr = self.env['res.groups'].with_context(lang='fr_FR')._get_view_group_hierarchy()
         view_group_hierarchy_en = self.env['res.groups']._get_view_group_hierarchy()
-        self.assertNotEqual(view_group_hierarchy_en['groups'][group_system.id]['name'], 'Administrateur')
-        self.assertEqual(view_group_hierarchy_fr['groups'][group_system.id]['name'], 'Administrateur')
+        self.assertNotEqual(view_group_hierarchy_en['groups'][str(group_system.id)]['name'], 'Administrateur')
+        self.assertEqual(view_group_hierarchy_fr['groups'][str(group_system.id)]['name'], 'Administrateur')
 
         with patch('odoo.addons.base.models.res_groups.ResGroups._get_view_group_hierarchy') as mock:
             self.user_portal_1.copy_data()

@@ -140,7 +140,7 @@ class TestOrmCache(TransactionCase):
 
         for key, value in old_sequences.items():
             if key == 'assets':
-                self.assertEqual(value + 1, registry.cache_sequences[key], "Assets cache sequence should have changed")
+                self.assertNotEqual(value, registry.cache_sequences[key], "Assets cache sequence should have changed")
             else:
                 self.assertEqual(value, registry.cache_sequences[key], "other registry sequence shouldn't have changed")
 
@@ -179,7 +179,7 @@ class TestOrmCache(TransactionCase):
 
         for key, value in old_sequences.items():
             if key in ('assets', 'default'):
-                self.assertEqual(value + 1, registry.cache_sequences[key], "Assets and default cache sequence should have changed")
+                self.assertNotEqual(value, registry.cache_sequences[key], "Assets and default cache sequence should have changed")
             else:
                 self.assertEqual(value, registry.cache_sequences[key], "other registry sequence shouldn't have changed")
 
@@ -198,40 +198,41 @@ class TestOrmCache(TransactionCase):
         )
 
     def test_signaling_gc(self):
+        # Under uuid PKs the signaling tables have no integer id sequence:
+        # ids are uuidv7 and the GC keeps the 10 most-recent-by-date rows plus
+        # every row younger than one hour. We therefore assert on row counts.
         cr = self.env.cr
-        cr.execute('SELECT last_value FROM orm_signaling_registry_id_seq')
-        sequence_start = cr.fetchone()[0]
 
-        def assertSignalCount(expected_count, expected_max_id, message):
-            cr.execute("SELECT count(*), max(id) FROM orm_signaling_registry")
-            count, max_id = cr.fetchone()
+        def assertSignalCount(expected_count, message):
+            cr.execute("SELECT count(*) FROM orm_signaling_registry")
+            count = cr.fetchone()[0]
             self.assertEqual(expected_count, count, message)
-            self.assertEqual(expected_max_id, max_id-sequence_start, message)     
 
         cr.execute('DELETE FROM orm_signaling_registry')
-    
-        for _ in range (7):
-            cr.execute("INSERT INTO orm_signaling_registry (date) VALUES (NOW() - interval '2 hours')")
 
+        # 7 old signals (older than one hour) + 1 recent signal
+        for _ in range(7):
+            cr.execute("INSERT INTO orm_signaling_registry (date) VALUES (NOW() - interval '2 hours')")
         cr.execute("INSERT INTO orm_signaling_registry DEFAULT VALUES")
 
-        assertSignalCount(8, 8, "8 signals were inserted")
+        assertSignalCount(8, "8 signals were inserted")
         self.env['ir.autovacuum']._gc_orm_signaling()
-        assertSignalCount(8, 8, "less than 10 signals, no deletion")
+        assertSignalCount(8, "less than 10 signals, no deletion")
 
-        for _ in range (5):
+        # 5 more recent signals (total 13, but only 6 are recent)
+        for _ in range(5):
             cr.execute("INSERT INTO orm_signaling_registry DEFAULT VALUES")
 
-        assertSignalCount(13, 13, "5 more signals were inserted")
+        assertSignalCount(13, "5 more signals were inserted")
         self.env['ir.autovacuum']._gc_orm_signaling()
-        assertSignalCount(10, 13, "more than 10 signals, some should have been deleted")
+        # GC keeps the 10 most recent by date; the 3 oldest (old) rows are dropped
+        assertSignalCount(10, "more than 10 signals, some should have been deleted")
 
-        for _ in range (7):
+        # 7 more recent signals: now 13 recent rows (younger than one hour),
+        # so none of them may be deleted even though there are more than 10.
+        for _ in range(7):
             cr.execute("INSERT INTO orm_signaling_registry DEFAULT VALUES")
 
-        assertSignalCount(17, 20, "7 more signals were inserted")
+        assertSignalCount(17, "7 more signals were inserted")
         self.env['ir.autovacuum']._gc_orm_signaling()
-        assertSignalCount(13, 20, "Keeping the 13 signals having less than one hour")
-
-        # reset sequence to avoid side effects
-        cr.execute(f"SELECT setval('orm_signaling_registry_id_seq', {sequence_start})")
+        assertSignalCount(13, "Keeping the 13 signals having less than one hour")

@@ -298,9 +298,9 @@ class TestPermissions(TransactionCaseWithUserDemo):
 
         # prevent create, write and unlink accesses on record
         self.rule = self.env['ir.rule'].sudo().create({
-            'name': 'remove access to record %d' % record.id,
+            'name': 'remove access to record %s' % record.id,
             'model_id': self.env['ir.model']._get_id(record._name),
-            'domain_force': "[('id', '!=', %s)]" % record.id,
+            'domain_force': "[('id', '!=', %r)]" % str(record.id),
             'perm_read': False
         })
         self.env.flush_all()

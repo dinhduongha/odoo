@@ -155,9 +155,11 @@ class TestQwebFieldMany2Many(common.TransactionCase):
             'name': 'User2',
             'login': 'user2@example.com',
         })
+        # This build adds `group_multi_company implied_by group_user`, so the
+        # first two groups of a fresh user are Multi Companies and Role / User.
         self.assertEqual(
             self.value_to_html(user.all_group_ids[:2].sorted()),
-            'Role / User, Technical Features',
+            'Multi Companies, Role / User',
         )
 
 

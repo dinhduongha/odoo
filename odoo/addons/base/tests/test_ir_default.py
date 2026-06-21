@@ -103,7 +103,8 @@ class TestIrDefault(TransactionCase):
         # set a record as a default value
         country_id = self.env['res.country'].create({'name': 'country', 'code': 'ZZ'})
         IrDefault.set('res.partner', 'country_id', country_id.id)
-        self.assertEqual(IrDefault._get_model_defaults('res.partner'), {'country_id': country_id.id})
+        # m2o defaults are stored as JSON, so the uuid id round-trips as a string
+        self.assertEqual(IrDefault._get_model_defaults('res.partner'), {'country_id': str(country_id.id)})
 
         # delete the record, and check the presence of the default value
         country_id.unlink()

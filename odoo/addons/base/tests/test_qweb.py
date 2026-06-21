@@ -11,7 +11,12 @@ from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
 from odoo.addons.base.models.ir_qweb import QWebError
 from odoo.tools import file_open, misc, mute_logger
 from odoo.tools.json import scriptsafe as json_scriptsafe
+from odoo.tools.uuid_utils import uuid7
 from odoo.exceptions import UserError, MissingError
+
+# deliberately-nonexistent template ids (uuid PKs: ints are never valid ids)
+_MISSING_TEMPLATE_A = uuid7()
+_MISSING_TEMPLATE_B = uuid7()
 
 unsafe_eval = eval
 
@@ -30,7 +35,7 @@ class TestQWebTField(TransactionCase):
         result = self.engine._render(field, {'company': company})
         self.assertEqual(
             etree.fromstring(result),
-            etree.fromstring('<span data-oe-model="res.company" data-oe-id="%d" '
+            etree.fromstring('<span data-oe-model="res.company" data-oe-id="%s" '
                   'data-oe-field="name" data-oe-type="char" '
                   'data-oe-expression="company.name">%s</span>' % (
                 company.id,
@@ -46,7 +51,7 @@ class TestQWebTField(TransactionCase):
         result = self.engine._render(field, {'company': company})
         self.assertEqual(
             etree.fromstring(result),
-            etree.fromstring('<span data-oe-model="res.company" data-oe-id="%d" '
+            etree.fromstring('<span data-oe-model="res.company" data-oe-id="%s" '
                   'data-oe-field="name" data-oe-type="char" '
                   'data-oe-expression="company.name">%s</span>' % (
                 company.id,
@@ -1566,9 +1571,9 @@ class TestQWebBasic(TransactionCase):
     def test_error_message_4(self):
         # Template record view not found.
         with self.assertRaises(MissingError):
-            self.env['ir.qweb']._render(-999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_A)
         try:
-            self.env['ir.qweb']._render(-999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_A)
         except MissingError as e:
             self.assertIn('Template does not exist or has been deleted', str(e))
 
@@ -1589,40 +1594,40 @@ class TestQWebBasic(TransactionCase):
     def test_error_message_5(self):
         # Error not found a first rendering.
         with self.assertRaises(MissingError, msg="Not Found"):
-            self.env['ir.qweb']._render(-9999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_B)
 
     @mute_logger('odoo.addons.base.models.ir_qweb') # warning for template not found
     def test_error_message_6(self):
         # Error not found a second rendering (first rendering with option hide this error).
-        html = self.env['ir.qweb']._render(-9999, raise_if_not_found=False)
+        html = self.env['ir.qweb']._render(_MISSING_TEMPLATE_B, raise_if_not_found=False)
         self.assertEqual('', html)
 
         # re try this rendering without any error (use cached method)
-        html = self.env['ir.qweb']._render(-9999, raise_if_not_found=False)
+        html = self.env['ir.qweb']._render(_MISSING_TEMPLATE_B, raise_if_not_found=False)
         self.assertEqual('', html)
 
         # re try this rendering but raise (use cached method)
         with self.assertRaises(MissingError, msg="Not Found"):
-            self.env['ir.qweb']._render(-9999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_B)
 
     def test_error_message_7(self):
         # UserError not found a first rendering.
         with self.assertRaises(UserError, msg="Not Found"):
-            self.env['ir.qweb']._render(-9999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_B)
 
     @mute_logger('odoo.addons.base.models.ir_qweb') # warning for template not found
     def test_error_message_8(self):
         # UserError not found a second rendering (first rendering with option hide this error).
-        html = self.env['ir.qweb']._render(-9999, raise_if_not_found=False)
+        html = self.env['ir.qweb']._render(_MISSING_TEMPLATE_B, raise_if_not_found=False)
         self.assertEqual('', html)
 
         # re try this rendering without any error (use cached method)
-        html = self.env['ir.qweb']._render(-9999, raise_if_not_found=False)
+        html = self.env['ir.qweb']._render(_MISSING_TEMPLATE_B, raise_if_not_found=False)
         self.assertEqual('', html)
 
         # re try this rendering but raise (use cached method)
         with self.assertRaises(UserError, msg="Not Found"):
-            self.env['ir.qweb']._render(-9999)
+            self.env['ir.qweb']._render(_MISSING_TEMPLATE_B)
 
     def test_error_message_9(self):
         target = self.env['ir.ui.view'].create({
@@ -1662,9 +1667,9 @@ class TestQWebBasic(TransactionCase):
                f"    Reference: {target.id}\n"
                 "    Path: /t/section/div\n"
                 "    Element: <div t-out=\"abc + def\"/>\n"
-               f"    From: ({t.id}, '/div/t', '<t t-call=\"base.test_qweb_wrap\"/>')\n"
-               f"          ({wrap.id}, '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
-               f"          ({target.id}, '/t/section/div', '<div t-out=\"abc + def\"/>')"
+               f"    From: ('{t.id}', '/div/t', '<t t-call=\"base.test_qweb_wrap\"/>')\n"
+               f"          ('{wrap.id}', '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
+               f"          ('{target.id}', '/t/section/div', '<div t-out=\"abc + def\"/>')"
             )
 
     def test_error_message_10(self):
@@ -1696,11 +1701,11 @@ class TestQWebBasic(TransactionCase):
                f"    Reference: {wrap.id}\n"
                 "    Path: /div/t/span\n"
                 "    Element: <span t-out=\"abc + def\"/>\n"
-               f"    From: ({t.id}, '/div/t', '<t t-call=\"base.test_qweb_wrap\"/>')\n"
-               f"          ({wrap.id}, '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
-               f"          ({a.id}, '/t/section/div', '<div t-out=\"0\"/>')\n"
-               f"          ({wrap.id}, '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
-               f"          ({wrap.id}, '/div/t/span', '<span t-out=\"abc + def\"/>')"
+               f"    From: ('{t.id}', '/div/t', '<t t-call=\"base.test_qweb_wrap\"/>')\n"
+               f"          ('{wrap.id}', '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
+               f"          ('{a.id}', '/t/section/div', '<div t-out=\"0\"/>')\n"
+               f"          ('{wrap.id}', '/div/t', '<t t-call=\"base.test_qweb_error\"/>')\n"
+               f"          ('{wrap.id}', '/div/t/span', '<span t-out=\"abc + def\"/>')"
             )
 
         with self.assertRaises(QWebError):
@@ -1740,10 +1745,10 @@ class TestQWebBasic(TransactionCase):
                f"    Reference: {t.id}\n"
                 "    Path: /section/t[1]/div/t\n"
                 "    Element: <t t-out=\"1/div\"/>\n"
-               f"    From: ({t.id}, '/section/t[2]', '<t t-call=\"base.view_test_error_11_callee\" b=\"a\"/>')\n"
-               f"          ({v.id}, '/article/t', '<t t-out=\"b % 99\"/>')\n"
-               f"          ({t.id}, '/section/t[1]', '<t t-set=\"a\"/>')\n"
-               f"          ({t.id}, '/section/t[1]/div/t', '<t t-out=\"1/div\"/>')"
+               f"    From: ('{t.id}', '/section/t[2]', '<t t-call=\"base.view_test_error_11_callee\" b=\"a\"/>')\n"
+               f"          ('{v.id}', '/article/t', '<t t-out=\"b % 99\"/>')\n"
+               f"          ('{t.id}', '/section/t[1]', '<t t-set=\"a\"/>')\n"
+               f"          ('{t.id}', '/section/t[1]/div/t', '<t t-out=\"1/div\"/>')"
             )
 
         # an error triggered on first render
@@ -1759,10 +1764,10 @@ class TestQWebBasic(TransactionCase):
                f"    Reference: {t.id}\n"
                 "    Path: /section/t[1]/div/t\n"
                 "    Element: <t t-out=\"1/div\"/>\n"
-               f"    From: ({t.id}, '/section/t[2]', '<t t-call=\"base.view_test_error_11_callee\" b=\"a\"/>')\n"
-               f"          ({v.id}, '/article/t', '<t t-out=\"b % 99\"/>')\n"
-               f"          ({t.id}, '/section/t[1]', '<t t-set=\"a\"/>')\n"
-               f"          ({t.id}, '/section/t[1]/div/t', '<t t-out=\"1/div\"/>')"
+               f"    From: ('{t.id}', '/section/t[2]', '<t t-call=\"base.view_test_error_11_callee\" b=\"a\"/>')\n"
+               f"          ('{v.id}', '/article/t', '<t t-out=\"b % 99\"/>')\n"
+               f"          ('{t.id}', '/section/t[1]', '<t t-set=\"a\"/>')\n"
+               f"          ('{t.id}', '/section/t[1]/div/t', '<t t-out=\"1/div\"/>')"
             )
 
     def test_error_message_12(self):
@@ -1834,7 +1839,7 @@ class TestQWebBasic(TransactionCase):
                f"    Reference: {view.id}\n"
                 "    Path: /section/t\n"
                 "    Element: <t t-set=\"a\" t-value=\"env.__stuff\"/>\n"
-               f"    From: ({view.id}, '/section/t', '<t t-set=\"a\" t-value=\"env.__stuff\"/>')"
+               f"    From: ('{view.id}', '/section/t', '<t t-set=\"a\" t-value=\"env.__stuff\"/>')"
             )
 
     def test_error_message_14(self):

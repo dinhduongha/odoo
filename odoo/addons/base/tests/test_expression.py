@@ -5,6 +5,7 @@ from odoo.addons.base.tests.common import SavepointCaseWithUserDemo
 from odoo.fields import Command, Domain
 from odoo.tests.common import TransactionCase
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import uuid7
 from odoo.tests import tagged
 
 _FALSE_LEAF, _TRUE_LEAF = (0, '=', 1), (1, '=', 1)
@@ -292,7 +293,7 @@ class TestExpression(SavepointCaseWithUserDemo, TransactionExpressionCase):
     def test_10_equivalent_id(self):
         # equivalent queries
         Currency = self.env['res.currency']
-        non_currency_id = max(Currency.search([]).ids) + 1003
+        non_currency_id = uuid7()  # a deliberately-nonexistent currency id
         res_0 = self._search(Currency, [])
         res_1 = self._search(Currency, [('name', 'not like', 'probably_unexisting_name')])
         self.assertEqual(res_0, res_1)
@@ -371,11 +372,12 @@ class TestExpression(SavepointCaseWithUserDemo, TransactionExpressionCase):
         self.assertTrue(len(partners) >= 4, "We should have at least 4 partners with no company")
 
         # check that many2one will exclude the correct records with a list
-        partners = self._search(Partner, [('company_id', 'not in', [1])])
+        main_company = self.env.ref('base.main_company')
+        partners = self._search(Partner, [('company_id', 'not in', [main_company.id])])
         self.assertTrue(len(partners) >= 4, "We should have at least 4 partners not related to company #1")
 
         # check that many2one will exclude the correct records with a list and False
-        partners = self._search(Partner, ['|', ('company_id', 'not in', [1]),
+        partners = self._search(Partner, ['|', ('company_id', 'not in', [main_company.id]),
                                         ('company_id', '=', False)])
         self.assertTrue(len(partners) >= 8, "We should have at least 8 partners not related to company #1")
 
@@ -648,7 +650,7 @@ class TestExpression(SavepointCaseWithUserDemo, TransactionExpressionCase):
         self.assertEqual([p1], res.ids, "o2m IN accept single int on right side")
         res = self._search(Partner, [('user_ids', '=', 'Dédé Boitaclou')])
         self.assertEqual([p1], res.ids, "o2m NOT IN matches none on the right side")
-        res = self._search(Partner, [('user_ids', 'in', [10000])])
+        res = self._search(Partner, [('user_ids', 'in', [uuid7()])])
         self.assertEqual([], res.ids, "o2m NOT IN matches none on the right side")
         res = self._search(Partner, [('user_ids', 'in', [u1a,u2])])
         self.assertEqual([p1,p2], res.ids, "o2m IN matches any on the right side")
@@ -683,8 +685,8 @@ class TestExpression(SavepointCaseWithUserDemo, TransactionExpressionCase):
         # create a currency and a currency rate
         currency = Currency.create({'name': 'ZZZ', 'symbol': 'ZZZ', 'rounding': 1.0})
         currency_rate = CurrencyRate.create({'name': '2010-01-01', 'currency_id': currency.id, 'rate': 1.0})
-        non_currency_id = currency_rate.id + 1000
-        default_currency = Currency.browse(1)
+        non_currency_id = uuid7()  # a deliberately-nonexistent id
+        default_currency = self.env.company.currency_id
 
         # search the currency via its rates one2many (the one2many must point back at the currency)
         currency_rate1 = self._search(CurrencyRate, [('currency_id', 'not like', 'probably_unexisting_name')])
@@ -1934,7 +1936,7 @@ class TestMany2one(TransactionCase):
         super().setUp()
         self.Partner = self.env['res.partner'].with_context(active_test=False)
         self.User = self.env['res.users'].with_context(active_test=False)
-        self.company = self.env['res.company'].browse(1)
+        self.company = self.env.ref('base.main_company')
 
     def test_inherited(self):
         with self.assertQueries(['''
@@ -2481,7 +2483,7 @@ class TestMany2many(TransactionCase):
     def setUp(self):
         super().setUp()
         self.User = self.env['res.users'].with_context(active_test=False)
-        self.company = self.env['res.company'].browse(1)
+        self.company = self.env.ref('base.main_company')
 
     def test_regular(self):
         group = self.env.ref('base.group_user')

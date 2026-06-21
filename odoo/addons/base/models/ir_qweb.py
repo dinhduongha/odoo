@@ -944,7 +944,9 @@ class IrQweb(models.AbstractModel):
                     break
                 continue
             if found:
-                info = (ref, match[1][1:-1], match[2][1:-1])
+                # ref may be a uuid.UUID here, but stack-frame refs are strings;
+                # coerce to str so the "From:" lines have a consistent format.
+                info = (str(ref) if ref is not None else ref, match[1][1:-1], match[2][1:-1])
                 if info not in source:
                     source.append(info)
             else:
@@ -953,7 +955,7 @@ class IrQweb(models.AbstractModel):
                 html = match[2][1:-1]
 
         if path:
-            source.append((ref, path, html))
+            source.append((str(ref) if ref is not None else ref, path, html))
 
         surrounding = None
         if self.env.context.get('dev_mode') and line_nb:

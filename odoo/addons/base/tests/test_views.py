@@ -4735,9 +4735,9 @@ class TestQWebRender(ViewCase):
 
         # render view and child view with an xmlid
         self.env.cr.execute("INSERT INTO ir_model_data(name, model, res_id, module)"
-                            "VALUES ('dummy', 'ir.ui.view', %s, 'base')" % view1.id)
+                            "VALUES ('dummy', 'ir.ui.view', %s, 'base')", (view1.id,))
         self.env.cr.execute("INSERT INTO ir_model_data(name, model, res_id, module)"
-                            "VALUES ('dummy_ext', 'ir.ui.view', %s, 'base')" % view2.id)
+                            "VALUES ('dummy_ext', 'ir.ui.view', %s, 'base')", (view2.id,))
 
         content1 = self.env['ir.qweb'].with_context(check_view_ids=[view1.id, view2.id])._render('base.dummy')
         content2 = self.env['ir.qweb'].with_context(check_view_ids=[view1.id, view2.id])._render('base.dummy_ext')

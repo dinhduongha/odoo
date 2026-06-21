@@ -9,6 +9,7 @@ from odoo import Command
 from odoo.tests.common import TransactionCase, BaseCase
 from odoo.tools import mute_logger
 from odoo.tools.safe_eval import safe_eval, const_eval, expr_eval
+from odoo.tools.uuid_utils import uuid7
 
 
 class TestSafeEval(BaseCase):
@@ -192,26 +193,26 @@ class TestParentStore(TransactionCase):
         """ Missing parent id should not raise an error. """
         # Missing parent with _parent_store
         new_cat0 = self.cat0.copy()
-        records = new_cat0.search([('parent_id', 'parent_of', 999999999)])
+        records = new_cat0.search([('parent_id', 'parent_of', uuid7())])
         self.assertEqual(len(records), 0)
 
         # Missing parent without _parent_store
         category = self.env['res.partner.category']
         self.patch(self.env.registry['res.partner.category'], '_parent_store', False)
-        records = category.search([('parent_id', 'child_of', 999999999)])
+        records = category.search([('parent_id', 'child_of', uuid7())])
         self.assertEqual(len(records), 0)
 
     def test_missing_child(self):
         """ Missing child id should not raise an error. """
         # Missing child with _parent_store
         new_cat0 = self.cat0.copy()
-        records = new_cat0.search([('parent_id', 'child_of', 999999999)])
+        records = new_cat0.search([('parent_id', 'child_of', uuid7())])
         self.assertEqual(len(records), 0)
 
         # Missing child without _parent_store
         category = self.env['res.partner.category']
         self.patch(self.env.registry['res.partner.category'], '_parent_store', False)
-        records = category.search([('parent_id', 'child_of', 999999999)])
+        records = category.search([('parent_id', 'child_of', uuid7())])
         self.assertEqual(len(records), 0)
 
     def test_duplicate_children_01(self):
