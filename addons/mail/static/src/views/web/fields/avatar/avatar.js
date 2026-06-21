@@ -8,7 +8,7 @@ export class Avatar extends Component {
     static components = { Popover: AvatarCardPopover };
     static props = {
         resModel: { type: String },
-        resId: { type: Number },
+        resId: { type: [Number, String] },
         canOpenPopover: { type: Boolean, optional: true },
         cssClass: { type: [String, Object], optional: true },
         displayName: { type: String, optional: true },

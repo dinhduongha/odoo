@@ -7,7 +7,7 @@ export class AvatarCardPopover extends Component {
     static template = "mail.AvatarCardPopover";
     static components = { ImStatus };
     static props = {
-        id: { type: Number, required: true },
+        id: { type: [Number, String], required: true },
         close: { type: Function, required: true },
         model: {
             type: String,

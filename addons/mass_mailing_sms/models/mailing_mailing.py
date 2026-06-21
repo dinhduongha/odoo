@@ -336,7 +336,8 @@ class MailingMailing(models.Model):
             mailing_id_placeholder_length = len(str(self.id))
         else:
             max_mailing = self.env['mailing.mailing'].sudo().search_read([], ['id'], order='id DESC', limit=1)
-            mailing_id_placeholder_length = len(str(max_mailing[0]['id'] + 1)) if max_mailing else 1
+            # uuid ids are fixed-length; no int "+1" digit-growth to account for
+            mailing_id_placeholder_length = len(str(max_mailing[0]['id'])) if max_mailing else 1
         mailing_id_placeholder = 'x' * mailing_id_placeholder_length
 
         base_url = self.get_base_url()
