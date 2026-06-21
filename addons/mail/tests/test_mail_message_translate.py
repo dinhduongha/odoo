@@ -76,19 +76,19 @@ class TestTranslationController(HttpCaseWithUserDemo):
 
     def test_update_message(self):
         self.authenticate("admin", "admin")
-        result = self._mock_translation_request({"message_id": self.message.id})
+        result = self._mock_translation_request({"message_id": str(self.message.id)})
         self.assertFalse(result.get("error"))
         self.assertEqual(self.env["mail.message.translation"].search_count([]), 1)
         # The translation records should not be discarded if the body did not change.
         self.make_jsonrpc_request(
             "/mail/message/update_content",
-            {"message_id": self.message.id, "update_data": {"body": None, "attachment_ids": []}},
+            {"message_id": str(self.message.id), "update_data": {"body": None, "attachment_ids": []}},
         )
         self.assertEqual(self.env["mail.message.translation"].search_count([]), 1)
         self.make_jsonrpc_request(
             "/mail/message/update_content",
             {
-                "message_id": self.message.id,
+                "message_id": str(self.message.id),
                 "update_data": {"body": "update", "attachment_ids": []},
             },
         )
@@ -99,7 +99,7 @@ class TestTranslationController(HttpCaseWithUserDemo):
         new_test_user(self.env, "user_test_en", groups="base.group_user", lang="en_US")
         for login, target_lang in [("user_test_fr", "fr"), ("user_test_en", "en"), ("admin", "fr")]:
             self.authenticate(login, login)
-            result = self._mock_translation_request({"message_id": self.message.id})
+            result = self._mock_translation_request({"message_id": str(self.message.id)})
             self.assertFalse(result.get("error"))
             self.assertEqual(result["body"], SAMPLE[target_lang])
             self.assertEqual(result["lang_name"], SAMPLE["lang"][target_lang])
@@ -111,7 +111,7 @@ class TestTranslationController(HttpCaseWithUserDemo):
     def test_invalid_api_key(self):
         self.env["ir.config_parameter"].set_param("mail.google_translate_api_key", "INVALIDKEY")
         self.authenticate("demo", "demo")
-        result = self._mock_translation_request({"message_id": self.message.id})
+        result = self._mock_translation_request({"message_id": str(self.message.id)})
         self.assertNotIn("body", result)
         self.assertNotIn("lang_name", result)
         self.assertTrue(result["error"])
@@ -120,7 +120,7 @@ class TestTranslationController(HttpCaseWithUserDemo):
         self.env["res.lang"]._activate_lang("nl_NL")
         new_test_user(self.env, "user_test_nl", groups="base.group_user", lang="nl_NL")
         self.authenticate("user_test_nl", "user_test_nl")
-        result = self._mock_translation_request({"message_id": self.message.id})
+        result = self._mock_translation_request({"message_id": str(self.message.id)})
         self.assertFalse(result.get("error"))
         self.assertHTMLEqual(result["body"], "<p>Bij slecht weer, goed gezicht.</p>")
         translation = self.env["mail.message.translation"].search([])
@@ -129,14 +129,14 @@ class TestTranslationController(HttpCaseWithUserDemo):
 
     def test_access_right(self):
         with self.assertRaises(JsonRpcException, msg="odoo.http.SessionExpiredException"):
-            self._mock_translation_request({"message_id": self.message.id})
+            self._mock_translation_request({"message_id": str(self.message.id)})
         new_test_user(self.env, "user_test_portal", groups="base.group_portal", lang="fr_FR")
         self.authenticate("user_test_portal", "user_test_portal")
         with self.assertRaises(JsonRpcException, msg="odoo.exceptions.AccessError"), mute_logger("odoo.http"):
-            self._mock_translation_request({"message_id": self.message.id})
+            self._mock_translation_request({"message_id": str(self.message.id)})
 
     def test_unknown_language(self):
         self.authenticate("admin", "admin")
         with patch.dict(SAMPLE, {"src": "unknown_by_babel_but_known_by_google_api"}):
-            result = self._mock_translation_request({"message_id": self.message.id})
+            result = self._mock_translation_request({"message_id": str(self.message.id)})
         self.assertEqual(result["body"], "<p>Au mauvais temps, bonne tête.</p>")

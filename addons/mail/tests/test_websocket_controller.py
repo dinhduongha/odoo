@@ -22,7 +22,7 @@ class TestWebsocketController(HttpCaseWithUserDemo):
             },
         )["notifications"][0]["message"]
         self.assertEqual(message["type"], "bus.bus/im_status_updated")
-        self.assertEqual(message["payload"]["partner_id"], self.partner_demo.id)
+        self.assertEqual(message["payload"]["partner_id"], str(self.partner_demo.id))
         self.assertEqual(message["payload"]["im_status"], "offline")
         self.assertEqual(message["payload"]["presence_status"], "offline")
 
@@ -32,7 +32,7 @@ class TestWebsocketController(HttpCaseWithUserDemo):
         self.env.cr.precommit.run()  # trigger the creation of bus.bus records
         # First request will get notifications and trigger the creation
         # of the missed presences one.
-        last_id = self.env["bus.bus"]._bus_last_id()
+        last_id = str(self.env["bus.bus"]._bus_last_id())
         self.make_jsonrpc_request(
             "/websocket/peek_notifications",
             {
@@ -50,12 +50,12 @@ class TestWebsocketController(HttpCaseWithUserDemo):
                 "is_first_poll": True,
             },
         )["notifications"][0]
-        bus_record = self.env["bus.bus"].search([("id", "=", int(notification["id"]))])
+        bus_record = self.env["bus.bus"].search([("id", "=", notification["id"])])
         self.assertEqual(
             bus_record.channel, json_dump(channel_with_db(self.env.cr.dbname, self.partner_demo))
         )
         self.assertEqual(notification["message"]["type"], "bus.bus/im_status_updated")
-        self.assertEqual(notification["message"]["payload"]["partner_id"], self.partner_demo.id)
+        self.assertEqual(notification["message"]["payload"]["partner_id"], str(self.partner_demo.id))
         self.assertEqual(notification["message"]["payload"]["im_status"], "online")
         self.assertEqual(notification["message"]["payload"]["presence_status"], "online")
 

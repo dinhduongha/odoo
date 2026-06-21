@@ -56,10 +56,10 @@ class TestMessageController(HttpCaseWithUserDemo):
                 {
                     "params": {
                         "thread_model": "discuss.channel",
-                        "thread_id": self.channel.id,
+                        "thread_id": str(self.channel.id),
                         "post_data": {
                             "body": "test",
-                            "attachment_ids": [self.attachments[0].id],
+                            "attachment_ids": [str(self.attachments[0].id)],
                             "attachment_tokens": ["wrong token"],
                         },
                     },
@@ -80,10 +80,10 @@ class TestMessageController(HttpCaseWithUserDemo):
                 {
                     "params": {
                         "thread_model": "discuss.channel",
-                        "thread_id": self.channel.id,
+                        "thread_id": str(self.channel.id),
                         "post_data": {
                             "body": "test",
-                            "attachment_ids": [self.attachments[0].id],
+                            "attachment_ids": [str(self.attachments[0].id)],
                             "attachment_tokens": [self.attachments[0]._get_ownership_token()],
                             "message_type": "comment",
                         },
@@ -102,14 +102,14 @@ class TestMessageController(HttpCaseWithUserDemo):
                     "create_date": fields.Datetime.to_string(self.attachments[0].create_date),
                     "file_size": 0,
                     "has_thumbnail": False,
-                    "id": self.attachments[0].id,
+                    "id": str(self.attachments[0].id),
                     "mimetype": "application/octet-stream",
                     "name": "File 1",
                     "ownership_token": self.attachments[0]._get_ownership_token(),
                     "raw_access_token": self.attachments[0]._get_raw_access_token(),
                     "res_name": "Test channel",
                     "res_model": self.attachments[0].res_model,
-                    "thread": {"id": self.channel.id, "model": "discuss.channel"},
+                    "thread": {"id": str(self.channel.id), "model": "discuss.channel"},
                     "thumbnail_access_token": self.attachments[0]._get_thumbnail_token(),
                     "voice_ids": [],
                     'type': 'binary',
@@ -127,7 +127,7 @@ class TestMessageController(HttpCaseWithUserDemo):
                         "message_id": data1["message_id"],
                         "update_data": {
                             "body": "test",
-                            "attachment_ids": [self.attachments[1].id],
+                            "attachment_ids": [str(self.attachments[1].id)],
                             "attachment_tokens": ["wrong token"],
                         },
                     },
@@ -150,7 +150,7 @@ class TestMessageController(HttpCaseWithUserDemo):
                         "message_id": data1["message_id"],
                         "update_data": {
                             "body": "test",
-                            "attachment_ids": [self.attachments[1].id],
+                            "attachment_ids": [str(self.attachments[1].id)],
                             "attachment_tokens": [self.attachments[1]._get_ownership_token()],
                         },
                     },
@@ -168,14 +168,14 @@ class TestMessageController(HttpCaseWithUserDemo):
                     "create_date": fields.Datetime.to_string(self.attachments[0].create_date),
                     "file_size": 0,
                     "has_thumbnail": False,
-                    "id": self.attachments[0].id,
+                    "id": str(self.attachments[0].id),
                     "mimetype": "application/octet-stream",
                     "name": "File 1",
                     "ownership_token": self.attachments[0]._get_ownership_token(),
                     "raw_access_token": self.attachments[0]._get_raw_access_token(),
                     "res_name": "Test channel",
                     "res_model": self.attachments[0].res_model,
-                    "thread": {"id": self.channel.id, "model": "discuss.channel"},
+                    "thread": {"id": str(self.channel.id), "model": "discuss.channel"},
                     "thumbnail_access_token": self.attachments[0]._get_thumbnail_token(),
                     "voice_ids": [],
                     'type': 'binary',
@@ -186,14 +186,14 @@ class TestMessageController(HttpCaseWithUserDemo):
                     "create_date": fields.Datetime.to_string(self.attachments[1].create_date),
                     "file_size": 0,
                     "has_thumbnail": False,
-                    "id": self.attachments[1].id,
+                    "id": str(self.attachments[1].id),
                     "mimetype": "application/octet-stream",
                     "name": "File 2",
                     "ownership_token": self.attachments[1]._get_ownership_token(),
                     "raw_access_token": self.attachments[1]._get_raw_access_token(),
                     "res_name": "Test channel",
                     "res_model": self.attachments[1].res_model,
-                    "thread": {"id": self.channel.id, "model": "discuss.channel"},
+                    "thread": {"id": str(self.channel.id), "model": "discuss.channel"},
                     "thumbnail_access_token": self.attachments[1]._get_thumbnail_token(),
                     "voice_ids": [],
                     'type': 'binary',
@@ -213,7 +213,7 @@ class TestMessageController(HttpCaseWithUserDemo):
                 {
                     "params": {
                         "thread_model": "discuss.channel",
-                        "thread_id": self.channel.id,
+                        "thread_id": str(self.channel.id),
                         "emails": ["john@test.be"],
                     },
                 }
@@ -235,7 +235,7 @@ class TestMessageController(HttpCaseWithUserDemo):
                 {
                     "params": {
                         "thread_model": "discuss.channel",
-                        "thread_id": self.channel.id,
+                        "thread_id": str(self.channel.id),
                         "emails": ["john@test.be"],
                     },
                 }
@@ -254,7 +254,7 @@ class TestMessageController(HttpCaseWithUserDemo):
                 {
                     "params": {
                         "thread_model": "discuss.channel",
-                        "thread_id": self.channel.id,
+                        "thread_id": str(self.channel.id),
                         "post_data": {
                             "body": "test",
                             "partner_emails": ["john@test.be"],

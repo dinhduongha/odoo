@@ -3,6 +3,7 @@
 # from odoo import exceptions
 from odoo.addons.mail.tests import common
 from odoo.tests import new_test_user, tagged, users
+from odoo.tools.uuid_utils import uuid7
 
 
 @tagged("-at_install", "post_install", "mail_message")
@@ -25,7 +26,7 @@ class TestMailMessage(common.MailCommon):
         self.assertNotIn(self.env.user.partner_id, message.starred_partner_ids)
 
     def test_mail_message_read_inexisting(self):
-        inexisting_message = self.env['mail.message'].with_user(self.user_employee).browse(-434264)
+        inexisting_message = self.env['mail.message'].with_user(self.user_employee).browse(uuid7())
         self.assertFalse(inexisting_message.exists())
         self.assertTrue(inexisting_message.browse().has_access('read'), 'Should not crash (can read void)')
         # TDE to check: cache pollution / inexisting not correctly tracked, ok-ish for stable

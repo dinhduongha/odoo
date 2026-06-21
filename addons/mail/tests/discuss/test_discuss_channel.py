@@ -16,6 +16,7 @@ from odoo.addons.mail.tools.discuss import Store
 from odoo.exceptions import ValidationError
 from odoo.tests import HttpCase, tagged, users
 from odoo.tools import html_escape, mute_logger
+from odoo.tools.uuid_utils import uuid7
 
 
 @tagged("post_install", "-at_install")
@@ -436,7 +437,7 @@ class TestChannelInternals(MailCommon, HttpCase):
                             "id": member.id,
                             "message_unread_counter": 0,
                             "message_unread_counter_bus_id": 0,
-                            "new_message_separator": msg_1.id + 1,
+                            "new_message_separator": msg_1.id,
                             "partner_id": self.user_admin.partner_id.id,
                             "channel_id": {
                                 "id": chat.id,
@@ -497,7 +498,7 @@ class TestChannelInternals(MailCommon, HttpCase):
         message = self._add_messages(channels[0], 'Body1')
         message_2 = channels[1].message_post(body='Body2', parent_id=message.id)
         self.assertFalse(message_2.parent_id, "should not allow parent from wrong thread")
-        message_3 = channels[1].message_post(body='Body3', parent_id=message.id + 100)
+        message_3 = channels[1].message_post(body='Body3', parent_id=uuid7())
         self.assertFalse(message_3.parent_id, "should not allow non-existing parent")
 
     def test_channel_message_post_with_voice_attachment(self):
@@ -1008,7 +1009,7 @@ class TestChannelInternals(MailCommon, HttpCase):
                             (
                                 data
                                 for data in message["payload"]["discuss.channel"]
-                                if data["id"] == channel.id and "channel_name_member_ids" in data
+                                if data["id"] == str(channel.id) and "channel_name_member_ids" in data
                             ),
                             None,
                         )
@@ -1024,7 +1025,7 @@ class TestChannelInternals(MailCommon, HttpCase):
                             matching_data, "Missing channel_name_member_ids update"
                         )
                         expected_member_ids = [
-                            member.id
+                            str(member.id)
                             for member in channel.channel_member_ids
                             if member.partner_id.main_user_id in expected_users
                         ]

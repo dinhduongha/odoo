@@ -44,11 +44,11 @@ class TestResRole(MailCommon, HttpCase):
                 "/mail/message/post",
                 {
                     "thread_model": "res.partner",
-                    "thread_id": contact.id,
+                    "thread_id": str(contact.id),
                     "post_data": {
                         "body": "irrelevant",
                         "message_type": "comment",
-                        "role_ids": roles.ids,
+                        "role_ids": [str(role_id) for role_id in roles.ids],
                         "subtype_xmlid": "mail.mt_note",
                     },
                 },
@@ -56,5 +56,5 @@ class TestResRole(MailCommon, HttpCase):
             message = next(filter(lambda m: m["id"] == data["message_id"], data["store_data"]["mail.message"]))
             self.assertEqual(
                 message["partner_ids"],
-                expected_users.partner_id.ids
+                [str(pid) for pid in expected_users.partner_id.ids]
             )

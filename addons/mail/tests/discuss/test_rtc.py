@@ -9,6 +9,7 @@ from odoo.addons.mail.tests.common import MailCommon
 from odoo.addons.mail.tools.discuss import Store
 from odoo.tests.common import HttpCase, new_test_user, tagged, users
 from odoo.tools.misc import mute_logger
+from odoo.tools.uuid_utils import uuid7
 
 
 @tagged("RTC", "post_install", "-at_install")
@@ -23,94 +24,101 @@ class TestChannelRTC(MailCommon, HttpCase):
         channel = self.env['discuss.channel']._create_channel(name='Test Channel', group_id=self.env.ref('base.group_user').id)
         channel_member = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.partner_id == self.user_employee.partner_id)
         channel_member._rtc_join_call()
-        with self.assertBus(
-            [
-                # delete of old sessions
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # end of old sessions
-                (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
-                # update history with duration of previous session
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # insert new session
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # message unread counter (message post)
-                (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
-                # start call notification message post
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # new call history (not asserted below)
-                (self.cr.dbname, "discuss.channel", channel.id),
-            ],
-            [
-                {
-                    "type": "discuss.channel.rtc.session/ended",
-                    "payload": {"sessionId": channel_member.rtc_session_ids.id},
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("DELETE", [channel_member.rtc_session_ids.id])],
-                            },
-                        ],
+        # capture the session created by the first join; it is deleted and replaced
+        # by the second join below (ids are uuid, hence not predictable by arithmetic)
+        old_session_id = channel_member.rtc_session_ids.id
+
+        def get_params():
+            return (
+                [
+                    # delete of old sessions
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # end of old sessions
+                    (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
+                    # update history with duration of previous session
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # insert new session
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # message unread counter (message post)
+                    (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
+                    # start call notification message post
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # new call history (not asserted below)
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                ],
+                [
+                    {
+                        "type": "discuss.channel.rtc.session/ended",
+                        "payload": {"sessionId": old_session_id},
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("ADD", [channel_member.rtc_session_ids.id + 1])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member.id,
-                                "partner_id": channel_member.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member.channel_id.id,
-                                    "model": "discuss.channel",
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("DELETE", [old_session_id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member.id,
-                                "id": channel_member.rtc_session_ids.id + 1,
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member.partner_id.id,
-                                "im_status": channel_member.partner_id.im_status,
-                                "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member.partner_id._get_mention_token(),
-                                "name": channel_member.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                        },
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member.id,
-                                "new_message_separator": channel_member.new_message_separator + 1,
-                                "partner_id": channel_member.partner_id.id,
-                                "channel_id": {"id": channel.id, "model": "discuss.channel"}
-                            }
-                        ]
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("ADD", [channel_member.rtc_session_ids.id])],
+                                },
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member.id,
+                                    "partner_id": channel_member.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member.id,
+                                    "id": channel_member.rtc_session_ids.id,
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member.partner_id.id,
+                                    "im_status": channel_member.partner_id.im_status,
+                                    "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member.partner_id._get_mention_token(),
+                                    "name": channel_member.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-            ],
-        ):
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member.id,
+                                    "new_message_separator": channel_member.new_message_separator,
+                                    "partner_id": channel_member.partner_id.id,
+                                    "channel_id": {"id": channel.id, "model": "discuss.channel"}
+                                }
+                            ]
+                        },
+                    },
+                ],
+            )
+
+        with self.assertBus(get_params=get_params):
             store = Store()
             channel_member._rtc_join_call(store)
             res = store.get_result()
@@ -122,7 +130,7 @@ class TestChannelRTC(MailCommon, HttpCase):
                         "id": channel.id,
                         "rtc_session_ids": [
                             ("ADD", [channel_member.rtc_session_ids.id]),
-                            ("DELETE", [channel_member.rtc_session_ids.id - 1]),
+                            ("DELETE", [old_session_id]),
                         ],
                     },
                 ],
@@ -171,101 +179,105 @@ class TestChannelRTC(MailCommon, HttpCase):
         channel_member = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.partner_id == self.user_employee.partner_id)
         channel_member_test_user = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.partner_id == test_user.partner_id)
         channel_member._rtc_join_call()
-        last_rtc_session_id = channel_member.rtc_session_ids.id
         channel_member._rtc_leave_call()
 
-        with self.assertBus(
-            [
-                # update new session
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update new message separator
-                (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
-                # message_post "started a live conference" (not asserted below)
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update call history (not asserted below)
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # incoming invitation
-                (self.cr.dbname, "res.partner", test_user.partner_id.id),
-                # update list of invitations
-                (self.cr.dbname, "discuss.channel", channel.id),
-            ],
-            [
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("ADD", [last_rtc_session_id + 1])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member.id,
-                                "partner_id": channel_member.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member.channel_id.id,
-                                    "model": "discuss.channel",
+        def get_params():
+            # the session created by the join below has a uuid id read live here
+            new_rtc_session_id = channel_member.rtc_session_ids.id
+            return (
+                [
+                    # update new session
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update new message separator
+                    (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
+                    # message_post "started a live conference" (not asserted below)
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update call history (not asserted below)
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # incoming invitation
+                    (self.cr.dbname, "res.partner", test_user.partner_id.id),
+                    # update list of invitations
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                ],
+                [
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("ADD", [new_rtc_session_id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member.id,
-                                "id": last_rtc_session_id + 1,
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member.partner_id.id,
-                                "im_status": channel_member.partner_id.im_status,
-                                "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member.partner_id._get_mention_token(),
-                                "name": channel_member.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member.partner_id.write_date
-                                ),
-                            },
-                        ),
-                    },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "invited_member_ids": [("ADD", [channel_member_test_user.id])],
-                            }
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_user.id,
-                                "partner_id": channel_member_test_user.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_user.channel_id.id,
-                                    "model": "discuss.channel",
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member.id,
+                                    "partner_id": channel_member.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
                                 },
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_user.partner_id.id,
-                                "im_status": channel_member_test_user.partner_id.im_status,
-                                "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member_test_user.partner_id._get_mention_token(),
-                                "name": channel_member_test_user.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_user.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member.id,
+                                    "id": new_rtc_session_id,
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member.partner_id.id,
+                                    "im_status": channel_member.partner_id.im_status,
+                                    "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member.partner_id._get_mention_token(),
+                                    "name": channel_member.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-            ],
-        ):
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "invited_member_ids": [("ADD", [channel_member_test_user.id])],
+                                }
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_user.id,
+                                    "partner_id": channel_member_test_user.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_user.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_user.partner_id.id,
+                                    "im_status": channel_member_test_user.partner_id.im_status,
+                                    "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member_test_user.partner_id._get_mention_token(),
+                                    "name": channel_member_test_user.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_user.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
+                    },
+                ],
+            )
+
+        with self.assertBus(get_params=get_params):
             now = fields.Datetime.now()
             with patch.object(fields.Datetime, 'now', lambda: now + relativedelta(seconds=5)):
                 channel_member._rtc_join_call()
@@ -282,168 +294,172 @@ class TestChannelRTC(MailCommon, HttpCase):
         channel_member_test_guest = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.guest_id == test_guest)
         channel_member = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.partner_id == self.user_employee.partner_id)
         channel_member._rtc_join_call()
-        last_rtc_session_id = channel_member.rtc_session_ids.id
         channel_member._rtc_leave_call()
 
-        with self.assertBus(
-            [
-                # update new session
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update new message separator
-                (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
-                # message_post "started a live conference" (not asserted below)
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update call history (not asserted below)
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # incoming invitation
-                (self.cr.dbname, "res.partner", test_user.partner_id.id),
-                # incoming invitation
-                (self.cr.dbname, "mail.guest", test_guest.id),
-                # update list of invitations
-                (self.cr.dbname, "discuss.channel", channel.id),
-            ],
-            [
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("ADD", [last_rtc_session_id + 1])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member.id,
-                                "partner_id": channel_member.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member.channel_id.id,
-                                    "model": "discuss.channel",
+        def get_params():
+            # the session created by the join below has a uuid id read live here
+            new_rtc_session_id = channel_member.rtc_session_ids.id
+            return (
+                [
+                    # update new session
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update new message separator
+                    (self.cr.dbname, "res.partner", self.user_employee.partner_id.id),
+                    # message_post "started a live conference" (not asserted below)
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update call history (not asserted below)
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # incoming invitation
+                    (self.cr.dbname, "res.partner", test_user.partner_id.id),
+                    # incoming invitation
+                    (self.cr.dbname, "mail.guest", test_guest.id),
+                    # update list of invitations
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                ],
+                [
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("ADD", [new_rtc_session_id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member.id,
-                                "id": last_rtc_session_id + 1,
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member.partner_id.id,
-                                "im_status": channel_member.partner_id.im_status,
-                                "im_status_access_token":  channel_member.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member.partner_id._get_mention_token(),
-                                "name": channel_member.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member.id,
+                                    "partner_id": channel_member.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member.id,
+                                    "id": new_rtc_session_id,
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member.partner_id.id,
+                                    "im_status": channel_member.partner_id.im_status,
+                                    "im_status_access_token":  channel_member.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member.partner_id._get_mention_token(),
+                                    "name": channel_member.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("ADD", [last_rtc_session_id + 1])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member.id,
-                                "partner_id": channel_member.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member.channel_id.id,
-                                    "model": "discuss.channel",
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("ADD", [new_rtc_session_id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member.id,
-                                "id": last_rtc_session_id + 1,
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member.partner_id.id,
-                                "im_status": channel_member.partner_id.im_status,
-                                "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member.partner_id._get_mention_token(),
-                                "name": channel_member.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member.id,
+                                    "partner_id": channel_member.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member.id,
+                                    "id": new_rtc_session_id,
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member.partner_id.id,
+                                    "im_status": channel_member.partner_id.im_status,
+                                    "im_status_access_token": channel_member.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member.partner_id._get_mention_token(),
+                                    "name": channel_member.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "invited_member_ids": [
-                                    (
-                                        "ADD",
-                                        [channel_member_test_user.id, channel_member_test_guest.id],
-                                    )
-                                ],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_user.id,
-                                "partner_id": channel_member_test_user.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_user.channel_id.id,
-                                    "model": "discuss.channel",
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "invited_member_ids": [
+                                        (
+                                            "ADD",
+                                            [channel_member_test_user.id, channel_member_test_guest.id],
+                                        )
+                                    ],
                                 },
-                            },
-                            {
-                                "id": channel_member_test_guest.id,
-                                "guest_id": channel_member_test_guest.guest_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_guest.channel_id.id,
-                                    "model": "discuss.channel",
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_user.id,
+                                    "partner_id": channel_member_test_user.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_user.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
                                 },
-                            },
-                        ],
-                        "mail.guest": [
-                            {
-                                "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_guest.guest_id.id,
-                                "im_status": channel_member_test_guest.guest_id.im_status,
-                                "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
-                                "name": channel_member_test_guest.guest_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_guest.guest_id.write_date
-                                ),
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_user.partner_id.id,
-                                "im_status": channel_member_test_user.partner_id.im_status,
-                                "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member_test_user.partner_id._get_mention_token(),
-                                "name": channel_member_test_user.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_user.partner_id.write_date
-                                ),
-                            },
-                        ),
+                                {
+                                    "id": channel_member_test_guest.id,
+                                    "guest_id": channel_member_test_guest.guest_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_guest.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "mail.guest": [
+                                {
+                                    "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_guest.guest_id.id,
+                                    "im_status": channel_member_test_guest.guest_id.im_status,
+                                    "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
+                                    "name": channel_member_test_guest.guest_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_guest.guest_id.write_date
+                                    ),
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_user.partner_id.id,
+                                    "im_status": channel_member_test_user.partner_id.im_status,
+                                    "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member_test_user.partner_id._get_mention_token(),
+                                    "name": channel_member_test_user.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_user.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-            ],
-        ):
+                ],
+            )
+
+        with self.assertBus(get_params=get_params):
             now = fields.Datetime.now()
             with patch.object(fields.Datetime, 'now', lambda: now + relativedelta(seconds=5)):
                 channel_member._rtc_join_call()
@@ -460,207 +476,219 @@ class TestChannelRTC(MailCommon, HttpCase):
         channel_member._rtc_join_call()
 
         channel_member_test_user = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.partner_id == test_user.partner_id)
-        with self.assertBus(
-            [
-                # update invitation
-                (self.cr.dbname, "res.partner", test_user.partner_id.id),
-                # update list of invitations
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update sessions
-                (self.cr.dbname, "discuss.channel", channel.id),
-            ],
-            [
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel.member": [
-                            {
-                                "channel_id": {"id": channel.id, "model": "discuss.channel"},
-                                "id": channel_member_test_user.id,
-                                "partner_id": channel_member_test_user.partner_id.id,
-                                "rtc_inviting_session_id": False,
-                            },
-                        ],
-                    },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "invited_member_ids": [("DELETE", [channel_member_test_user.id])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_user.id,
-                                "partner_id": channel_member_test_user.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_user.channel_id.id,
-                                    "model": "discuss.channel",
+
+        def get_params_test_user():
+            # session created by the test_user join below, uuid id read live
+            new_rtc_session_id = channel_member_test_user.rtc_session_ids.id
+            return (
+                [
+                    # update invitation
+                    (self.cr.dbname, "res.partner", test_user.partner_id.id),
+                    # update list of invitations
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update sessions
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                ],
+                [
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel.member": [
+                                {
+                                    "channel_id": {"id": channel.id, "model": "discuss.channel"},
+                                    "id": channel_member_test_user.id,
+                                    "partner_id": channel_member_test_user.partner_id.id,
+                                    "rtc_inviting_session_id": False,
                                 },
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_user.partner_id.id,
-                                "im_status": channel_member_test_user.partner_id.im_status,
-                                "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member_test_user.partner_id._get_mention_token(),
-                                "name": channel_member_test_user.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_user.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                        },
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [("ADD", [channel_member.rtc_session_ids.id + 1])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_user.id,
-                                "partner_id": channel_member_test_user.partner_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_user.channel_id.id,
-                                    "model": "discuss.channel",
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "invited_member_ids": [("DELETE", [channel_member_test_user.id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member_test_user.id,
-                                "id": channel_member.rtc_session_ids.id + 1,
-                            },
-                        ],
-                        "res.partner": self._filter_partners_fields(
-                            {
-                                "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_user.partner_id.id,
-                                "im_status": channel_member_test_user.partner_id.im_status,
-                                "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
-                                "mention_token": channel_member_test_user.partner_id._get_mention_token(),
-                                "name": channel_member_test_user.partner_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_user.partner_id.write_date
-                                ),
-                            },
-                        ),
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_user.id,
+                                    "partner_id": channel_member_test_user.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_user.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_user.partner_id.id,
+                                    "im_status": channel_member_test_user.partner_id.im_status,
+                                    "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member_test_user.partner_id._get_mention_token(),
+                                    "name": channel_member_test_user.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_user.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
                     },
-                },
-            ],
-        ):
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [("ADD", [new_rtc_session_id])],
+                                },
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_user.id,
+                                    "partner_id": channel_member_test_user.partner_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_user.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member_test_user.id,
+                                    "id": new_rtc_session_id,
+                                },
+                            ],
+                            "res.partner": self._filter_partners_fields(
+                                {
+                                    "avatar_128_access_token": channel_member_test_user.partner_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_user.partner_id.id,
+                                    "im_status": channel_member_test_user.partner_id.im_status,
+                                    "im_status_access_token": channel_member_test_user.partner_id._get_im_status_access_token(),
+                                    "mention_token": channel_member_test_user.partner_id._get_mention_token(),
+                                    "name": channel_member_test_user.partner_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_user.partner_id.write_date
+                                    ),
+                                },
+                            ),
+                        },
+                    },
+                ],
+            )
+
+        with self.assertBus(get_params=get_params_test_user):
             channel_member_test_user._rtc_join_call()
 
         channel_member_test_guest = channel.sudo().channel_member_ids.filtered(lambda channel_member: channel_member.guest_id == test_guest)
-        with self.assertBus(
-            [
-                # update invitation
-                (self.cr.dbname, "mail.guest", test_guest.id),
-                # update list of invitations
-                (self.cr.dbname, "discuss.channel", channel.id),
-                # update sessions
-                (self.cr.dbname, "discuss.channel", channel.id),
-            ],
-            [
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel.member": [
-                            {
-                                "channel_id": {"id": channel.id, "model": "discuss.channel"},
-                                "guest_id": channel_member_test_guest.guest_id.id,
-                                "id": channel_member_test_guest.id,
-                                "rtc_inviting_session_id": False,
-                            },
-                        ],
-                    },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "invited_member_ids": [("DELETE", [channel_member_test_guest.id])],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_guest.id,
-                                "guest_id": channel_member_test_guest.guest_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_guest.channel_id.id,
-                                    "model": "discuss.channel",
+
+        def get_params_test_guest():
+            # session created by the test_guest join below, uuid id read live
+            new_rtc_session_id = channel_member_test_guest.rtc_session_ids.id
+            return (
+                [
+                    # update invitation
+                    (self.cr.dbname, "mail.guest", test_guest.id),
+                    # update list of invitations
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                    # update sessions
+                    (self.cr.dbname, "discuss.channel", channel.id),
+                ],
+                [
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel.member": [
+                                {
+                                    "channel_id": {"id": channel.id, "model": "discuss.channel"},
+                                    "guest_id": channel_member_test_guest.guest_id.id,
+                                    "id": channel_member_test_guest.id,
+                                    "rtc_inviting_session_id": False,
                                 },
-                            },
-                        ],
-                        "mail.guest": [
-                            {
-                                "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_guest.guest_id.id,
-                                "im_status": channel_member_test_guest.guest_id.im_status,
-                                "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
-                                "name": channel_member_test_guest.guest_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_guest.guest_id.write_date
-                                ),
-                            },
-                        ],
+                            ],
+                        },
                     },
-                },
-                {
-                    "type": "mail.record/insert",
-                    "payload": {
-                        "discuss.channel": [
-                            {
-                                "id": channel.id,
-                                "rtc_session_ids": [
-                                    ("ADD", [channel_member.rtc_session_ids.id + 2])
-                                ],
-                            },
-                        ],
-                        "discuss.channel.member": [
-                            {
-                                "id": channel_member_test_guest.id,
-                                "guest_id": channel_member_test_guest.guest_id.id,
-                                "channel_id": {
-                                    "id": channel_member_test_guest.channel_id.id,
-                                    "model": "discuss.channel",
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "invited_member_ids": [("DELETE", [channel_member_test_guest.id])],
                                 },
-                            },
-                        ],
-                        "discuss.channel.rtc.session": [
-                            {
-                                "channel_member_id": channel_member_test_guest.id,
-                                "id": channel_member.rtc_session_ids.id + 2,
-                            },
-                        ],
-                        "mail.guest": [
-                            {
-                                "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
-                                "id": channel_member_test_guest.guest_id.id,
-                                "im_status": channel_member_test_guest.guest_id.im_status,
-                                "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
-                                "name": channel_member_test_guest.guest_id.name,
-                                "write_date": fields.Datetime.to_string(
-                                    channel_member_test_guest.guest_id.write_date
-                                ),
-                            },
-                        ],
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_guest.id,
+                                    "guest_id": channel_member_test_guest.guest_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_guest.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "mail.guest": [
+                                {
+                                    "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_guest.guest_id.id,
+                                    "im_status": channel_member_test_guest.guest_id.im_status,
+                                    "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
+                                    "name": channel_member_test_guest.guest_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_guest.guest_id.write_date
+                                    ),
+                                },
+                            ],
+                        },
                     },
-                },
-            ],
-        ):
+                    {
+                        "type": "mail.record/insert",
+                        "payload": {
+                            "discuss.channel": [
+                                {
+                                    "id": channel.id,
+                                    "rtc_session_ids": [
+                                        ("ADD", [new_rtc_session_id])
+                                    ],
+                                },
+                            ],
+                            "discuss.channel.member": [
+                                {
+                                    "id": channel_member_test_guest.id,
+                                    "guest_id": channel_member_test_guest.guest_id.id,
+                                    "channel_id": {
+                                        "id": channel_member_test_guest.channel_id.id,
+                                        "model": "discuss.channel",
+                                    },
+                                },
+                            ],
+                            "discuss.channel.rtc.session": [
+                                {
+                                    "channel_member_id": channel_member_test_guest.id,
+                                    "id": new_rtc_session_id,
+                                },
+                            ],
+                            "mail.guest": [
+                                {
+                                    "avatar_128_access_token": channel_member_test_guest.guest_id._get_avatar_128_access_token(),
+                                    "id": channel_member_test_guest.guest_id.id,
+                                    "im_status": channel_member_test_guest.guest_id.im_status,
+                                    "im_status_access_token": channel_member_test_guest.guest_id._get_im_status_access_token(),
+                                    "name": channel_member_test_guest.guest_id.name,
+                                    "write_date": fields.Datetime.to_string(
+                                        channel_member_test_guest.guest_id.write_date
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            )
+
+        with self.assertBus(get_params=get_params_test_guest):
             channel_member_test_guest._rtc_join_call()
 
     @users('employee')
@@ -1256,7 +1284,7 @@ class TestChannelRTC(MailCommon, HttpCase):
         test_session = self.env['discuss.channel.rtc.session'].sudo().create({'channel_member_id': test_channel_member.id})
         test_session.flush_model()
         test_session._write({'write_date': fields.Datetime.now() - relativedelta(days=2)})
-        unused_ids = [9998, 9999]
+        unused_ids = [uuid7(), uuid7()]
         with self.assertBus(
             [
                 # update list of sessions
@@ -1283,7 +1311,7 @@ class TestChannelRTC(MailCommon, HttpCase):
                 check_rtc_session_ids=[join_call_values["Rtc"]["localSession"]] + unused_ids
             )
         self.assertEqual(channel_member.rtc_session_ids, current_rtc_sessions)
-        self.assertEqual(unused_ids, outdated_rtc_sessions.ids)
+        self.assertEqual(set(unused_ids), set(outdated_rtc_sessions.ids))
         self.assertFalse(outdated_rtc_sessions.exists())
 
     def test_07_call_invitation_ui(self):

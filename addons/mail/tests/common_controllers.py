@@ -11,6 +11,7 @@ from odoo.addons.mail.tests.common import mail_new_test_user, MailCommon
 from odoo.http import Request
 from odoo.tests import JsonRpcException
 from odoo.tools import file_open, mute_logger
+from odoo.tools.uuid_utils import uuid7
 
 
 class MessagePostSubTestData:
@@ -31,10 +32,10 @@ class MessagePostSubTestData:
         if partner_emails is not None:
             self.post_data["partner_emails"] = partner_emails
         if partners is not None:
-            self.post_data["partner_ids"] = partners.ids
+            self.post_data["partner_ids"] = [str(pid) for pid in partners.ids]
         if add_mention_token:
             self.post_data["partner_ids_mention_token"] = {
-                partner.id: partner._get_mention_token() for partner in partners
+                str(partner.id): partner._get_mention_token() for partner in partners
             }
         self.exp_author = exp_author
         self.exp_partners = exp_partners
@@ -52,8 +53,7 @@ class MailControllerCommon(HttpCase, MailCommon):
         cls.maxDiff = None
         cls._create_portal_user()
         cls.guest = cls.env["mail.guest"].create({"name": "Guest"})
-        last_message = cls.env["mail.message"].search([], order="id desc", limit=1)
-        cls.fake_message = cls.env["mail.message"].browse(last_message.id + 1000000)
+        cls.fake_message = cls.env["mail.message"].browse(uuid7())
         cls.user_employee_nopartner = mail_new_test_user(
             cls.env,
             company_id=cls.company_admin.id,
@@ -141,7 +141,7 @@ class MailControllerAttachmentCommon(MailControllerCommon):
                 data={
                     "csrf_token": Request.csrf_token(self),
                     "is_pending": True,
-                    "thread_id": document.id,
+                    "thread_id": str(document.id),
                     "thread_model": document._name,
                     **route_kw,
                 },
@@ -197,7 +197,7 @@ class MailControllerBinaryCommon(MailControllerCommon):
             route="/mail/message/post",
             params={
                 "thread_model": document._name,
-                "thread_id": document.id,
+                "thread_id": str(document.id),
                 "post_data": {
                     "body": "Test",
                     "message_type": "comment",
@@ -244,13 +244,13 @@ class MailControllerReactionCommon(MailControllerCommon):
     def _add_reaction(self, message, content, route_kw):
         self.make_jsonrpc_request(
             route="/mail/message/reaction",
-            params={"action": "add", "content": content, "message_id": message.id, **route_kw},
+            params={"action": "add", "content": content, "message_id": str(message.id), **route_kw},
         )
 
     def _remove_reaction(self, message, content, route_kw):
         self.make_jsonrpc_request(
             route="/mail/message/reaction",
-            params={"action": "remove", "content": content, "message_id": message.id, **route_kw},
+            params={"action": "remove", "content": content, "message_id": str(message.id), **route_kw},
         )
 
 
@@ -279,7 +279,7 @@ class MailControllerThreadCommon(MailControllerCommon):
             route="/mail/message/post",
             params={
                 "thread_model": record._name,
-                "thread_id": record.id,
+                "thread_id": str(record.id),
                 "post_data": post_data,
                 **route_kw,
             },
@@ -303,7 +303,7 @@ class MailControllerUpdateCommon(MailControllerCommon):
             user, guest = self._authenticate_pseudo_user(data_user)
             with self.subTest(user=user.name, guest=guest.name, route_kw=route_kw):
                 if allowed:
-                    self._update_content(message.id, self.alter_message_body, route_kw)
+                    self._update_content(str(message.id), self.alter_message_body, route_kw)
                     self.assertEqual(message.body,
                                      Markup('<p>Altered message body<span class="o-mail-Message-edited"></span></p>'))
                 else:
@@ -311,7 +311,7 @@ class MailControllerUpdateCommon(MailControllerCommon):
                         JsonRpcException,
                         msg="update message content should raise NotFound",
                     ):
-                        self._update_content(message.id, self.alter_message_body, route_kw)
+                        self._update_content(str(message.id), self.alter_message_body, route_kw)
 
     def _update_content(self, message_id, body, route_kw):
         self.make_jsonrpc_request(
