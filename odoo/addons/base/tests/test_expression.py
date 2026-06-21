@@ -400,7 +400,7 @@ class TestExpression(SavepointCaseWithUserDemo, TransactionExpressionCase):
         # Null value, and there are actually some null and non-null values in
         # the demo data.
         all_partners = self._search(Partner, [])
-        non_partner_id = max(all_partners.ids) + 1
+        non_partner_id = uuid7()  # a deliberately-nonexistent partner id
 
         with_parent = all_partners.filtered(lambda p: p.parent_id)
         without_parent = all_partners.filtered(lambda p: not p.parent_id)

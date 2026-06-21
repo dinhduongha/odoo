@@ -3210,6 +3210,10 @@ class TestViews(ViewCase):
                     </group>
                 </form>
             """, field='display_name', demo=False)
+        # This build adds `group_multi_company implied_by group_user`, so within
+        # a group_user-restricted block, group_multi_company covers every user:
+        # the auto-added 'name' field is needed for all group_user users (incl.
+        # the plain demo user), hence demo=True here.
         validate("""
                 <form string="View attachment">
                     <group groups="base.group_user" invisible="not display_name">
@@ -3217,7 +3221,7 @@ class TestViews(ViewCase):
                         <field name="company_id" invisible="not name" groups="base.group_erp_manager"/>
                     </group>
                 </form>
-            """, field='name', demo=False)
+            """, field='name', demo=True)
         validate("""
                 <form string="View attachment">
                     <group groups="base.group_user" invisible="not display_name">
@@ -5754,13 +5758,18 @@ class ViewModifiers(ViewCase):
 
         # Add the missing field only for 'base.group_multi_company' because the
         # other field is valid.
+        # NOTE: this build adds `group_multi_company implied_by group_user`, and
+        # ir.ui.view is only accessible to base.group_system (which implies
+        # group_user, hence group_multi_company). So restricting the auto-added
+        # field to group_multi_company is universal among view-accessing users:
+        # the field is still added, but without a group key (repr collapses to '').
         validate("""
             <form string="View">
                 <field name="name" groups="base.test_group"/>
                 <field name="inherit_id" groups="base.test_group" %(attrs)s/>
                 <field name="inherit_id" groups="base.group_multi_company" %(attrs)s/>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'")
+        """, add_field_with_groups='')
 
         # All situations have the field name, not need to add one as invisible.
         validate("""
@@ -5780,12 +5789,14 @@ class ViewModifiers(ViewCase):
         """, add_field_with_groups=False)
 
         # add the missing field to have 'name' when inherit_id is present in the view.
+        # group_multi_company is universal among view-accessing users (see note
+        # above), so the union with base.test_group is universal too (repr '').
         validate("""
             <form string="View">
                 <field name="name" groups="base.test_group"/>
                 <field name="inherit_id" groups="base.group_multi_company,base.test_group" %(attrs)s/>
             </form>
-        """, add_field_with_groups="'base.group_multi_company' | 'base.test_group'")
+        """, add_field_with_groups='')
 
         # Should not add the field because when 'inherit_id' is present, 'name' is present
         validate("""
@@ -5819,12 +5830,13 @@ class ViewModifiers(ViewCase):
         """, add_field_with_groups=False, parent=True)
 
         # add missing field with the same group of the needed
+        # (group_multi_company is universal among view-accessing users -> repr '')
         validate("""
             <form string="View">
                 <field name="name" groups="base.test_group"/>
                 <field name="inherit_id" groups="base.group_multi_company" %(attrs)s/>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'")
+        """, add_field_with_groups='')
 
         validate("""
             <form string="View">
@@ -5835,7 +5847,7 @@ class ViewModifiers(ViewCase):
                     </list>
                 </field>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'", parent=True)
+        """, add_field_with_groups='', parent=True)
 
         validate("""
             <form string="View">
@@ -5896,7 +5908,7 @@ class ViewModifiers(ViewCase):
                     <field name="inherit_id" %(attrs)s/>
                 </group>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'")
+        """, add_field_with_groups='')  # group_multi_company universal among view-accessing users
 
         validate("""
             <form string="View">
@@ -5929,7 +5941,7 @@ class ViewModifiers(ViewCase):
                     </list>
                 </field>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'", parent=True)
+        """, add_field_with_groups='', parent=True)  # group_multi_company universal among view-accessing users
 
         validate("""
             <form string="View">
@@ -5969,14 +5981,15 @@ class ViewModifiers(ViewCase):
             </form>
         """, add_field_with_groups=False)
 
-        # Add field because the field 'name' can be hide from the other
-        # negative group
+        # With `group_multi_company implied_by group_user`, no view-accessing
+        # user is outside group_multi_company, so '!base.group_multi_company' is
+        # empty: the field 'name' never needs to be hidden -> no field added.
         validate("""
             <form string="View">
                 <field name="name" groups="!base.group_multi_company,!base.test_group"/>
                 <field name="inherit_id" groups="!base.group_multi_company" %(attrs)s/>
             </form>
-        """, add_field_with_groups="~'base.group_multi_company'")
+        """, add_field_with_groups=False)
 
         # don't need to add field with an additional the negative group
         validate("""
@@ -5986,14 +5999,15 @@ class ViewModifiers(ViewCase):
             </form>
         """, add_field_with_groups=False)
 
-        # add field with the negative mandatory group (the group is added in order
-        # to only be present in the view when it is needed.)
+        # '!base.group_multi_company' is empty among view-accessing users (see
+        # note above), so the inherit_id field is never visible and 'name' is not
+        # required -> no field added.
         validate("""
             <form string="View">
                 <field name="name" groups="!base.group_user"/>
                 <field name="inherit_id" groups="!base.group_multi_company" %(attrs)s/>
             </form>
-        """, add_field_with_groups="~'base.group_multi_company'")
+        """, add_field_with_groups=False)
 
         # fail because the access rights is group_system, no body can see the inherit_id
         # # don't need to add field, the negative group is a subset of the mandatory group
@@ -6006,6 +6020,7 @@ class ViewModifiers(ViewCase):
 
         # add missing field with the mandatory group. The field present in view has a
         # restricted group opposing the desired visibility.
+        # (group_multi_company universal among view-accessing users -> repr '')
         validate("""
             <form string="View">
                 <group groups="base.group_multi_company">
@@ -6015,16 +6030,17 @@ class ViewModifiers(ViewCase):
                     <field name="inherit_id" %(attrs)s/>
                 </group>
             </form>
-        """, add_field_with_groups="'base.group_multi_company'")
+        """, add_field_with_groups='')
 
-        # add missing field with the mandatory group. The field present in view has a
-        # restricted (negative) group opposing the desired visibility.
+        # '!base.group_multi_company' is empty among view-accessing users (see
+        # note above): the inherit_id field is never visible, so 'name' is not
+        # required -> no field added.
         validate("""
             <form string="View">
                 <field name="name" groups="base.group_multi_company"/>
                 <field name="inherit_id" groups="!base.group_multi_company" %(attrs)s/>
             </form>
-        """, add_field_with_groups="~'base.group_multi_company'")
+        """, add_field_with_groups=False)
 
         # don't need to add field (because we can see all time: !base.test_group <> base.test_group).
         validate("""
