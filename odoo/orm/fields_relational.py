@@ -132,6 +132,18 @@ class _Relational(Field[BaseModel]):
 
     def _description_domain(self, env: Environment) -> str | list:
         domain = self._internal_description_domain_raw(env)
+        # uuidv7: a python domain that ends up embedded into the view's domain
+        # *string* (e.g. for check_company fields below) would render uuid values
+        # as UUID(...) which is not an evaluable expression. Normalize uuid leaves
+        # to their string form; this is also valid for a returned list domain.
+        if not isinstance(domain, str):
+            def _uuid_safe(v):
+                if isinstance(v, uuid.UUID):
+                    return str(v)
+                if isinstance(v, (list, tuple)):
+                    return type(v)(_uuid_safe(x) for x in v)
+                return v
+            domain = _uuid_safe(domain)
         if self.check_company:
             field_to_check = None
             if self.company_dependent:
