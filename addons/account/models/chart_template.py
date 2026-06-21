@@ -2,6 +2,7 @@
 
 import ast
 import csv
+import uuid
 from collections import defaultdict
 from functools import wraps
 from inspect import getmembers
@@ -683,7 +684,7 @@ class AccountChartTemplate(models.AbstractModel):
                 if isinstance(xml_id, str) and (record := self.ref(xml_id, raise_if_not_found=False)):
                     xml_id = record.id
 
-                if isinstance(xml_id, int):
+                if isinstance(xml_id, (int, uuid.UUID)):
                     record_vals['id'] = xml_id
                     xml_id = False
                 else:
