@@ -2085,7 +2085,7 @@ class AccountMove(models.Model):
                     field_name: move._fields[field_name].convert_to_write(move[field_name], move) or None
                     for field_name in used_fields
                 }
-                values["id"] = move._origin.id or 0
+                values["id"] = move._origin.id or '00000000-0000-0000-0000-000000000000'
                 # The amount total depends on the field line_ids and is calculated upon saving,
                 # we needed a way to get it even when the invoices has not been saved yet.
                 values['amount_total'] = move.tax_totals.get('total_amount_currency', 0)
@@ -2158,7 +2158,7 @@ class AccountMove(models.Model):
                  GROUP BY move.id
                 """,
                 matching_states=tuple(matching_states),
-                moves=tuple(moves.ids or [0]),
+                moves=tuple(moves.ids or ['00000000-0000-0000-0000-000000000000']),
                 move_table_and_alias=move_table_and_alias,
                 move_type_sql_condition=move_type_sql_condition,
             )))
