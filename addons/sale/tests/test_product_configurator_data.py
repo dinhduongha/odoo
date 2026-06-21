@@ -202,7 +202,7 @@ class TestProductConfiguratorData(HttpCaseWithUserDemo, ProductVariantsCommon, S
             2
         )
         for combination in result['products'][0]['archived_combinations']:
-            self.assertIn(archived_ptav.id, combination)
+            self.assertIn(str(archived_ptav.id), combination)
 
         # When requested combination contains inactive ptav check that exclusions contains it
         self.assertIn(str(archived_ptav.id), result['products'][0]['exclusions'])
@@ -233,9 +233,9 @@ class TestProductConfiguratorData(HttpCaseWithUserDemo, ProductVariantsCommon, S
         result = self.request_get_values(product_template)
         # The PTAVs should be mutually excluded
         self.assertEqual(result['products'][0]['exclusions']
-                         [str(ptav_with_exclusion.id)], [ptav_excluded.id])
+                         [str(ptav_with_exclusion.id)], [str(ptav_excluded.id)])
         self.assertEqual(result['products'][0]['exclusions']
-                         [str(ptav_excluded.id)], [ptav_with_exclusion.id])
+                         [str(ptav_excluded.id)], [str(ptav_with_exclusion.id)])
 
         ptav_with_exclusion.write({'ptav_active': False})
         result = self.request_get_values(product_template)
@@ -319,7 +319,7 @@ class TestProductConfiguratorData(HttpCaseWithUserDemo, ProductVariantsCommon, S
             for selected_value in product['selected_attribute_value_ids']]
 
         # Make sure that deleted value is not selected
-        self.assertNotIn(archived_ptav.id, selected_values)
+        self.assertNotIn(str(archived_ptav.id), selected_values)
 
     def test_attribute_removal(self):
         product_template_2lines_2attributes = self.env['product.template'].create({
