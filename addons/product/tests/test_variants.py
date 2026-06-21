@@ -14,6 +14,7 @@ from odoo.exceptions import UserError
 from odoo.fields import Command
 from odoo.tests import Form, TransactionCase, tagged
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import uuid7
 
 from odoo.addons.product.tests.common import ProductVariantsCommon
 
@@ -60,14 +61,15 @@ class TestVariantsSearch(ProductVariantsCommon):
         self.assertIn(self.product_slip_template.product_variant_ids.id, res_ids,
                       'Slip should be found searching \'not ilike\'')
 
+        missing_id = uuid7()
         templates = self.product_slip_template.name_search(
             "ABC",
-            [['id', '!=', -1]],
+            [['id', '!=', missing_id]],
         )
         self.assertFalse(templates, "Should not return template when searching on code")
         templates = self.product_slip_template.with_context(search_product_product=True).name_search(
             "ABC",
-            [['id', '!=', -1]],
+            [['id', '!=', missing_id]],
         )
         self.assertTrue(templates, "Should return template when searching on code")
 
