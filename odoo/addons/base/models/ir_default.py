@@ -194,7 +194,7 @@ class IrDefault(models.Model):
         """ Discard all the defaults of many2one fields using any of the given
             records.
         """
-        json_vals = [json.dumps(id) for id in records.ids]
+        json_vals = [json.dumps(id, default=str) for id in records.ids]
         domain = [('field_id.ttype', '=', 'many2one'),
                   ('field_id.relation', '=', records._name),
                   ('json_value', 'in', json_vals)]
