@@ -32,4 +32,5 @@ class PosSession(models.Model):
                     "quantity": orderline.qty,
                     "attribute_value_ids": orderline.attribute_value_ids.ids,
                 }
-            order.write({'last_order_preparation_change': json.dumps(last_order_preparation_change)})
+            # default=str: uuid ids (product_id, attribute_value_ids) are not JSON serializable
+            order.write({'last_order_preparation_change': json.dumps(last_order_preparation_change, default=str)})
