@@ -148,12 +148,12 @@ group; for demo, load demo data under with_company(demo_company) / default_compa
 Also relevant: gen_company_id_backfill_sql.py for child company_id.
 
 ## NOT DONE / FOLLOW-UP
-- **Controller `browse(int(url_param))` class (RUNTIME, not install-blocking)**: many web
-  controllers cast a url/kwarg id with int() before browse — breaks on uuid at request
-  time. Drop the int() (browse accepts str uuid). Sites: website_slides/controllers/main.py
-  (many), website_blog, website_sale_loyalty, payment_stripe, website_event_booth_sale,
-  html_editor (ir_ui_view, ir_qweb_fields), mass_mailing/controllers, website/website_form.
-  Sweep: grep -rnE "browse\(int\(" addons (exclude real-int params like *_iterations/_limit).
+- **Controller int() on ids — ✅ DONE (RUNTIME class)**: removed ~188 int() casts on
+  url/param record ids across controllers (browse(int()), domain leaves, write/create
+  vals, context, URL f-strings, function args); survey question membership uses str(id).
+  Word-boundary \bint\( to avoid constraint(/print(); skipped numeric/real-int params.
+  Runtime-verified: /web/image/res.partner/<uuid>/avatar_128 -> 200 image/png, company
+  logo -> 200, website / -> 200, /my -> 303. Commits in odoo repo.
 - Python `-id` negations (runtime, not install-blocking): virtual-record dicts/sorts in
   hr_holidays/l10n_in_hr_holidays/mail ir_ui_menu/product_template/stock — `-uuid` will
   TypeError when hit; need a non-arithmetic unique-id / reverse-sort scheme.
