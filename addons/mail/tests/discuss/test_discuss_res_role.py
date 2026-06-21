@@ -41,16 +41,16 @@ class TestDiscussResRole(TestResRole):
                     "/mail/message/post",
                     {
                         "thread_model": "discuss.channel",
-                        "thread_id": channel.id,
+                        "thread_id": str(channel.id),
                         "post_data": {
                             "body": "irrelevant",
                             "message_type": "comment",
-                            "role_ids": role.ids,
+                            "role_ids": [str(role_id) for role_id in role.ids],
                             "subtype_xmlid": "mail.mt_note",
                         },
                     },
                 )
-                formatted_partner = user.partner_id.id
+                formatted_partner = str(user.partner_id.id)
                 message = next(filter(lambda m: m["id"] == data["message_id"], data["store_data"]["mail.message"]))
                 if mentionned:
                     self.assertIn(formatted_partner, message["partner_ids"])

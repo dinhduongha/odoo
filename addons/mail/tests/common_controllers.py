@@ -85,8 +85,8 @@ class MailControllerCommon(HttpCase, MailCommon):
         _hash = record._sign_token(partner.id)
         token = {"token": access_token}
         bad_token = {"token": "incorrect token"}
-        sign = {"hash": _hash, "pid": partner.id}
-        bad_sign = {"hash": "incorrect hash", "pid": partner.id}
+        sign = {"hash": _hash, "pid": str(partner.id)}
+        bad_sign = {"hash": "incorrect hash", "pid": str(partner.id)}
         return token, bad_token, sign, bad_sign, partner
 
 
@@ -160,7 +160,7 @@ class MailControllerAttachmentCommon(MailControllerCommon):
             self.make_jsonrpc_request(
                 route="/mail/attachment/delete",
                 params={
-                    "attachment_id": attachment.id,
+                    "attachment_id": str(attachment.id),
                     "access_token": attachment._get_ownership_token() if token else None,
                 },
             )
