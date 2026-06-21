@@ -71,7 +71,7 @@ class IrUiView(models.Model):
             value = converter.from_html(Model, Model._fields[field], el)
             if value is not None:
                 # TODO: batch writes?
-                record = Model.browse(int(el.get('data-oe-id')))
+                record = Model.browse(to_uuid(el.get("data-oe-id")))
                 if not self.env.context.get('lang') and self.get_default_lang_code():
                     record.with_context(lang=self.get_default_lang_code()).write({field: value})
                 else:
@@ -513,7 +513,7 @@ class IrUiView(models.Model):
         res_id = self.env.context.get('resId')
         if model and field and res_id:
             self._copy_field_terms_translations(
-                self.env[model].browse(int(res_id)),
+                self.env[model].browse(to_uuid(res_id)),
                 field,
                 custom_snippet_view,
                 'arch_db',

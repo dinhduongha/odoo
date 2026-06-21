@@ -23,6 +23,7 @@ from markupsafe import Markup, escape_silent
 from PIL import Image as I
 from werkzeug import urls
 
+from odoo.tools.uuid_utils import to_uuid
 from odoo import _, api, models, fields
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import posix_to_ldml
@@ -505,7 +506,7 @@ class IrQwebFieldImage(models.AbstractModel):
                 model = query.get('model', fragments[3])
                 oid = query.get('id', fragments[4])
                 field = query.get('field', fragments[5])
-            item = self.env[model].browse(int(oid))
+            item = self.env[model].browse(to_uuid(oid))
             if self.redirect_url_re.match(url_object.path):
                 return self.load_remote_url(item.url)
             return item[field]
