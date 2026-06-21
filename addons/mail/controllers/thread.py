@@ -38,7 +38,7 @@ class ThreadController(http.Controller):
         access on mail.message, aka rights to post on the document. Default
         behavior is to rely on _mail_post_access but it might be customized.
         See '_mail_get_operation_for_mail_message_operation'. """
-        thread_su = request.env[thread_model].sudo().browse(int(thread_id))
+        thread_su = request.env[thread_model].sudo().browse(thread_id)
         access_mode = thread_su._mail_get_operation_for_mail_message_operation('create')[thread_su]
         if not access_mode:
             return request.env[thread_model]  # match _get_thread_with_access void result

@@ -35,7 +35,7 @@ class WebsiteForum(WebsiteProfile):
         if kwargs.get('forum'):
             values['forum'] = kwargs.get('forum')
         elif kwargs.get('forum_id'):
-            values['forum'] = request.env['forum.forum'].browse(int(kwargs.pop('forum_id')))
+            values['forum'] = request.env['forum.forum'].browse(kwargs.pop('forum_id'))
         forum = values.get('forum')
         if forum and forum is not True and not request.env.user._is_public():
             def _get_my_other_forums():
@@ -114,7 +114,7 @@ class WebsiteForum(WebsiteProfile):
     def questions(self, forum=None, tag=None, page=1, filters='all', my=None, sorting=None, search='', create_uid=False, include_answers=False, **post):
         Post = request.env['forum.post']
 
-        author = request.env['res.users'].browse(int(create_uid))
+        author = request.env['res.users'].browse(create_uid)
 
         if author == request.env.user:
             my = 'mine'
@@ -667,7 +667,7 @@ class WebsiteForum(WebsiteProfile):
             if post.get('forum'):
                 forums = post['forum']
             elif post.get('forum_id'):
-                forums = request.env['forum.forum'].browse(int(post['forum_id']))
+                forums = request.env['forum.forum'].browse(post['forum_id'])
                 values.update({
                     'forum_filtered': forums.name,
                 })

@@ -157,7 +157,7 @@ def get_action(env, path_part):
     if path_part.startswith('action-'):
         someid = path_part.removeprefix('action-')
         if someid.isdigit():  # record id
-            action = Actions.sudo().browse(int(someid)).exists()
+            action = Actions.sudo().browse(someid).exists()
         elif '.' in someid:   # xml id
             action = env.ref(someid, False)
             if not action or not action._name.startswith('ir.actions'):

@@ -14,7 +14,7 @@ class PortalChatter(ThreadController):
     def portal_avatar(self, res_id=None, height=50, width=50, access_token=None, _hash=None, pid=None):
         """Get the avatar image in the chatter of the portal"""
         if access_token or (_hash and pid):
-            message_su = request.env["mail.message"].browse(int(res_id)).exists().sudo()
+            message_su = request.env["mail.message"].browse(res_id).exists().sudo()
             thread = self._get_thread_with_access(
                 message_su.model, message_su.res_id,
                 token=access_token, hash=_hash, pid=pid and int(pid)
@@ -124,6 +124,6 @@ class PortalChatter(ThreadController):
 
     @http.route(['/mail/update_is_internal'], type='jsonrpc', auth="user", website=True)
     def portal_message_update_is_internal(self, message_id, is_internal):
-        message = request.env['mail.message'].browse(int(message_id))
+        message = request.env['mail.message'].browse(message_id)
         message.write({'is_internal': is_internal})
         return message.is_internal

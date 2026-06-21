@@ -47,7 +47,7 @@ class WebsiteEventBoothController(WebsiteEventController):
         )
 
     def _prepare_booth_contact_form_values(self, event, booth_ids, booth_category_id):
-        booth_category = request.env['event.booth.category'].sudo().browse(int(booth_category_id))
+        booth_category = request.env['event.booth.category'].sudo().browse(booth_category_id)
         event_booths = request.env['event.booth'].sudo().browse([int(booth_id) for booth_id in booth_ids.split(',')])
         default_contact = {}
 

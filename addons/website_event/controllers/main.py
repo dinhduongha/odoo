@@ -119,10 +119,10 @@ class WebsiteEventController(http.Controller):
         current_country = None
 
         if searches["type"] != 'all':
-            current_type = SudoEventType.browse(int(searches['type']))
+            current_type = SudoEventType.browse(searches['type'])
 
         if searches["country"] != 'all' and searches["country"] != 'online':
-            current_country = request.env['res.country'].browse(int(searches['country']))
+            current_country = request.env['res.country'].browse(searches['country'])
 
         pager = website.pager(
             url=f"/event/tags/{slug_tags}" if slug_tags else "/event",
@@ -253,7 +253,7 @@ class WebsiteEventController(http.Controller):
         ]))
 
         tickets = request.env['event.event.ticket'].browse(ticket_dict.keys())
-        slot = request.env['event.slot'].browse(int(slot)) if (slot := form_details.get("event_slot_id", False)) else slot
+        slot = request.env['event.slot'].browse(slot) if (slot := form_details.get("event_slot_id", False)) else slot
         tickets_limits = tickets._get_current_limit_per_order(slot, event)
 
         return [{
@@ -297,7 +297,7 @@ class WebsiteEventController(http.Controller):
                 ordered_seats += ticket['quantity']
             seats_available = event.seats_available
             if slot_id:
-                seats_available = request.env['event.slot'].browse(int(slot_id)).seats_available or 0
+                seats_available = request.env['event.slot'].browse(slot_id).seats_available or 0
             if seats_available < ordered_seats:
                 availability_check = False
         if not tickets:

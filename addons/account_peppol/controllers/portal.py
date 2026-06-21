@@ -41,7 +41,7 @@ class PortalAccount(CustomerPortal):
             peppol_eas = address_values.get('peppol_eas')
             peppol_endpoint = address_values.get('peppol_endpoint')
             edi_format = address_values.get('invoice_edi_format')
-            if request.env['res.country'].browse(int(address_values.get('country_id'))).code not in PEPPOL_LIST:
+            if request.env['res.country'].browse(address_values.get('country_id')).code not in PEPPOL_LIST:
                 invalid_fields.add('country_id')
                 address_values['country_id'] = 'error'
                 error_messages.append(_("That country is not available for Peppol."))

@@ -60,9 +60,9 @@ class PosController(PortalAccount):
                 ('user_id', '=', request.session.uid),
                 ('rescue', '=', False)
                 ]
-        if config_id and request.env['pos.config'].sudo().browse(int(config_id)).exists():
+        if config_id and request.env['pos.config'].sudo().browse(config_id).exists():
             domain = Domain.AND([domain, [('config_id', '=', int(config_id))]])
-            pos_config = request.env['pos.config'].sudo().browse(int(config_id))
+            pos_config = request.env['pos.config'].sudo().browse(config_id)
         pos_session = request.env['pos.session'].sudo().search(domain, limit=1)
 
         # The same POS session can be opened by a different user => search without restricting to

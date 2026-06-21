@@ -237,7 +237,7 @@ class WebsiteCrmPartnerAssign(WebsitePartnerPage, GoogleMap):
 
         industries = request.env['res.partner.industry'].sudo().search([])
         industry_param = request.env['ir.http']._unslug(post.pop('industry', ''))[1]
-        current_industry = industry_param in industries.ids and industries.browse(int(industry_param))
+        current_industry = industry_param in industries.ids and industries.browse(industry_param)
 
         search = post.get('search', '')
 
@@ -389,9 +389,9 @@ class WebsiteCrmPartnerAssign(WebsitePartnerPage, GoogleMap):
         grade_id = post.get('grade_id')
         country_id = post.get('country_id')
         if grade_id:
-            current_grade = request.env['res.partner.grade'].browse(int(grade_id)).exists()
+            current_grade = request.env['res.partner.grade'].browse(grade_id).exists()
         if country_id:
-            current_country = request.env['res.country'].browse(int(country_id)).exists()
+            current_country = request.env['res.country'].browse(country_id).exists()
         if partner_id:
             partner = request.env['res.partner'].sudo().browse(partner_id)
             is_website_restricted_editor = request.env.user.has_group('website.group_website_restricted_editor')

@@ -15,7 +15,7 @@ class ImportController(http.Controller):
     def set_file(self, id):
         file = request.httprequest.files.getlist('ufile')[0]
 
-        written = request.env['base_import.import'].browse(int(id)).write({
+        written = request.env['base_import.import'].browse(id).write({
             'file': file.read(),
             'file_name': file.filename,
             'file_type': file.content_type,

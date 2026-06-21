@@ -29,7 +29,7 @@ class QFPayNotificationController(Controller):
         except ValueError:
             _logger.warning("QFpay invalid out_trade_no format")
             return
-        qfpay_pm_sudo = request.env['pos.payment.method'].sudo().browse(int(pm_id))
+        qfpay_pm_sudo = request.env['pos.payment.method'].sudo().browse(pm_id)
         if not qfpay_pm_sudo.exists() or not qfpay_pm_sudo.qfpay_notification_key:
             _logger.warning("QFPay payment method does not have a notification key set")
             return
@@ -42,7 +42,7 @@ class QFPayNotificationController(Controller):
             return
 
         # We have verified the signature we can trust the data
-        pos_session_sudo = request.env['pos.session'].sudo().browse(int(session_id))
+        pos_session_sudo = request.env['pos.session'].sudo().browse(session_id)
         qfpay_pm_sudo.qfpay_latest_response = json.dumps(data)
         qfpay_pm_sudo._qfpay_handle_webhook(pos_session_sudo.config_id, data, payment_uuid)
 

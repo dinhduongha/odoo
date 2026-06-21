@@ -58,7 +58,7 @@ class PosMercadoPagoWebhook(http.Controller):
 
         session_id, payment_method_id, _ = match.groups()
 
-        pos_session_sudo = request.env['pos.session'].sudo().browse(int(session_id))
+        pos_session_sudo = request.env['pos.session'].sudo().browse(session_id)
         if not pos_session_sudo or pos_session_sudo.state != 'opened':
             _logger.error("Invalid session id: %s", session_id)
             # This error is not related with Mercado Pago, simply acknowledge Mercado Pago message

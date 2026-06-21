@@ -9,7 +9,7 @@ class WebsiteMailGroup(http.Controller):
     @http.route('/group/is_member', type='jsonrpc', auth='public', website=True)
     def group_is_member(self, group_id=0, email=None, **kw):
         """Return the email of the member if found, otherwise None."""
-        group = request.env['mail.group'].browse(int(group_id)).exists()
+        group = request.env['mail.group'].browse(group_id).exists()
         if not group:
             return
 

@@ -62,7 +62,7 @@ class CalendarController(http.Controller):
             return request.not_found()
         timezone = attendee.partner_id.tz
         lang = attendee.partner_id.lang or get_lang(request.env).code
-        event = request.env['calendar.event'].with_context(tz=timezone, lang=lang).sudo().browse(int(id))
+        event = request.env['calendar.event'].with_context(tz=timezone, lang=lang).sudo().browse(id)
         company = event.user_id and event.user_id.company_id or event.create_uid.company_id
 
         # If user is internal and logged, redirect to form view of event

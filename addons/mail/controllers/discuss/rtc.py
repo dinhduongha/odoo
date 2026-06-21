@@ -25,7 +25,7 @@ class RtcController(http.Controller):
         notifications_by_session = defaultdict(list)
         for sender_session_id, target_session_ids, content in peer_notifications:
             # sudo: discuss.channel.rtc.session - only keeping sessions matching the current user
-            session_sudo = request.env["discuss.channel.rtc.session"].sudo().browse(int(sender_session_id)).exists()
+            session_sudo = request.env["discuss.channel.rtc.session"].sudo().browse(sender_session_id).exists()
             if (
                 not session_sudo
                 or (session_sudo.guest_id and session_sudo.guest_id != guest)
@@ -48,13 +48,13 @@ class RtcController(http.Controller):
             guest = request.env["mail.guest"]._get_guest_from_context()
             if guest:
                 # sudo: discuss.channel.rtc.session - only keeping sessions matching the current user
-                session = guest.env["discuss.channel.rtc.session"].sudo().browse(int(session_id)).exists()
+                session = guest.env["discuss.channel.rtc.session"].sudo().browse(session_id).exists()
                 if session and session.guest_id == guest:
                     session._update_and_broadcast(values)
                     return
             return
         # sudo: discuss.channel.rtc.session - only keeping sessions matching the current user
-        session = request.env["discuss.channel.rtc.session"].sudo().browse(int(session_id)).exists()
+        session = request.env["discuss.channel.rtc.session"].sudo().browse(session_id).exists()
         if session and session.partner_id == request.env.user.partner_id:
             session._update_and_broadcast(values)
 

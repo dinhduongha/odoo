@@ -53,15 +53,15 @@ class PosSelfOrderController(http.Controller):
     @http.route('/pos-self-order/validate-partner', auth='public', type='jsonrpc', website=True)
     def validate_partner(self, access_token, name, phone, street, zip, city, country_id, state_id=None, partner_id=None, email=None):
         pos_config = self._verify_pos_config(access_token)
-        existing_partner = pos_config.env['res.partner'].sudo().browse(int(partner_id)) if partner_id else False
+        existing_partner = pos_config.env['res.partner'].sudo().browse(partner_id) if partner_id else False
 
         if existing_partner and existing_partner.exists():
             return {
                 'res.partner': existing_partner.read(['id'], load=False),
             }
 
-        state_id = pos_config.env['res.country.state'].browse(int(state_id)) if state_id else False
-        country_id = pos_config.env['res.country'].browse(int(country_id))
+        state_id = pos_config.env['res.country.state'].browse(state_id) if state_id else False
+        country_id = pos_config.env['res.country'].browse(country_id)
         partner_sudo = request.env['res.partner'].sudo().create({
             'name': name,
             'email': email,

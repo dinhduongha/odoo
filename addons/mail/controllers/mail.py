@@ -207,7 +207,7 @@ class MailController(http.Controller):
         # So this block of code is needed to guarantee the backward compatibility of those links.
         if kwargs.get('message_id'):
             try:
-                message = request.env['mail.message'].sudo().browse(int(kwargs['message_id'])).exists()
+                message = request.env['mail.message'].sudo().browse(kwargs['message_id']).exists()
             except:
                 message = request.env['mail.message']
             if message:

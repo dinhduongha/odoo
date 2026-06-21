@@ -36,7 +36,7 @@ class Cart(PaymentPortal):
 
         values = {}
         if id and access_token:
-            abandoned_order = request.env['sale.order'].sudo().browse(int(id)).exists()
+            abandoned_order = request.env['sale.order'].sudo().browse(id).exists()
             if not abandoned_order or not consteq(abandoned_order.access_token, access_token):  # wrong token (or SO has been deleted)
                 raise NotFound()
             if abandoned_order.state != 'draft':  # abandoned cart already finished

@@ -26,7 +26,7 @@ class Profiling(Controller):
         '/web/speedscope/<profile>',
     ], type='http', sitemap=False, auth='user', readonly=True)
     def speedscope(self, profile=None, action=False, **kwargs):
-        profiles = request.env['ir.profile'].browse(int(p) for p in profile.split(',')).exists()
+        profiles = request.env['ir.profile'].browse(p for p in profile.split(',')).exists()
         profile_str = profile
         if not profiles:
             raise request.not_found()
@@ -72,7 +72,7 @@ class Profiling(Controller):
     ], type='http', sitemap=False, auth='user', readonly=True)
     def profile_config(self, profile=None, action=False, **kwargs):
         profile_str = profile
-        profiles = request.env['ir.profile'].browse(int(p) for p in profile_str.split(',')).exists()
+        profiles = request.env['ir.profile'].browse(p for p in profile_str.split(',')).exists()
         if not profiles:
             raise request.not_found()
 

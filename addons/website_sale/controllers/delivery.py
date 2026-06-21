@@ -104,7 +104,7 @@ class Delivery(WebsiteSale):
             ))
 
         Monetary = request.env['ir.qweb.field.monetary']
-        delivery_method = request.env['delivery.carrier'].sudo().browse(int(dm_id)).exists()
+        delivery_method = request.env['delivery.carrier'].sudo().browse(dm_id).exists()
         rate = Delivery._get_rate(delivery_method, order_sudo)
         if rate['success']:
             rate['amount_delivery'] = Monetary.value_to_html(

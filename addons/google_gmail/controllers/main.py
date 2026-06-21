@@ -76,7 +76,7 @@ class GoogleGmailController(http.Controller):
             _logger.error('Google Gmail: Wrong model %r.', model_name)
             raise Forbidden()
 
-        record = model.browse(int(rec_id)).exists().sudo()
+        record = model.browse(rec_id).exists().sudo()
         if not record:
             _logger.error('Google Gmail: No record found.')
             raise Forbidden()

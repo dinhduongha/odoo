@@ -246,7 +246,7 @@ class WebsiteBlog(http.Controller):
 
         tag = None
         if tag_id:
-            tag = request.env['blog.tag'].browse(int(tag_id))
+            tag = request.env['blog.tag'].browse(tag_id)
         blog_url = QueryURL('', ['blog', 'tag'], blog=blog_post.blog_id, tag=tag, date_begin=date_begin, date_end=date_end)
 
         if not blog_post.blog_id.id == blog.id:

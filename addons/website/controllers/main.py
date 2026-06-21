@@ -683,7 +683,7 @@ class Website(Home):
         template = template and dict(template=template) or {}
         website_id = kwargs.get('website_id')
         if website_id:
-            website = request.env['website'].browse(int(website_id))
+            website = request.env['website'].browse(website_id)
             website._force()
         page = request.env['website'].new_page(
             path,
@@ -802,7 +802,7 @@ class Website(Home):
         - Hard reset: it will read the original `arch` from the XML file if the
         view comes from an XML file (arch_fs).
         """
-        view = request.env['ir.ui.view'].browse(int(view_id))
+        view = request.env['ir.ui.view'].browse(view_id)
         # Deactivate COW to not fix a generic view by creating a specific
         view.with_context(website_id=None).reset_arch(mode)
         return True

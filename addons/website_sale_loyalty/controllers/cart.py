@@ -16,6 +16,6 @@ class Cart(WebsiteSaleCart):
 
     @route('/wallet/top_up', type='http', auth='user', website=True, sitemap=False)
     def wallet_top_up(self, **kwargs):
-        product = self.env['product.product'].browse(int(kwargs['trigger_product_id']))
+        product = self.env['product.product'].browse(kwargs['trigger_product_id'])
         self.add_to_cart(product.product_tmpl_id.id, product.id, 1)
         return request.redirect('/shop/cart')

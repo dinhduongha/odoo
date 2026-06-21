@@ -92,7 +92,7 @@ class WebsiteProfile(http.Controller):
 
         can_sudo = self._check_avatar_access(int(user_id), **post)
         return request.env['ir.binary']._get_image_stream_from(
-            request.env['res.users'].sudo(can_sudo).browse(int(user_id)),
+            request.env['res.users'].sudo(can_sudo).browse(user_id),
             field_name=field, width=int(width), height=int(height), crop=crop
         ).get_response()
 
@@ -325,7 +325,7 @@ class WebsiteProfile(http.Controller):
 
     @http.route('/profile/validate_email', type='http', auth='public', website=True, sitemap=False)
     def validate_email(self, token, user_id, email, **kwargs):
-        done = request.env['res.users'].sudo().browse(int(user_id))._process_profile_validation_token(token, email)
+        done = request.env['res.users'].sudo().browse(user_id)._process_profile_validation_token(token, email)
         if done:
             request.session['validation_email_done'] = True
         url = kwargs.get('redirect_url', '/')

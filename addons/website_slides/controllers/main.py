@@ -62,7 +62,7 @@ class WebsiteSlides(WebsiteProfile):
     # --------------------------------------------------
 
     def _fetch_slide(self, slide_id):
-        slide = request.env['slide.slide'].browse(int(slide_id)).exists()
+        slide = request.env['slide.slide'].browse(slide_id).exists()
         if not slide:
             return {'error': 'slide_wrong'}
         if not slide.has_access('read'):
@@ -820,7 +820,7 @@ class WebsiteSlides(WebsiteProfile):
         :param invite_partner_id: The id of the invited partner.
         :param invite_hash: The invitation hash that allows a direct access to channel_id, even if not connected.
         """
-        channel = request.env['slide.channel'].browse(int(channel_id)).exists()
+        channel = request.env['slide.channel'].browse(channel_id).exists()
         if not channel:
             return self._redirect_to_slides_main('no_channel')
 
@@ -929,7 +929,7 @@ class WebsiteSlides(WebsiteProfile):
         # handle exception during addition of course tag and send error notification to the client
         # otherwise client slide create dialog box continue processing even server fail to create a slide
         try:
-            channel = request.env['slide.channel'].browse(int(channel_id))
+            channel = request.env['slide.channel'].browse(channel_id)
             can_upload = channel.can_upload
             can_publish = channel.can_publish
         except UserError as e:
@@ -948,7 +948,7 @@ class WebsiteSlides(WebsiteProfile):
     def slide_channel_send_share_email(self, channel_id, emails):
         if not email_normalize_all(emails):
             return False
-        channel = request.env['slide.channel'].browse(int(channel_id))
+        channel = request.env['slide.channel'].browse(channel_id)
         channel._send_share_email(emails)
         return True
 
@@ -999,7 +999,7 @@ class WebsiteSlides(WebsiteProfile):
         # Allows to have breadcrumb for the previously used filter
         values.update({
             'search_category': slide.category_id if kwargs.get('search_category') else None,
-            'search_tag': request.env['slide.tag'].browse(int(kwargs.get('search_tag'))) if kwargs.get('search_tag') else None,
+            'search_tag': request.env['slide.tag'].browse(kwargs.get('search_tag')) if kwargs.get('search_tag') else None,
             'slide_categories': dict(request.env['slide.slide']._fields['slide_category']._description_selection(request.env)) if kwargs.get('search_slide_category') else None,
             'search_slide_category': kwargs.get('search_slide_category'),
             'search_uncategorized': kwargs.get('search_uncategorized'),
@@ -1143,7 +1143,7 @@ class WebsiteSlides(WebsiteProfile):
     def slide_archive(self, slide_id):
         """ This route allows channel publishers to archive slides.
         It has to be done in sudo mode since only restricted_editors can write on slides in ACLs """
-        slide = request.env['slide.slide'].browse(int(slide_id))
+        slide = request.env['slide.slide'].browse(slide_id)
         if slide.channel_id.can_publish:
             slide.sudo().active = False
             return True
@@ -1152,7 +1152,7 @@ class WebsiteSlides(WebsiteProfile):
 
     @http.route('/slides/slide/toggle_is_preview', type='jsonrpc', auth='user', website=True)
     def slide_preview(self, slide_id):
-        slide = request.env['slide.slide'].browse(int(slide_id))
+        slide = request.env['slide.slide'].browse(slide_id)
         if slide.channel_id.can_publish:
             slide.is_preview = not slide.is_preview
         return slide.is_preview
@@ -1161,7 +1161,7 @@ class WebsiteSlides(WebsiteProfile):
     def slide_send_share_email(self, slide_id, emails, fullscreen=False):
         if not email_normalize_all(emails):
             return False
-        slide = request.env['slide.slide'].browse(int(slide_id))
+        slide = request.env['slide.slide'].browse(slide_id)
         slide._send_share_email(emails, fullscreen)
         return True
 
@@ -1350,7 +1350,7 @@ class WebsiteSlides(WebsiteProfile):
     def slide_category_add(self, channel_id, name):
         """ Adds a category to the specified channel. Slide is added at the end
         of slide list based on sequence. """
-        channel = request.env['slide.channel'].browse(int(channel_id))
+        channel = request.env['slide.channel'].browse(channel_id)
         if not channel.can_upload or not channel.can_publish:
             raise werkzeug.exceptions.NotFound()
 
@@ -1576,7 +1576,7 @@ class WebsiteSlides(WebsiteProfile):
         if kwargs.get('channel'):
             channels = kwargs['channel']
         elif kwargs.get('channel_id'):
-            channels = tools.lazy(lambda: request.env['slide.channel'].browse(int(kwargs['channel_id'])))
+            channels = tools.lazy(lambda: request.env['slide.channel'].browse(kwargs['channel_id']))
         return channels
 
     @staticmethod

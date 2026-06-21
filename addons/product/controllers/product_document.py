@@ -16,7 +16,7 @@ class ProductDocumentController(Controller):
         if not self.is_model_valid(res_model):
             return
 
-        record = request.env[res_model].browse(int(res_id)).exists()
+        record = request.env[res_model].browse(res_id).exists()
 
         if not record or not record.browse().has_access('write'):
             return

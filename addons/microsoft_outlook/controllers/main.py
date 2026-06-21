@@ -75,7 +75,7 @@ class MicrosoftOutlookController(http.Controller):
             _logger.error('Microsoft Outlook: Wrong model %r.', model_name)
             raise Forbidden()
 
-        record = model.browse(int(rec_id)).exists().sudo()
+        record = model.browse(rec_id).exists().sudo()
         if not record:
             _logger.error('Microsoft Outlook: Record not found.')
             raise Forbidden()

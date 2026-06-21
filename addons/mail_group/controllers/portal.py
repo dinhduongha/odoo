@@ -316,7 +316,7 @@ class PortalMailGroup(http.Controller):
             - The partner of the current user
         :raise NotFound: if the given token is not valid
         """
-        group = request.env['mail.group'].browse(int(group_id)).exists()
+        group = request.env['mail.group'].browse(group_id).exists()
         if not group:
             raise werkzeug.exceptions.NotFound()
 
@@ -377,7 +377,7 @@ class PortalMailGroup(http.Controller):
         if not group_id or not email or not token:
             return False
         # Here we can SUDO because the token will be checked
-        group = request.env['mail.group'].browse(int(group_id)).exists().sudo()
+        group = request.env['mail.group'].browse(group_id).exists().sudo()
         if not group:
             raise werkzeug.exceptions.NotFound()
 

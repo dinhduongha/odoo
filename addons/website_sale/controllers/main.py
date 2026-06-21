@@ -681,8 +681,8 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 'image_1920': thumbnail,
             })]
 
-        product_product = request.env['product.product'].browse(int(product_product_id)) if product_product_id else False
-        product_template = request.env['product.template'].browse(int(product_template_id)) if product_template_id else False
+        product_product = request.env['product.product'].browse(product_product_id) if product_product_id else False
+        product_template = request.env['product.template'].browse(product_template_id) if product_template_id else False
 
         if product_product and not product_template:
             product_template = product_product.product_tmpl_id
@@ -709,8 +709,8 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if not request.env.user.has_group('website.group_website_restricted_editor'):
             raise NotFound()
 
-        product_product = request.env['product.product'].browse(int(product_product_id)) if product_product_id else False
-        product_template = request.env['product.template'].browse(int(product_template_id)) if product_template_id else False
+        product_product = request.env['product.product'].browse(product_product_id) if product_product_id else False
+        product_template = request.env['product.template'].browse(product_template_id) if product_template_id else False
 
         if product_product and not product_template:
             product_template = product_product.product_tmpl_id
@@ -1864,7 +1864,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
     @route(['/shop/config/category'], type='jsonrpc', auth='user')
     def _change_category_config(self, category_id, **options):
-        category = request.env['product.public.category'].browse(int(category_id))
+        category = request.env['product.public.category'].browse(category_id)
         if not category.exists():
             raise NotFound()
 

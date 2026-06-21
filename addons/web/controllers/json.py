@@ -102,7 +102,7 @@ class WebJsonController(http.Controller):
                 return redirect
             if not record_id:
                 raise BadRequest(env._("Missing record id"))
-            res = model.browse(int(record_id)).web_read(spec)[0]
+            res = model.browse(record_id).web_read(spec)[0]
             return request.make_json_response(res)
 
         # Find domain and limits

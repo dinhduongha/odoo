@@ -88,7 +88,7 @@ class AttachmentController(ThreadController):
     @http.route("/mail/attachment/delete", methods=["POST"], type="jsonrpc", auth="public")
     @add_guest_to_context
     def mail_attachment_delete(self, attachment_id, access_token=None):
-        attachment = request.env["ir.attachment"].browse(int(attachment_id)).exists()
+        attachment = request.env["ir.attachment"].browse(attachment_id).exists()
         if not attachment or not attachment._has_attachments_ownership([access_token]):
             request.env.user._bus_send("ir.attachment/delete", {"id": attachment_id})
             raise NotFound()
@@ -117,7 +117,7 @@ class AttachmentController(ThreadController):
     @add_guest_to_context
     def mail_attachment_pdf_first_page(self, attachment_id, access_token=None):
         """Returns the first page of a pdf."""
-        attachment = request.env["ir.attachment"].browse(int(attachment_id)).exists()
+        attachment = request.env["ir.attachment"].browse(attachment_id).exists()
         if not attachment or (
             not attachment.has_access("read")
             and not attachment._has_attachments_ownership([access_token])
@@ -135,7 +135,7 @@ class AttachmentController(ThreadController):
     @add_guest_to_context
     def mail_attachement_update_thumbnail(self, attachment_id, thumbnail=None, access_token=None):
         """Updates the thumbnail of an attachment."""
-        attachment = request.env["ir.attachment"].browse(int(attachment_id)).exists()
+        attachment = request.env["ir.attachment"].browse(attachment_id).exists()
         if not attachment or (
             not attachment.has_access("write")
             and not attachment._has_attachments_ownership([access_token])

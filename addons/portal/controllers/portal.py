@@ -857,7 +857,7 @@ class CustomerPortal(Controller):
 
     @route('/my/address/archive', type='jsonrpc', auth='user', website=True, methods=['POST'])
     def address_archive(self, partner_id):
-        address_sudo = request.env['res.partner'].sudo().browse(int(partner_id)).exists()
+        address_sudo = request.env['res.partner'].sudo().browse(partner_id).exists()
         if not address_sudo or not address_sudo._can_be_edited_by_current_customer():
             raise Forbidden()
 

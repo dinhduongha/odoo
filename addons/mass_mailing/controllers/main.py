@@ -429,7 +429,7 @@ class MassMailController(http.Controller):
     def mailing_report_deactivate(self, token, user_id):
         if not token or not user_id:
             raise BadRequest()
-        user = request.env['res.users'].sudo().browse(int(user_id)).exists()
+        user = request.env['res.users'].sudo().browse(user_id).exists()
         if not user or not user.has_group('mass_mailing.group_mass_mailing_user') or \
            not consteq(token, request.env['mailing.mailing']._generate_mailing_report_token(user.id)):
             raise Unauthorized()
