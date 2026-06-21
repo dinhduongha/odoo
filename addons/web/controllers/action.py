@@ -3,6 +3,7 @@
 import logging
 from odoo import _
 from odoo.exceptions import UserError, MissingError, AccessError
+from odoo.tools.uuid_utils import is_uuid
 from odoo.http import Controller, request, route
 from .utils import clean_action
 from werkzeug.exceptions import BadRequest
@@ -24,9 +25,9 @@ class Action(Controller):
         if context:
             request.update_context(**context)
         Actions = request.env['ir.actions.actions']
-        try:
-            action_id = action_id
-        except ValueError:
+        # action_id may be a real id (uuid or legacy int), an xmlid ("module.name")
+        # or a path slug ("contacts"); resolve the latter two to a real id.
+        if isinstance(action_id, str) and not (is_uuid(action_id) or action_id.isdigit()):
             try:
                 if '.' in action_id:
                     action = request.env.ref(action_id)
