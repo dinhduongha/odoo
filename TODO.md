@@ -94,14 +94,22 @@ config) or the minimal `-i <mods>` loop used this session (see handoff.md).
   their company land in Demo Company.
 - Verified: install (no demo) + demo install both EXIT 0; admin.company_ids = both.
 
-### Remaining nuance / optional
-- Demo Company has NO accounting/stock setup (chart, journals, warehouse) — those are
-  created only for the company that runs the chart template (main). So company-BOUND
-  demo (invoices, journals) can't fully populate Demo Company without setting it up
-  (load a chart template + warehouse for `…0002`). Company-shared demo (products) stays
-  NULL (correct); default-company demo (e.g. partners) goes to Demo Company.
-- If a richer demo in Demo Company is wanted: set up Demo Company (chart_template.try_loading
-  for demo_company) before/around demo load.
+### Demo Company chart + warehouse — ✅ DONE
+- account ir_module auto-install loads the chart for base.demo_company too; stock
+  create_missing_warehouse covers every company. Verified: both companies have 7
+  journals + 1 warehouse + chart_template=generic_coa; demo install EXIT 0.
+- FOLLOW-UP: account demo *transactions* (invoices) = 0 rows for BOTH companies in this
+  module set (account_demo.xml `_install_demo` runs for chart'd companies but produces
+  no moves; no error). Separate account-demo investigation, not Demo-Company-specific.
+
+## CUSTOM ADDONS uuid conversion (NEW task — custom-addons/odooapps om_account suite)
+Convert om_account_accountant + related OM modules to uuidv7 (same bug classes as core:
+%d/int() on ids, browse(int()), -id negations, ids in domain/code strings, json uuid
+keys, COALESCE(id,0), create_column int4 FK, fields.Integer used as an id). Modules in
+custom-addons/odooapps: om_account_accountant, om_account_asset, om_account_budget,
+om_account_daily_reports, om_account_followup, om_fiscal_year, accounting_pdf_reports
+(+ om_hr_payroll*, om_recurring_payments, om_data_remove). Not on the refactor compose
+addons_path yet.
 
 ## (original notes) MULTI-COMPANY FORCING (after full install — user decisions 2026-06-21)
 1. Force multi-company = on DB init auto-create a 2nd company + grant base.group_multi_company
