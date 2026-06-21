@@ -125,6 +125,16 @@ YourCompany + the US demo company. Note Odoo 19 changed the flag: demo is OFF un
 8. account/models/account_bank_statement_line.py — `internal_index` `f'{id:0>10}'`
    (UUID has no format spec) → `id.hex` (uuidv7 hex is lexicographically time-sortable).
 
+### Payment + reconciliation — ✅ VERIFIED
+`-i account_payment --with-demo` → EXIT 0, no errors. Reconciliation proven
+functionally (shell, real data): out_invoice residual 750 → `account.payment.register`
+→ payment `state=paid` / `is_reconciled=True`; invoice residual 0.0,
+`payment_state=paid`; 1 `account.partial.reconcile` created. `_compute_payment_state`
+(the fixed `has_payment`/`has_st_line` BOOL_OR query) ran against the real partial row
+and computed correctly. NOTE: stock account demo creates 0 payments by itself
+(`_post_load_demo_data` only posts moves), so payments=0 after a plain demo install is
+expected upstream behavior, not a uuid bug.
+
 ## CUSTOM ADDONS uuid conversion — ✅ DONE (om_account_accountant suite)
 Installed clean with uuidv7 (56 modules incl deps, EXIT 0): om_account_accountant,
 om_account_asset, om_account_budget, om_account_daily_reports, om_account_followup,
