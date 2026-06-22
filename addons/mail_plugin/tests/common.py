@@ -80,7 +80,7 @@ class TestMailPluginControllerCommon(HttpCase):
             "id": 0,
             "jsonrpc": "2.0",
             "method": "call",
-            "params": {"partner_id": partner_id},
+            "params": {"partner_id": str(partner_id)},
         }
 
         with patch(

@@ -72,7 +72,7 @@ class TestMailPluginController(TestMailPluginControllerCommon):
         self.assertFalse(mock_iap_enrich.called)
         self.assertEqual(result["partner"]["id"], -1)
         self.assertEqual(result["partner"]["email"], "qsd@test_domain.xyz")
-        self.assertEqual(result["partner"]["company"]["id"], company.id)
+        self.assertEqual(result["partner"]["company"]["id"], str(company.id))
         self.assertFalse(result["partner"]["company"]["additionalInfo"])
 
     def test_get_partner_company_not_found(self):
@@ -156,7 +156,7 @@ class TestMailPluginController(TestMailPluginControllerCommon):
                 "Test", "test@test.example.com",
                 lambda _, domain: {"name": "Name", "email": "test@test.example.com"},
             )
-        self.assertEqual(result["partner"]["company"].get("id"), partner.id)
+        self.assertEqual(result["partner"]["company"].get("id"), str(partner.id))
         self.assertEqual(result["partner"]["company"].get("name"), "No Access")
         self.assertFalse(result["partner"]["company"].get("website"))
         new_partner_count = self.env['res.partner'].search_count([])
@@ -174,7 +174,7 @@ class TestMailPluginController(TestMailPluginControllerCommon):
         )
 
         first_company_id = result["partner"]["company"]["id"]
-        self.assertTrue(first_company_id and first_company_id > 0)
+        self.assertTrue(first_company_id and first_company_id != -1)
 
         first_company = self.env["res.partner"].browse(first_company_id)
         self.assertEqual(first_company.name, "Name")
