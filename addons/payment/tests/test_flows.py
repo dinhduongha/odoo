@@ -7,6 +7,7 @@ from freezegun import freeze_time
 
 from odoo.tests import JsonRpcException, tagged
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import to_uuid, uuid7
 
 from odoo.addons.payment.controllers.portal import PaymentPortal
 from odoo.addons.payment.tests.http_common import PaymentHttpCommon
@@ -63,10 +64,11 @@ class TestFlows(PaymentHttpCommon):
         self.assertEqual(tx_sudo.reference, self.reference)
 
         # processing_values == given values
-        self.assertEqual(processing_values['provider_id'], self.provider.id)
+        # Ids round-trip through JSON as strings; coerce back to uuid before comparing.
+        self.assertEqual(to_uuid(processing_values['provider_id']), self.provider.id)
         self.assertEqual(processing_values['amount'], self.amount)
-        self.assertEqual(processing_values['currency_id'], self.currency.id)
-        self.assertEqual(processing_values['partner_id'], self.partner.id)
+        self.assertEqual(to_uuid(processing_values['currency_id']), self.currency.id)
+        self.assertEqual(to_uuid(processing_values['partner_id']), self.partner.id)
         self.assertEqual(processing_values['reference'], self.reference)
         self.assertFalse(processing_values['should_tokenize'])
 
@@ -196,9 +198,10 @@ class TestFlows(PaymentHttpCommon):
         self.assertEqual(tx_sudo.partner_id.id, self.partner.id)
         self.assertEqual(tx_sudo.reference, expected_reference)
         # processing_values == given values
+        # Ids round-trip through JSON as strings; coerce back to uuid before comparing.
         self.assertEqual(processing_values['amount'], validation_amount)
-        self.assertEqual(processing_values['currency_id'], validation_currency.id)
-        self.assertEqual(processing_values['partner_id'], self.partner.id)
+        self.assertEqual(to_uuid(processing_values['currency_id']), validation_currency.id)
+        self.assertEqual(to_uuid(processing_values['partner_id']), self.partner.id)
         self.assertEqual(processing_values['reference'], expected_reference)
 
     def test_51_validation_direct_portal(self):
@@ -265,7 +268,7 @@ class TestFlows(PaymentHttpCommon):
 
     def test_pay_wrong_currency(self):
         # Pay with a wrong currency --> Not found (404)
-        self.currency = self.env['res.currency'].browse(self.env['res.currency'].search([], order='id desc', limit=1).id + 1000)
+        self.currency = self.env['res.currency'].browse(uuid7())
         route_values = self._prepare_pay_values()
         response = self._portal_pay(**route_values)
         self.assertEqual(response.status_code, 404)

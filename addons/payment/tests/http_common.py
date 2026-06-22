@@ -6,6 +6,7 @@ from lxml import etree, objectify
 
 from odoo.tests import HttpCase, JsonRpcException
 from odoo.tools import urls
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.payment.tests.common import PaymentCommon
 
@@ -95,7 +96,7 @@ class PaymentHttpCommon(PaymentCommon, HttpCase):
             if key.startswith("data-"):
                 formatted_key = key[5:].replace('-', '_')
                 if formatted_key.endswith('_id'):
-                    formatted_val = int(val)
+                    formatted_val = to_uuid(val)
                 elif formatted_key == 'amount':
                     formatted_val = float(val)
                 else:
@@ -111,9 +112,9 @@ class PaymentHttpCommon(PaymentCommon, HttpCase):
                 if key.startswith('data-'):
                     data[key[5:]] = val
             if data['payment-option-type'] == 'token':
-                token_ids.append(int(data['payment-option-id']))
+                token_ids.append(to_uuid(data['payment-option-id']))
             else:  # 'payment_method'
-                payment_method_ids.append(int(data['payment-option-id']))
+                payment_method_ids.append(to_uuid(data['payment-option-id']))
 
         values.update({
             'token_ids': token_ids,

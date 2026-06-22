@@ -3,6 +3,7 @@
 from odoo.fields import Command
 from odoo.tests import tagged
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.payment.tests.http_common import PaymentHttpCommon
 
@@ -90,10 +91,13 @@ class TestMultiCompanyFlows(PaymentHttpCommon):
         self.assertEqual(tx_sudo.reference, self.reference)
         self.assertEqual(tx_sudo.company_id, self.company_b)
         # processing_values == given values
-        self.assertEqual(processing_values['provider_id'], self.provider.id)
+        # Ids round-trip through JSON as strings; coerce back to uuid before comparing.
+        self.assertEqual(to_uuid(processing_values['provider_id']), self.provider.id)
         self.assertEqual(processing_values['amount'], self.amount)
-        self.assertEqual(processing_values['currency_id'], self.currency.id)
-        self.assertEqual(processing_values['partner_id'], self.user_company_a.partner_id.id)
+        self.assertEqual(to_uuid(processing_values['currency_id']), self.currency.id)
+        self.assertEqual(
+            to_uuid(processing_values['partner_id']), self.user_company_a.partner_id.id
+        )
         self.assertEqual(processing_values['reference'], self.reference)
 
     def test_full_access_to_partner_tokens(self):

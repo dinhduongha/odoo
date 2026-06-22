@@ -1,12 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import urllib.parse
+import uuid
 
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from odoo import _, http
 from odoo.exceptions import AccessError
 from odoo.http import request
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
@@ -66,9 +68,9 @@ class PaymentPortal(portal.CustomerPortal):
         :rtype: str
         :raise NotFound: If the access token is invalid.
         """
-        # Cast numeric parameters as int or float and void them if their str value is malformed
+        # Cast id parameters as uuid and amount as float, voiding them if their str value is malformed
         currency_id, partner_id, company_id = tuple(map(
-            self._cast_as_int, (currency_id, partner_id, company_id)
+            self._cast_as_uuid, (currency_id, partner_id, company_id)
         ))
         amount = self._cast_as_float(amount)
 
@@ -400,7 +402,7 @@ class PaymentPortal(portal.CustomerPortal):
         :param dict kwargs: Optional data. This parameter is not used here
         :raise NotFound: If the access token is invalid.
         """
-        tx_id = self._cast_as_int(tx_id)
+        tx_id = self._cast_as_uuid(tx_id)
         if tx_id:
             tx_sudo = request.env['payment.transaction'].sudo().browse(tx_id)
 
@@ -446,6 +448,20 @@ class PaymentPortal(portal.CustomerPortal):
             return int(str_value)
         except (TypeError, ValueError, OverflowError):
             return None
+
+    @staticmethod
+    def _cast_as_uuid(str_value):
+        """ Cast a string as a uuid `id` value and return it.
+
+        If the value is not a valid uuid, `None` is returned instead. The returned value is kept as
+        a string, which the ORM accepts wherever a record id is expected.
+
+        :param str str_value: The value to validate as a uuid.
+        :return: The validated value as a `uuid.UUID`, or None if incompatible.
+        :rtype: uuid.UUID|None
+        """
+        value = to_uuid(str_value) if isinstance(str_value, str) else None
+        return value if isinstance(value, uuid.UUID) else None
 
     @staticmethod
     def _cast_as_float(str_value):
