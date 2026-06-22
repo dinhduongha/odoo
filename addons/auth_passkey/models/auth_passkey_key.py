@@ -41,7 +41,7 @@ class AuthPasskeyKey(models.Model):
     def unlink(self):
         for passkey in self:
             _logger.info(
-                "Passkey (#%d) deleted by %s (#%d) from %s",
+                "Passkey (#%s) deleted by %s (#%s) from %s",
                 passkey.id,
                 self.env.user.login, self.env.user.id,
                 request.httprequest.environ['REMOTE_ADDR'] if request else 'n/a'
@@ -132,7 +132,7 @@ class AuthPasskeyKey(models.Model):
                 request.session.session_token = new_token
             else:
                 _logger.info(
-                    "%s (#%d) attempted to delete passkey (#%d) belonging to %s (#%d) from %s but was denied.",
+                    "%s (#%s) attempted to delete passkey (#%s) belonging to %s (#%s) from %s but was denied.",
                     self.env.user.login, self.env.user.id,
                     key.id,
                     key.create_uid.login, key.create_uid.id,
@@ -181,7 +181,7 @@ class AuthPasskeyKeyCreate(models.TransientModel):
         ))
         ip = request.httprequest.environ['REMOTE_ADDR'] if request else 'n/a'
         _logger.info(
-            "Passkey (#%d) created by %s (#%d) from %s",
+            "Passkey (#%s) created by %s (#%s) from %s",
             passkey.id,
             self.env.user.login, self.env.user.id,
             ip
