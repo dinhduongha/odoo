@@ -514,7 +514,7 @@ class MrpProduction(models.Model):
                     'model': late_document._name,
                 } for late_document in production.move_raw_ids.filtered(lambda m: m.delay_alert_date).move_orig_ids._delay_alert_get_documents()
                 ]
-            })
+            }, default=str)
 
     @api.depends('state')  # To get SAM moves after validation
     def _compute_picking_ids(self):

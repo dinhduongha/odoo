@@ -6,6 +6,7 @@ import json
 
 from odoo import api, fields, models, _
 from odoo.tools import float_compare, float_round, format_date, float_is_zero, float_repr
+from odoo.tools.uuid_utils import to_uuid
 from odoo.exceptions import UserError
 
 
@@ -44,10 +45,10 @@ class ReportMrpReport_Bom_Structure(models.AbstractModel):
             if not bom:
                 continue
             variant = data.get('variant')
-            candidates = variant and self.env['product.product'].browse(int(variant)) or bom.product_id or bom.product_tmpl_id.product_variant_ids
+            candidates = variant and self.env['product.product'].browse(to_uuid(variant)) or bom.product_id or bom.product_tmpl_id.product_variant_ids
             quantity = float(data.get('quantity', bom.product_qty))
             if data.get('warehouse_id'):
-                self = self.with_context(warehouse_id=int(data.get('warehouse_id')))  # noqa: PLW0642
+                self = self.with_context(warehouse_id=to_uuid(data.get('warehouse_id')))  # noqa: PLW0642
             for product_variant_id in candidates.ids:
                 docs.append(self._get_pdf_doc(bom_id, data, quantity, product_variant_id))
             if not candidates:
@@ -76,7 +77,7 @@ class ReportMrpReport_Bom_Structure(models.AbstractModel):
         bom_uom_name = ''
 
         if searchVariant:
-            product = self.env['product.product'].browse(int(searchVariant))
+            product = self.env['product.product'].browse(to_uuid(searchVariant))
         else:
             product = bom.product_id or bom.product_tmpl_id.product_variant_id or bom.product_tmpl_id.with_context(active_test=False).product_variant_ids[:1]
 
@@ -504,7 +505,7 @@ class ReportMrpReport_Bom_Structure(models.AbstractModel):
 
         bom = self.env['mrp.bom'].browse(bom_id)
         if product_id:
-            product = self.env['product.product'].browse(int(product_id))
+            product = self.env['product.product'].browse(to_uuid(product_id))
         else:
             product = bom.product_id or bom.product_tmpl_id.product_variant_id or bom.product_tmpl_id.with_context(active_test=False).product_variant_ids[:1]
 

@@ -241,7 +241,7 @@ class TestWarehouseMrp(common.TestMrpCommon):
         # Check Manufacturing order's availability.
         self.assertEqual(production_3.reservation_state, 'assigned', "Production order's availability should be Available.")
 
-        location_id = production_3.move_raw_ids.filtered(lambda x: x.state not in ('done', 'cancel')) and production_3.location_src_id.id or production_3.location_dest_id.id,
+        location_id = production_3.move_raw_ids.filtered(lambda x: x.state not in ('done', 'cancel')) and production_3.location_src_id.id or production_3.location_dest_id.id
 
         # Scrap Product Wood without lot to check assert raise ?.
         scrap_id = self.env['stock.scrap'].with_context(active_model='mrp.production', active_id=production_3.id).create({'product_id': self.product_2.id, 'scrap_qty': 1.0, 'product_uom_id': self.product_2.uom_id.id, 'location_id': location_id, 'production_id': production_3.id})

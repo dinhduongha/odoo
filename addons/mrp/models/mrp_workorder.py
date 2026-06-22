@@ -573,10 +573,32 @@ class MrpWorkorder(models.Model):
 
     def _plan_workorder(self, replan=False):
         self.ensure_one()
+        # Plan workorders in post-order (predecessors before the workorders that
+        # depend on them). An explicit stack is used instead of recursion to
+        # avoid hitting Python's recursion limit on long dependency chains.
+        visited = set()
+        order = []
+        stack = [(self, False)]
+        while stack:
+            workorder, processed = stack.pop()
+            if processed:
+                order.append(workorder)
+                continue
+            if workorder.id in visited:
+                continue
+            visited.add(workorder.id)
+            stack.append((workorder, True))
+            for predecessor in workorder.blocked_by_workorder_ids:
+                if predecessor.id not in visited:
+                    stack.append((predecessor, False))
+        for workorder in order:
+            workorder._plan_workorder_single(replan)
+
+    def _plan_workorder_single(self, replan=False):
+        self.ensure_one()
         # Plan workorder after its predecessors
         date_start = max(self.production_id.date_start, datetime.now())
         for workorder in self.blocked_by_workorder_ids:
-            workorder._plan_workorder(replan)
             if workorder.date_finished and workorder.date_finished > date_start:
                 date_start = workorder.date_finished
         # Plan only suitable workorders

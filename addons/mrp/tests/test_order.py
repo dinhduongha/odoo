@@ -3711,8 +3711,8 @@ class TestMrpOrder(TestMrpCommon):
             'product_qty': 1.0,
             'bom_line_ids': [Command.create({'product_id': self.product.id, 'product_qty': 1})],
             'picking_type_id': wh.manu_type_id.id,
-            'sequence': wh.id,
-        } for wh in [warehouse01, warehouse02]])
+            'sequence': seq,
+        } for seq, wh in enumerate([warehouse01, warehouse02])])
 
         # Prioritize BoM of WH02
         bom_wh01.sequence = bom_wh02.sequence + 1
@@ -5615,8 +5615,8 @@ class TestTourMrpOrder(HttpCase):
             json={
                 "params": {
                     'res_model': 'mrp.production',
-                    'order_id': mo.id,
-                    'product_id': component.id,
+                    'order_id': str(mo.id),
+                    'product_id': str(component.id),
                     'quantity': 2,
                     'child_field': 'move_raw_ids',
                 },

@@ -604,6 +604,7 @@ class TestTraceability(TestMrpCommon):
         lot_2 = mo.lot_producing_ids.name
         self.assertEqual(lot_2, str(int(lot_1) + 1).zfill(7))
 
+    @freeze_time('2024-06-15 12:00:00')
     def test_generate_serial_button_sequence(self):
         """Test if serial in form "00000dd" is manually created, the generate serial
         correctly create new serial from sequence.
