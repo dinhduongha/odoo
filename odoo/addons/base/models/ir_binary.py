@@ -11,6 +11,7 @@ from odoo.tools import file_open, replace_exceptions
 from odoo.tools.image import image_guess_size_from_field_name, image_process
 from odoo.tools.mimetypes import MIMETYPE_HEAD_SIZE, get_extension, guess_mimetype
 from odoo.tools.misc import verify_limited_field_access_token
+from odoo.tools.uuid_utils import to_uuid
 
 DEFAULT_PLACEHOLDER_PATH = 'web/static/img/placeholder.png'
 _logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class IrBinary(models.AbstractModel):
         if xmlid:
             record = self.env.ref(xmlid, False)
         elif res_id is not None and res_model in self.env:
-            record = self.env[res_model].browse(res_id).exists()
+            record = self.env[res_model].browse(to_uuid(res_id)).exists()
         if not record:
             raise MissingError(f"No record found for xmlid={xmlid}, res_model={res_model}, id={res_id}")  # pylint: disable=missing-gettext
         if access_token and verify_limited_field_access_token(record, field, access_token, scope="binary"):

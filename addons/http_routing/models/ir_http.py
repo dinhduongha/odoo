@@ -19,12 +19,17 @@ from odoo.addons.base.models.res_lang import LangData
 from odoo.exceptions import AccessError, MissingError
 from odoo.fields import Domain
 from odoo.http import request, Response
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 
+# uuidv7 PKs: the record id at the tail of a slug is now a uuid (or a legacy
+# integer). A uuid contains dashes, so the optional "name-" prefix must not greedily
+# eat the uuid; we anchor the id alternative (uuid before integer) at the end.
+_UUID_RE = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 # NOTE: the second pattern is used for the ModelConverter, do not use nor flags nor groups
-_UNSLUG_RE = re.compile(r'(?:(\w{1,2}|\w[\w-]+?\w)-)?(-?\d+)(?=$|\/|#|\?)')
-_UNSLUG_ROUTE_PATTERN = r'(?:(?:\w{1,2}|\w[\w-]+?\w)-)?(?:-?\d+)(?=$|\/|#|\?)'
+_UNSLUG_RE = re.compile(rf'(?:(\w{{1,2}}|\w[\w-]+?\w)-)?({_UUID_RE}|-?\d+)(?=$|\/|#|\?)')
+_UNSLUG_ROUTE_PATTERN = rf'(?:(?:\w{{1,2}}|\w[\w-]+?\w)-)?(?:{_UUID_RE}|-?\d+)(?=$|\/|#|\?)'
 
 
 class ModelConverter(ir_http.ModelConverter):
@@ -36,7 +41,7 @@ class ModelConverter(ir_http.ModelConverter):
 
     def to_python(self, value) -> models.BaseModel:
         record = super().to_python(value)
-        if record.id < 0 and not record.browse(record.id).exists():
+        if isinstance(record.id, int) and record.id < 0 and not record.browse(record.id).exists():
             # limited support for negative IDs due to our slug pattern, assume abs() if not found
             record = record.browse(abs(record.id))
         return record.with_context(_converter_value=value)
@@ -73,7 +78,8 @@ class IrHttp(models.AbstractModel):
         m = _UNSLUG_RE.match(value)
         if not m:
             return None, None
-        return m.group(1), int(m.group(2))
+        identifier = m.group(2)
+        return m.group(1), to_uuid(identifier) if is_uuid(identifier) else int(identifier)
 
     @classmethod
     def _unslug_url(cls, value: str) -> str:

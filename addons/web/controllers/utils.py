@@ -13,6 +13,7 @@ from werkzeug.urls import iri_to_uri
 
 from odoo.tools.translate import JAVASCRIPT_TRANSLATION_COMMENT
 from odoo.tools.misc import file_open
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo import http
 from odoo.http import request
 
@@ -156,8 +157,8 @@ def get_action(env, path_part):
 
     if path_part.startswith('action-'):
         someid = path_part.removeprefix('action-')
-        if someid.isdigit():  # record id
-            action = Actions.sudo().browse(someid).exists()
+        if is_uuid(someid):  # record id
+            action = Actions.sudo().browse(to_uuid(someid)).exists()
         elif '.' in someid:   # xml id
             action = env.ref(someid, False)
             if not action or not action._name.startswith('ir.actions'):
@@ -217,13 +218,13 @@ def get_action_triples(env, path, *, start_pos=0):
             if parts[0] == 'new':
                 parts.popleft()
                 record_id = None
-            elif parts[0].isdigit():
-                record_id = int(parts.popleft())
+            elif is_uuid(parts[0]):
+                record_id = to_uuid(parts.popleft())
 
         yield (active_id, action, record_id)
 
-        if len(parts) > 1 and parts[0].isdigit():  # new active id
-            active_id = int(parts.popleft())
+        if len(parts) > 1 and is_uuid(parts[0]):  # new active id
+            active_id = to_uuid(parts.popleft())
         elif record_id:
             active_id = record_id
 

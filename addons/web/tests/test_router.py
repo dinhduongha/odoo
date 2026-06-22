@@ -34,6 +34,7 @@ class TestWebRouter(TransactionCase):
         base = self.env['ir.module.module'].search([('name', '=', 'base')])
         user = self.env.user
         ir_cron_act = self.env.ref('base.ir_cron_act')
+        access = self.env['ir.model.access'].search([], limit=1)
 
         matrix = {
             # single action
@@ -56,10 +57,10 @@ class TestWebRouter(TransactionCase):
                 (user.id, self.env.ref('base.action_partner_form'), user.partner_id.id)],
 
             # Settings > Users & Companies > Users > Marc Demo > Access Right > TOTP
-            f'users/{user.id}/ir.model.access/ir.model.access/146': [
+            f'users/{user.id}/ir.model.access/ir.model.access/{access.id}': [
                 (None, self.env.ref('base.action_res_users'), user.id),
                 (user.id, self.env.ref('base.ir_access_act'), None),
-                (user.id, self.env.ref('base.ir_access_act'), 146),
+                (user.id, self.env.ref('base.ir_access_act'), access.id),
             ]
         }
         for path, triples in matrix.items():

@@ -75,7 +75,7 @@ class TestLoadBreadcrumbs(HttpCase):
                 'params': {
                     'actions': [],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'], [])
 
@@ -93,7 +93,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], 'Test Partners')
 
@@ -115,7 +115,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['error'], 'A server action must have a path to be restored')
         self.assertEqual(resp.json()['result'][1]['display_name'], 'Window Action From Server')
@@ -134,7 +134,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], 'Breadcrumb Client Action')
 
@@ -152,11 +152,11 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                         {
                             'action': self.client_action.id,
-                            'resId': 1,
+                            'resId': self.partner.id,
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['error'], 'Client actions don\'t have multi-record views')
 
@@ -174,7 +174,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], 'New')
 
@@ -190,7 +190,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], 'Test Partner')
 
@@ -212,7 +212,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], 'Window Action From Server')
         self.assertEqual(resp.json()['result'][1]['display_name'], None)
@@ -232,7 +232,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['error']['message'], 'Odoo Server Error')
 
@@ -252,7 +252,7 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['result'][0]['display_name'], self.partner.display_name)
         self.assertEqual(resp.json()['result'][1]['display_name'], 'New')
@@ -270,6 +270,6 @@ class TestLoadBreadcrumbs(HttpCase):
                         },
                     ],
                 },
-            }),
+            }, default=str),
         )
         self.assertEqual(resp.json()['error']['message'], 'Odoo Server Error')

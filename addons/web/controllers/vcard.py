@@ -9,6 +9,7 @@ import odoo.http as http
 
 from odoo.exceptions import UserError
 from odoo.http import request, content_disposition
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class Partner(http.Controller):
@@ -20,7 +21,7 @@ class Partner(http.Controller):
             raise UserError(self.env._('vobject library is not installed'))
 
         if partner_ids:
-            partner_ids = list(filter(None, (int(pid) for pid in partner_ids.split(',') if pid.isdigit())))
+            partner_ids = [to_uuid(pid) for pid in partner_ids.split(',') if is_uuid(pid)]
             partners = request.env['res.partner'].browse(partner_ids)
             if len(partners) > 1:
                 with io.BytesIO() as buffer:

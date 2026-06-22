@@ -24,7 +24,7 @@ from odoo.http import request, Response
 from odoo.tools import file_open, file_path, replace_exceptions, str2bool
 from odoo.tools.image import image_guess_size_from_field_name
 from odoo.tools.mimetypes import guess_mimetype
-from odoo.tools.uuid_utils import uuid7, is_uuid
+from odoo.tools.uuid_utils import uuid7, is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -74,6 +74,11 @@ class Binary(http.Controller):
     def content_common(self, xmlid=None, model='ir.attachment', id=None, field='raw',
                        filename=None, filename_field='name', mimetype=None, unique=False,
                        download=False, access_token=None, nocache=False):
+        # uuidv7 PKs: a bare record id is routed through the ``<string:xmlid>`` rule
+        # (it ranks above ``<uuid:id>`` in werkzeug), so it arrives as ``xmlid``. A
+        # uuid is never a valid xmlid ("module.name"), so treat it as the record id.
+        if xmlid and id is None and is_uuid(xmlid):
+            id, xmlid = to_uuid(xmlid), None
         with replace_exceptions(UserError, by=request.not_found()):
             record = request.env['ir.binary']._find_record(xmlid, model, id, access_token, field=field)
             stream = request.env['ir.binary']._get_stream_from(record, field, filename, filename_field, mimetype)
@@ -198,6 +203,11 @@ class Binary(http.Controller):
                       filename_field='name', filename=None, mimetype=None, unique=False,
                       download=False, width=0, height=0, crop=False, access_token=None,
                       nocache=False):
+        # uuidv7 PKs: a bare record id is routed through the ``<string:xmlid>`` rule
+        # (it ranks above ``<uuid:id>`` in werkzeug), so it arrives as ``xmlid``. A
+        # uuid is never a valid xmlid ("module.name"), so treat it as the record id.
+        if xmlid and id is None and is_uuid(xmlid):
+            id, xmlid = to_uuid(xmlid), None
         if isinstance(id, int) and id and model not in ('ir.attachment',):
             # uuid PKs: a numeric id for a uuid-keyed model is a stale/wrong
             # reference (no such record) -> serve the placeholder, not a 404/500

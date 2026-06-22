@@ -2,8 +2,15 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import re
+import uuid
 
 from odoo import models
+
+
+def _str_id(value):
+    """ Stringify a (uuid) record id for the webclient, which keys menus by
+    string ids (JSON object keys are always strings). ``False``/falsy stay as-is. """
+    return str(value) if isinstance(value, uuid.UUID) else value
 
 
 class IrUiMenu(models.Model):
@@ -27,7 +34,7 @@ class IrUiMenu(models.Model):
                 web_menus['root'] = {
                     "id": 'root',
                     "name": menu['name'],
-                    "children": menu['children'],
+                    "children": [_str_id(c) for c in menu['children']],
                     "appID": False,
                     "xmlid": "",
                     "actionID": False,
@@ -70,13 +77,13 @@ class IrUiMenu(models.Model):
                     else:
                         web_icon_data = '/web/static/img/default_icon_app.png'
 
-                web_menus[menu['id']] = {
-                    "id": menu['id'],
+                web_menus[_str_id(menu['id'])] = {
+                    "id": _str_id(menu['id']),
                     "name": menu['name'],
-                    "children": menu['children'],
-                    "appID": menu['app_id'],
+                    "children": [_str_id(c) for c in menu['children']],
+                    "appID": _str_id(menu['app_id']),
                     "xmlid": menu['xmlid'],
-                    "actionID": action_id,
+                    "actionID": _str_id(action_id),
                     "actionModel": action_model,
                     "actionPath": action_path,
                     "webIcon": web_icon,

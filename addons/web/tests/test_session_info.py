@@ -51,27 +51,27 @@ class TestSessionInfo(common.HttpCase):
 
         expected_allowed_companies = {
             str(company.id): {
-                'id': company.id,
+                'id': str(company.id),
                 'name': company.name,
                 'sequence': company.sequence,
-                'child_ids': company.child_ids.ids,
-                'currency_id': company.currency_id.id,
-                'parent_id': company.parent_id.id,
+                'child_ids': [str(i) for i in company.child_ids.ids],
+                'currency_id': str(company.currency_id.id),
+                'parent_id': str(company.parent_id.id) if company.parent_id else company.parent_id.id,
             } for company in self.allowed_companies
         }
 
         expected_disallowed_ancestor_companies = {
             str(company.id): {
-                'id': company.id,
+                'id': str(company.id),
                 'name': company.name,
                 'sequence': company.sequence,
-                'child_ids': company.child_ids.ids,
-                'parent_id': company.parent_id.id,
+                'child_ids': [str(i) for i in company.child_ids.ids],
+                'parent_id': str(company.parent_id.id) if company.parent_id else company.parent_id.id,
             } for company in self.disallowed_ancestor_companies
         }
 
         expected_user_companies = {
-            'current_company': self.company_a.id,
+            'current_company': str(self.company_a.id),
             'allowed_companies': expected_allowed_companies,
             'disallowed_ancestor_companies': expected_disallowed_ancestor_companies,
         }

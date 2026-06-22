@@ -3,7 +3,7 @@
 import logging
 from odoo import _
 from odoo.exceptions import UserError, MissingError, AccessError
-from odoo.tools.uuid_utils import is_uuid
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.http import Controller, request, route
 from .utils import clean_action
 from werkzeug.exceptions import BadRequest
@@ -63,7 +63,9 @@ class Action(Controller):
     def load_breadcrumbs(self, actions):
         results = []
         for idx, action in enumerate(actions):
-            record_id = action.get('resId')
+            # resId arrives over JSON as a uuid string (or the 'new' sentinel);
+            # coerce to a uuid so browse() doesn't compare uuid = text/integer.
+            record_id = to_uuid(action.get('resId'))
             try:
                 if action.get('action'):
                     act = self.load(action.get('action'))

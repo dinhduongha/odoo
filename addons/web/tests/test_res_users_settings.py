@@ -1,5 +1,6 @@
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase
+from odoo.tools.uuid_utils import uuid7
 
 
 class TestResUsersSettings(TransactionCase):
@@ -16,6 +17,8 @@ class TestResUsersSettings(TransactionCase):
             'name': 'Test Action',
             'res_model': 'res.users',
         })
+        # embedded action ids are uuids (action record ids) -> use real uuids
+        cls.eid1, cls.eid2, cls.eid3, cls.eid4 = (uuid7() for _ in range(4))
 
     def test_fields_validity_embedded_action_settings(self):
         '''
@@ -32,16 +35,16 @@ class TestResUsersSettings(TransactionCase):
 
         # Invalid case: duplicated ids
         embedded_action_settings_data.update({
-            'embedded_actions_order': '1,2,1',
-            'embedded_actions_visibility': '3,3,4',
+            'embedded_actions_order': f'{self.eid1},{self.eid2},{self.eid1}',
+            'embedded_actions_visibility': f'{self.eid3},{self.eid3},{self.eid4}',
         })
         with self.assertRaises(ValidationError, msg='The ids in embedded_actions_order must not be duplicated'):
             self.env['res.users.settings.embedded.action'].create(embedded_action_settings_data)
 
-        # Invalid case: non-integer ids or non-false values
+        # Invalid case: non-uuid ids or non-false values
         embedded_action_settings_data.update({
-            'embedded_actions_order': '1,2,true',
-            'embedded_actions_visibility': '3,4,false,abc',
+            'embedded_actions_order': f'{self.eid1},{self.eid2},true',
+            'embedded_actions_visibility': f'{self.eid3},{self.eid4},false,abc',
         })
         with self.assertRaises(ValidationError, msg='The ids in embedded_actions_order must only be integers or "false"'):
             self.env['res.users.settings.embedded.action'].create(embedded_action_settings_data)
@@ -51,8 +54,8 @@ class TestResUsersSettings(TransactionCase):
         Test setting and getting embedded action settings.
         '''
         settings_vals = {
-            'embedded_actions_order': [False, 1, 2, 3],
-            'embedded_actions_visibility': [2, False, 3],
+            'embedded_actions_order': [False, self.eid1, self.eid2, self.eid3],
+            'embedded_actions_visibility': [self.eid2, False, self.eid3],
             'embedded_visibility': True,
         }
         self.user_settings.set_embedded_actions_setting(
@@ -69,8 +72,8 @@ class TestResUsersSettings(TransactionCase):
         self.assertEqual(embedded_actions_config.action_id, self.window_action, 'The action should match the one set.')
         self.assertEqual(embedded_actions_config.res_id, self.user.id, 'The res_id should match the one set.')
         self.assertEqual(embedded_actions_config.res_model, 'res.users', 'The res_model should match the one set.')
-        self.assertEqual(embedded_actions_config.embedded_actions_order, 'false,1,2,3', 'The embedded actions order should match the one set.')
-        self.assertEqual(embedded_actions_config.embedded_actions_visibility, '2,false,3', 'The embedded actions visibility should match the one set.')
+        self.assertEqual(embedded_actions_config.embedded_actions_order, f'false,{self.eid1},{self.eid2},{self.eid3}', 'The embedded actions order should match the one set.')
+        self.assertEqual(embedded_actions_config.embedded_actions_visibility, f'{self.eid2},false,{self.eid3}', 'The embedded actions visibility should match the one set.')
         self.assertEqual(embedded_actions_config.embedded_visibility, True, 'The embedded visibility should be True.')
         # Check if the settings are correctly formatted from the getter
         embedded_settings = self.user_settings.get_embedded_actions_settings()
@@ -81,8 +84,8 @@ class TestResUsersSettings(TransactionCase):
 
         # Edit the settings
         new_settings_vals = {
-            'embedded_actions_order': [3, 1, False, 2],
-            'embedded_actions_visibility': [1, 3],
+            'embedded_actions_order': [self.eid3, self.eid1, False, self.eid2],
+            'embedded_actions_visibility': [self.eid1, self.eid3],
             'embedded_visibility': False,
         }
         self.user_settings.set_embedded_actions_setting(
@@ -96,8 +99,8 @@ class TestResUsersSettings(TransactionCase):
         self.assertEqual(embedded_actions_config.action_id, self.window_action, 'The action should remain the same after update.')
         self.assertEqual(embedded_actions_config.res_id, self.user.id, 'The res_id should remain the same after update.')
         self.assertEqual(embedded_actions_config.res_model, 'res.users', 'The res_model should remain the same after update.')
-        self.assertEqual(embedded_actions_config.embedded_actions_order, '3,1,false,2', 'The embedded actions order should be updated.')
-        self.assertEqual(embedded_actions_config.embedded_actions_visibility, '1,3', 'The embedded actions visibility should be updated.')
+        self.assertEqual(embedded_actions_config.embedded_actions_order, f'{self.eid3},{self.eid1},false,{self.eid2}', 'The embedded actions order should be updated.')
+        self.assertEqual(embedded_actions_config.embedded_actions_visibility, f'{self.eid1},{self.eid3}', 'The embedded actions visibility should be updated.')
         self.assertEqual(embedded_actions_config.embedded_visibility, False, 'The embedded visibility should be updated to False.')
         # Check if the settings are correctly formatted after the update
         embedded_settings = self.user_settings.get_embedded_actions_settings()

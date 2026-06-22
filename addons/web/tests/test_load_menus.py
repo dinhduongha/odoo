@@ -39,12 +39,12 @@ class LoadMenusTests(HttpCase):
         menu_loaded = self.url_open("/web/webclient/load_menus")
         expected = {
             str(self.menu.id): {
-                'actionID': self.action.id,  # Take the first action in children (see load_web_menus)
+                'actionID': str(self.action.id),  # Take the first action in children (see load_web_menus)
                 'actionModel': 'ir.actions.act_window',
                 'actionPath': False,
-                'appID': self.menu.id,
-                'children': [self.menu_child.id],
-                'id': self.menu.id,
+                'appID': str(self.menu.id),
+                'children': [str(self.menu_child.id)],
+                'id': str(self.menu.id),
                 'name': 'root menu (test)',
                 'webIcon': False,
                 'webIconData': '/web/static/img/default_icon_app.png',
@@ -52,12 +52,12 @@ class LoadMenusTests(HttpCase):
                 'xmlid': '',
             },
             str(self.menu_child.id): {
-                'actionID': self.action.id,
+                'actionID': str(self.action.id),
                 'actionModel': 'ir.actions.act_window',
                 'actionPath': False,
-                'appID': self.menu.id,
+                'appID': str(self.menu.id),
                 'children': [],
-                'id': self.menu_child.id,
+                'id': str(self.menu_child.id),
                 'name': 'child menu (test)',
                 'webIcon': False,
                 'webIconData': False,
@@ -70,7 +70,7 @@ class LoadMenusTests(HttpCase):
                 'actionPath': False,
                 'appID': False,
                 'backgroundImage': None,
-                'children': [self.menu.id],
+                'children': [str(self.menu.id)],
                 'id': 'root',
                 'name': 'root',
                 'webIcon': None,

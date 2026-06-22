@@ -79,7 +79,7 @@ class TestPartnerVCard(HttpCase):
         self.assertEqual(len(vcard.contents['photo'][0].value), len(b64decode(partner.avatar_512)), "Vcard should have the same photo")
 
     def test_fetch_single_partner_vcard(self):
-        res = self.url_open('/web_enterprise/partner/%d/vcard' % self.partners[0].id)
+        res = self.url_open('/web_enterprise/partner/%s/vcard' % self.partners[0].id)
         vcard = vobject.readOne(res.text)
         self.check_vcard_contents(vcard, self.partners[0])
 

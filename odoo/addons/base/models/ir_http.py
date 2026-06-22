@@ -59,7 +59,8 @@ class RequestUID(object):
 
 
 class ModelConverter(werkzeug.routing.BaseConverter):
-    regex = r'[0-9]+'
+    # uuidv7 PKs: accept uuid ids as well as legacy integer ids
+    regex = r'[0-9]+|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
     def __init__(self, url_map, model=False):
         super().__init__(url_map)
@@ -188,6 +189,9 @@ class IrHttp(models.AbstractModel):
 
     @classmethod
     def _unslug(cls, value: str) -> tuple[str | None, int] | tuple[None, None]:
+        from odoo.tools.uuid_utils import is_uuid, to_uuid
+        if is_uuid(value):
+            return None, to_uuid(value)
         try:
             return None, int(value)
         except ValueError:
