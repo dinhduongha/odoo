@@ -236,8 +236,14 @@ class TestAuthTimeoutHttp(HttpCase):
         cls.classPatch(PasskeyClass, "_verify_auth", _verify_auth)
 
     def rpc(self, model, method, *args, **kwargs):
+        # Marshal the params with `default=str` so UUID record ids serialize as
+        # strings, mirroring how the real JS web client passes record ids as JSON
+        # values (the ORM coerces them back to UUID server-side).
+        payload = json.dumps(
+            {"params": {"model": model, "method": method, "args": args, "kwargs": kwargs}}, default=str
+        )
         return self.url_open(
-            "/web/dataset/call_kw", json={"params": {"model": model, "method": method, "args": args, "kwargs": kwargs}}
+            "/web/dataset/call_kw", data=payload, headers={"Content-Type": "application/json"}
         ).json()
 
     def set_session_create_time(self, session_id, timestamp):
