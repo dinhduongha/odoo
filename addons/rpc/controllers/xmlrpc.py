@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+import uuid
 import xmlrpc.client
 from collections import defaultdict
 from datetime import date, datetime
@@ -99,12 +100,17 @@ class OdooMarshaller(xmlrpc.client.Marshaller):
         # XML 1.0 disallows control characters, remove them otherwise they break clients
         return super().dump_unicode(value.translate(CONTROL_CHARACTERS), write)
 
+    def dump_uuid(self, value, write):
+        # UUID primary keys are marshalled as their string representation.
+        self.dump_unicode(str(value), write)
+
     dispatch[frozendict] = dump_frozen_dict
     dispatch[bytes] = dump_bytes
     dispatch[datetime] = dump_datetime
     dispatch[date] = dump_date
     dispatch[lazy] = dump_lazy
     dispatch[str] = dump_unicode
+    dispatch[uuid.UUID] = dump_uuid
     dispatch[Command] = dispatch[int]
     dispatch[defaultdict] = dispatch[dict]
     dispatch[Markup] = lambda self, value, write: self.dispatch[str](self, str(value), write)

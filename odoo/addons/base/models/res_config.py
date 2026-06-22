@@ -6,6 +6,7 @@ from ast import literal_eval
 from odoo import api, models, _
 from odoo.exceptions import AccessError, RedirectWarning, UserError
 from odoo.tools import str2bool
+from odoo.tools.uuid_utils import to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -270,7 +271,12 @@ class ResConfigSettings(models.TransientModel):
                     try:
                         # Special case when value is the id of a deleted record, we do not want to
                         # block the settings screen
-                        value = self.env[field.comodel_name].browse(int(value)).exists().id
+                        try:
+                            res_id = int(value)
+                        except (ValueError, TypeError):
+                            # uuid primary keys are stored as their string representation
+                            res_id = to_uuid(value)
+                        value = self.env[field.comodel_name].browse(res_id).exists().id
                     except (ValueError, TypeError):
                         _logger.warning(WARNING_MESSAGE, value, field, icp)
                         value = False
