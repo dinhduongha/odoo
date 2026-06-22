@@ -31,12 +31,12 @@ class TestEventInternalsCommon(EventCase):
                 (0, 0, {  # right at subscription
                     'interval_unit': 'now',
                     'interval_type': 'after_sub',
-                    'template_ref': 'mail.template,%i' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
+                    'template_ref': 'mail.template,%s' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
                 (0, 0, {  # 1 days before event
                     'interval_nbr': 1,
                     'interval_unit': 'days',
                     'interval_type': 'before_event',
-                    'template_ref': 'mail.template,%i' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')}),
+                    'template_ref': 'mail.template,%s' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')}),
             ],
         })
 
@@ -138,7 +138,7 @@ class TestEventData(TestEventInternalsCommon):
         event_type.write({
             'event_type_mail_ids': [(5, 0), (0, 0, {
                 'interval_nbr': 1, 'interval_unit': 'days', 'interval_type': 'before_event',
-                'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')})
+                'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')})
             ],
             'event_type_ticket_ids': [(5, 0), (0, 0, {'name': 'TestRegistration'})],
         })
@@ -191,7 +191,7 @@ class TestEventData(TestEventInternalsCommon):
                     'interval_nbr': 77,
                     'interval_unit': 'days',
                     'interval_type': 'after_event',
-                    'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder'),
+                    'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder'),
                 })
             ],
         })
@@ -207,7 +207,7 @@ class TestEventData(TestEventInternalsCommon):
                 Command.create({
                     'interval_unit': 'now',
                     'interval_type': 'after_sub',
-                    'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription'),
+                    'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription'),
                 })
             ]
         })

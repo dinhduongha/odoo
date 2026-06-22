@@ -40,5 +40,5 @@ class EventTypeMail(models.Model):
             'interval_nbr': self.interval_nbr,
             'interval_unit': self.interval_unit,
             'interval_type': self.interval_type,
-            'template_ref': '%s,%i' % (self.template_ref._name, self.template_ref.id),
+            'template_ref': '%s,%s' % (self.template_ref._name, self.template_ref.id),
         }

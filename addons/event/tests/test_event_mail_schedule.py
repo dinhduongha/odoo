@@ -949,12 +949,12 @@ class TestMailScheduleInternals(EventMailCommon):
                     'interval_nbr': 0,
                     'interval_unit': 'now',
                     'interval_type': 'after_sub',
-                    'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')
+                    'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')
                 }), (0, 0, {
                     'interval_nbr': 5,
                     'interval_unit': 'hours',
                     'interval_type': 'before_event',
-                    'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')
+                    'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')
                 }),
             ]
         })
@@ -1040,12 +1040,12 @@ class TestMailScheduleInternals(EventMailCommon):
                     (0, 0, {  # right at subscription
                         'interval_unit': 'now',
                         'interval_type': 'after_sub',
-                        'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
+                        'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
                     (0, 0, {  # 3 hours before event
                         'interval_nbr': 3,
                         'interval_unit': 'hours',
                         'interval_type': 'before_event',
-                        'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')})
+                        'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')})
                 ]
             })
 
@@ -1117,12 +1117,12 @@ class TestMailScheduleInternals(EventMailCommon):
                         'interval_nbr': 3,
                         'interval_unit': 'hours',
                         'interval_type': 'after_sub',
-                        'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
+                        'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
                     (0, 0, {  # 3 hours after event end
                         'interval_nbr': 3,
                         'interval_unit': 'hours',
                         'interval_type': 'after_event',
-                        'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')}),
+                        'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_reminder')}),
                 ]
             })
 
