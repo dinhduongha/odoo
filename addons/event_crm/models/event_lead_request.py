@@ -47,10 +47,17 @@ class EventLeadRequest(models.Model):
         generate_requests = self.env['event.lead.request'].search([], limit=job_limit)
         fulfilled_requests = self.env['event.lead.request']
         for generate_request in generate_requests:
-            registrations_to_process = self.env['event.registration'].search([
+            domain = [
                 ('event_id', '=', generate_request.event_id.id),
                 ('state', 'not in', ['draft', 'cancel']),
-                ('id', '>', generate_request.processed_registration_id)],
+            ]
+            # resume cursor: uuidv7 ids are time-sortable so 'id >' works to
+            # skip already processed registrations; skip the clause on the first
+            # run as the field is empty (Uuid, no default unlike the legacy int 0)
+            if generate_request.processed_registration_id:
+                domain.append(('id', '>', generate_request.processed_registration_id))
+            registrations_to_process = self.env['event.registration'].search(
+                domain,
                 limit=registrations_batch_size,
                 order='id asc'
             )
