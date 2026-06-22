@@ -49,7 +49,7 @@ class MicrosoftEvent(abc.Set):
             raise ValueError("Expected singleton: %s" % self)
         event_id = list(self._events.keys())[0]
         value = self._events[event_id].get(name)
-        json.dumps(value)
+        json.dumps(value, default=str)
         return value
 
     def __repr__(self):
