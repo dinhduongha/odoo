@@ -3,6 +3,8 @@
 
 import json
 
+from odoo.tools.uuid_utils import to_uuid
+
 from odoo.addons.mail_plugin.tests.common import TestMailPluginControllerCommon, mock_auth_method_outlook
 
 
@@ -35,9 +37,9 @@ class TestCrmMailPlugin(TestMailPluginControllerCommon):
             msg="The user has access to crm.lead, the leads section should be visible",
         )
 
-        self.assertTrue([lead for lead in result["leads"] if lead["lead_id"] == lead_1.id],
+        self.assertTrue([lead for lead in result["leads"] if to_uuid(lead["lead_id"]) == lead_1.id],
             msg="The first lead belongs to the first partner, it should be returned")
-        self.assertFalse([lead for lead in result["leads"] if lead["lead_id"] == lead_2.id],
+        self.assertFalse([lead for lead in result["leads"] if to_uuid(lead["lead_id"]) == lead_2.id],
             msg="The second lead does not belong to the first partner, it should not be returned")
 
     @mock_auth_method_outlook('employee')
