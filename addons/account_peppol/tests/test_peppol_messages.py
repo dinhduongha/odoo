@@ -415,7 +415,7 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
         self.env["ir.default"].create({
             'company_id': other_company.id,
             'field_id': self.env['ir.model.fields']._get('res.partner', 'company_id').id,
-            'json_value': other_company.id,
+            'json_value': json.dumps(str(other_company.id)),
         })
         initial_company = self.env.company
         self.env['account_edi_proxy_client.user']\
