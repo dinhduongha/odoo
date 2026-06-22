@@ -65,7 +65,7 @@ class PaymentTransaction(models.Model):
         return {
             # Dummy basket item as it is required in Iyzico.
             'basketItems': [{
-                'id': self.id,
+                'id': str(self.id),
                 'price': self.amount,
                 'name': 'Odoo purchase',
                 'category1': 'Service',
@@ -78,7 +78,7 @@ class PaymentTransaction(models.Model):
                 'country': self.partner_country_id.name,
             },
             'buyer': {
-                'id': self.partner_id.id,
+                'id': str(self.partner_id.id),
                 'name': first_name,
                 'surname': last_name,
                 'identityNumber': str(self.partner_id.id).zfill(5),

@@ -26,7 +26,7 @@ class TestPaymentTransaction(IyzicoCommon, PaymentHttpCommon):
         )
         self.assertDictEqual(request_payload, {
             'basketItems': [{
-                'id': tx.id,
+                'id': str(tx.id),
                 'price': tx.amount,
                 'name': 'Odoo purchase',
                 'category1': 'Service',
@@ -39,7 +39,7 @@ class TestPaymentTransaction(IyzicoCommon, PaymentHttpCommon):
                 'country': tx.partner_country_id.name,
             },
             'buyer': {
-                'id': tx.partner_id.id,
+                'id': str(tx.partner_id.id),
                 'name': first_name,
                 'surname': last_name,
                 'identityNumber': str(tx.partner_id.id).zfill(5),
