@@ -698,7 +698,7 @@ class AccountPartialReconcile(models.Model):
             'credit_caba_lines': [(aml_type, aml.id) for aml_type, aml in credit_vals.get('to_process_lines', [])],
             'credit_total_balance': credit_vals.get('total_balance'),
             'credit_total_amount_currency': credit_vals.get('total_amount_currency'),
-        })
+        }, default=str)
 
     def _set_draft_caba_move_vals(self):
         for partial in self:
