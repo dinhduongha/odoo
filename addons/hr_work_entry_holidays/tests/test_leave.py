@@ -211,6 +211,17 @@ class TestWorkEntryLeave(TestWorkEntryHolidaysBase):
                                                                         "be number of days * hours per day")
 
     def test_leave_change_working_schedule(self):
+        # Align the employee's timezone with the calendars used in this test.
+        # The leave's start/stop are computed in the employee's tz while the
+        # attendance work entries are computed in the calendar's tz. If they
+        # differ, the leave and the attendances only partially overlap, which
+        # splits the day into two work entries. calendar_40h (used later in
+        # this test) has no explicit tz and therefore defaults to the ambient
+        # user tz, so use that same tz for the employee and for the 20h
+        # calendar to keep them all consistent regardless of the ambient
+        # admin user tz.
+        tz = self.calendar_40h.tz
+        self.jules_emp.tz = tz
         calendar_20h = self.env['resource.calendar'].create({
             'name': '20h calendar',
             'attendance_ids': [
@@ -220,7 +231,7 @@ class TestWorkEntryLeave(TestWorkEntryHolidaysBase):
                 (0, 0, {'name': 'Thursday Morning', 'dayofweek': '3', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
                 (0, 0, {'name': 'Friday Morning', 'dayofweek': '4', 'hour_from': 8, 'hour_to': 12, 'day_period': 'morning'}),
             ],
-            'tz': 'UTC',
+            'tz': tz,
         })
         self.contract_cdi.resource_calendar_id = calendar_20h
         self.contract_cdi.generate_work_entries(date(2019, 10, 1), date(2019, 10, 30))
