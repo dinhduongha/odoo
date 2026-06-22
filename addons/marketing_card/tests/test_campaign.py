@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from odoo import exceptions
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tests.common import users
 from odoo.tests import Form, HttpCase, tagged, warmup
 from odoo.addons.mail.tests.common import MailCase
@@ -33,7 +34,9 @@ class TestMarketingCardMail(MailCase, MarketingCardCommon):
         IrHttp = self.env['ir.http']
         sent_cards = self.env['card.card']
         for sent_mail in sent_mails:
-            record_id = int(sent_mail['object_id'].split('-')[0])
+            # object_id is f'{res_id}-{model}'; res_id is now a uuid (contains
+            # hyphens) and the model name has none, so split off the trailing model.
+            record_id = to_uuid(sent_mail['object_id'].rsplit('-', 1)[0])
             card = cards.filtered(lambda card: card.res_id == record_id)
             self.assertEqual(len(card), 1)
             sent_cards += card
@@ -53,7 +56,9 @@ class TestMarketingCardMail(MailCase, MarketingCardCommon):
         partners = self.env['res.partner'].sudo().create([{'name': f'Part{n}', 'email': f'partn{n}@test.lan'} for n in range(7)])
         mailing_context = campaign.action_share().get('context') | {
             'default_email_from': 'test@test.lan',
-            'default_mailing_domain': [('id', 'in', partners.ids[:5])],
+            # uuid ids must be stringified to survive literal_eval round-trip
+            # through the mailing_domain Char field
+            'default_mailing_domain': [('id', 'in', [str(i) for i in partners.ids[:5]])],
             'default_reply_to': 'test@test.lan',
         }
         mailing = Form(self.env['mailing.mailing'].with_context(mailing_context)).save()
@@ -77,7 +82,7 @@ class TestMarketingCardMail(MailCase, MarketingCardCommon):
         mailing.action_cancel()
 
         # modifying the domain such that there are missing cards prevents sending again
-        mailing.mailing_domain = [('id', 'in', partners.ids[1:6])]
+        mailing.mailing_domain = [('id', 'in', [str(i) for i in partners.ids[1:6]])]
         mailing._compute_card_requires_sync_count()
         self.assertTrue(mailing.card_requires_sync_count)
         with self.assertRaises(exceptions.UserError, msg="You should update all the cards before scheduling a mailing."):
@@ -121,7 +126,9 @@ class TestMarketingCardMail(MailCase, MarketingCardCommon):
         partners = self.env['res.partner'].sudo().create([{'name': f'Part{n}', 'email': f'email{n % 3}@test.lan'} for n in range(10)])
         mailing_context = campaign.action_share().get('context') | {
             'default_email_from': 'test@test.lan',
-            'default_mailing_domain': [('id', 'in', partners.ids)],
+            # uuid ids must be stringified to survive literal_eval round-trip
+            # through the mailing_domain Char field
+            'default_mailing_domain': [('id', 'in', [str(i) for i in partners.ids])],
             'default_reply_to': 'test@test.lan',
         }
         mailing = Form(self.env['mailing.mailing'].with_context(mailing_context)).save()
@@ -218,7 +225,7 @@ class TestMarketingCardRender(MarketingCardCommon):
             self.assertEqual(self.static_campaign.res_model, 'res.partner')
 
             # mismatch with card
-            self.env['card.card'].sudo().create({'campaign_id': self.static_campaign.id, 'res_id': 1})
+            self.env['card.card'].sudo().create({'campaign_id': self.static_campaign.id, 'res_id': self.partners[0].id})
 
             self.assertTrue(self.static_campaign.card_ids)
             with self.assertRaises(exceptions.ValidationError):

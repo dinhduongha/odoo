@@ -3,8 +3,9 @@ from markupsafe import Markup
 
 from odoo import api, models
 
-CARD_IMAGE_URL = re.compile(r'src=".*?/web/image/card.campaign/[0-9]+/image_preview"')
-CARD_PREVIEW_URL = re.compile(r'href=".*?/cards/[0-9]+/preview"')
+# card ids and campaign ids are uuids (hex digits + hyphens)
+CARD_IMAGE_URL = re.compile(r'src=".*?/web/image/card.campaign/[0-9a-fA-F-]+/image_preview"')
+CARD_PREVIEW_URL = re.compile(r'href=".*?/cards/[0-9a-fA-F-]+/preview"')
 
 
 class MailComposeMessage(models.TransientModel):
