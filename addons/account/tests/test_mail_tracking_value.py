@@ -36,7 +36,7 @@ class TestTracking(AccountTestInvoicingCommon, MailCase):
         self.flush_tracking()
         # Isolate the tracked value for the invoice line because changing the account has recomputed the taxes.
         tracking_value = account_move.message_ids.sudo().tracking_value_ids\
-            .filtered(lambda t: t.field_id.name == 'account_id' and t.old_value_integer == old_value.id)
+            .filtered(lambda t: t.field_id.name == 'account_id' and t.old_value_uuid == old_value.id)
         self.assertTracking(tracking_value.mail_message_id, [
             ('account_id', 'many2one', old_value, new_value),
         ])

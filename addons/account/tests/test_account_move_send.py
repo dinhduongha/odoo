@@ -6,6 +6,7 @@ from datetime import date
 from unittest.mock import patch
 
 from odoo import Command
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.mail.tests.common import MailCommon
 from odoo.exceptions import UserError
@@ -510,11 +511,14 @@ class TestAccountMoveSendCommon(AccountTestInvoicingCommon):
     def _assert_mail_attachments_widget(self, wizard, expected_values_list):
         self.assertEqual(len(wizard.mail_attachments_widget), len(expected_values_list))
         for values, expected_values in zip(wizard.mail_attachments_widget, expected_values_list):
+            # A real (already-stored) attachment has a database id: an int on
+            # legacy pks, a UUID string now. In that case the surrounding values
+            # aren't asserted (only placeholders are).
             try:
                 int(values['id'])
                 check_id_needed = True
-            except ValueError:
-                check_id_needed = False
+            except (ValueError, TypeError):
+                check_id_needed = is_uuid(values['id'])
             self.assertDictEqual(
                 {k: v for k, v in values.items() if not check_id_needed and k != 'id'},
                 {k: v for k, v in expected_values.items() if not check_id_needed and k != 'id'},
@@ -1099,8 +1103,9 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
                 invoice_data['error'] = {'error_title': 'blblblbl'}
 
         self.assertTrue(all(invoice.sending_data for invoice in invoices_success + invoices_error))
-        self.assertTrue(all(invoice.sending_data.get('author_partner_id') == sp_partner_1.id for invoice in invoices_success))
-        self.assertTrue(all(invoice.sending_data.get('author_partner_id') == sp_partner_2.id for invoice in invoices_error))
+        # ``sending_data`` is a JSON field, so the stored author partner id round-trips as a string.
+        self.assertTrue(all(to_uuid(invoice.sending_data.get('author_partner_id')) == sp_partner_1.id for invoice in invoices_success))
+        self.assertTrue(all(to_uuid(invoice.sending_data.get('author_partner_id')) == sp_partner_2.id for invoice in invoices_error))
 
         #  reset bus
         self.env.cr.precommit.run()
@@ -1114,22 +1119,31 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
             self.env.cr.precommit.run()  # trigger the creation of bus.bus records
 
         bus_1 = self.env['bus.bus'].sudo().search(
-            [('channel', 'like', f'"res.partner",{sp_partner_1.id}')],
+            # UUID primary keys are serialized as JSON strings in the bus channel,
+            # so the id must be quoted in the search pattern.
+            [('channel', 'like', f'"res.partner","{sp_partner_1.id}"')],
             order='id desc',
             limit=1,
         )
         payload_1 = json.loads(bus_1.message)['payload']
         self.assertEqual(payload_1['type'], 'success')
-        self.assertEqual(sorted(payload_1['action_button']['res_ids']), invoices_success.ids)
+        # ``res_ids`` round-trip through JSON as UUID strings; coerce before comparing.
+        self.assertEqual(
+            sorted(to_uuid(res_id) for res_id in payload_1['action_button']['res_ids']),
+            sorted(invoices_success.ids),
+        )
 
         bus_2 = self.env['bus.bus'].sudo().search(
-            [('channel', 'like', f'"res.partner",{sp_partner_2.id}')],
+            [('channel', 'like', f'"res.partner","{sp_partner_2.id}"')],
             order='id desc',
             limit=1,
         )
         payload_2 = json.loads(bus_2.message)['payload']
         self.assertEqual(payload_2['type'], 'warning')
-        self.assertEqual(sorted(payload_2['action_button']['res_ids']), invoices_error.ids)
+        self.assertEqual(
+            sorted(to_uuid(res_id) for res_id in payload_2['action_button']['res_ids']),
+            sorted(invoices_error.ids),
+        )
 
     def test_is_move_sent_state(self):
         # Post a move, nothing sent yet

@@ -71,12 +71,12 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
         self.assertTrue(self.env['ir.attachment'].sudo().search([('id', '=', create_res['id'])]))
 
         # Test created attachment is private
-        res_binary = self.url_open('/web/content/%d' % create_res['id'])
+        res_binary = self.url_open('/web/content/%s' % create_res['id'])
         self.assertEqual(res_binary.status_code, 404)
 
         # Test created access_token is working
         res_binary = self.url_open(
-            "/web/content/%d?access_token=%s"
+            "/web/content/%s?access_token=%s"
             % (create_res["id"], create_res["raw_access_token"])
         )
         self.assertEqual(res_binary.status_code, 200)
@@ -101,14 +101,14 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
         self.assertEqual(create_res['mimetype'], 'text/plain')
 
         res_binary = self.url_open(
-            "/web/content/%d?access_token=%s"
+            "/web/content/%s?access_token=%s"
             % (create_res["id"], create_res["raw_access_token"])
         )
         self.assertEqual(res_binary.headers['Content-Type'], 'text/plain; charset=utf-8')
         self.assertEqual(res_binary.content, b'<svg></svg>')
 
         res_image = self.url_open(
-            "/web/image/%d?access_token=%s"
+            "/web/image/%s?access_token=%s"
             % (create_res["id"], create_res["raw_access_token"])
         )
         self.assertEqual(res_image.headers['Content-Type'], 'application/octet-stream')
@@ -149,7 +149,7 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             url=f'{self.invoice_base_url}/mail/attachment/delete',
             json={
                 'params': {
-                    'attachment_id': attachment.id,
+                    'attachment_id': str(attachment.id),
                     "access_token": attachment._get_ownership_token(),
                 },
             },
@@ -171,7 +171,7 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             url=f'{self.invoice_base_url}/mail/attachment/delete',
             json={
                 'params': {
-                    'attachment_id': attachment.id,
+                    'attachment_id': str(attachment.id),
                     "access_token": attachment._get_ownership_token(),
                 },
             },
@@ -191,10 +191,10 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             json={
                 'params': {
                     'thread_model': self.out_invoice._name,
-                    'thread_id': self.out_invoice.id,
+                    'thread_id': str(self.out_invoice.id),
                     'post_data': {
                         'body': "test message 1",
-                        'attachment_ids': [attachment.id],
+                        'attachment_ids': [str(attachment.id)],
                         "attachment_tokens": ["false"],
                     },
                     "token": self.out_invoice._portal_ensure_token(),
@@ -213,10 +213,10 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             json={
                 'params': {
                     'thread_model': self.out_invoice._name,
-                    'thread_id': self.out_invoice.id,
+                    'thread_id': str(self.out_invoice.id),
                     "post_data": {
                         "body": "test message 1",
-                        'attachment_ids': [attachment.id],
+                        'attachment_ids': [str(attachment.id)],
                         "attachment_tokens": [attachment._get_ownership_token()],
                     },
                 },
@@ -235,10 +235,10 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             json={
                 'params': {
                     'thread_model': self.out_invoice._name,
-                    'thread_id': self.out_invoice.id,
+                    'thread_id': str(self.out_invoice.id),
                     "post_data": {
                         "body": "test message 1",
-                        "attachment_ids": [attachment.id],
+                        "attachment_ids": [str(attachment.id)],
                         "attachment_tokens": [attachment._get_ownership_token()],
                     },
                     'token': self.out_invoice._portal_ensure_token(),
@@ -260,10 +260,10 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             json={
                 'params': {
                     'thread_model': self.out_invoice._name,
-                    'thread_id': self.out_invoice.id,
+                    'thread_id': str(self.out_invoice.id),
                     "post_data": {
                         "body": "test message 2",
-                        "attachment_ids": [attachment.id],
+                        "attachment_ids": [str(attachment.id)],
                         "attachment_tokens": [attachment._get_ownership_token()],
                     },
                     'token': self.out_invoice._portal_ensure_token(),
@@ -304,7 +304,7 @@ class TestPortalAttachment(AccountTestInvoicingHttpCommon):
             json={
                 'params': {
                     'thread_model': self.out_invoice._name,
-                    'thread_id': self.out_invoice.id,
+                    'thread_id': str(self.out_invoice.id),
                     "post_data": {
                         "body": "test message 3",
                         "attachment_ids": [create_res['id']],

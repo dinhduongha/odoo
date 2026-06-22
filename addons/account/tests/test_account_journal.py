@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from odoo import http
 from odoo.tools import hash_sign
+from odoo.tools.uuid_utils import uuid7
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.account.models.account_payment_method import AccountPaymentMethod
 from odoo.addons.mail.tests.common import MailCommon
@@ -56,7 +57,8 @@ class TestAccountJournal(AccountTestInvoicingCommon, HttpCase):
         invoice_invalid.journal_id = journal
         invoice_invalid.action_post()
         self.assertTrue(invoice_invalid.payment_reference, "A payment reference should be generated.")
-        self.assertIn(str(journal.id), invoice_invalid.payment_reference, "The reference should fall back to using the journal ID.")
+        journal_id_alnum = str(journal.id).replace('-', '')
+        self.assertIn(journal_id_alnum, invoice_invalid.payment_reference.replace(' ', ''), "The reference should fall back to using the journal ID.")
 
         # Case 3: Code is non-ASCII but alphanumeric (e.g., Greek letter 'INVα'). # noqa: RUF003
         journal.code = 'INVα'
@@ -64,7 +66,8 @@ class TestAccountJournal(AccountTestInvoicingCommon, HttpCase):
         invoice_unicode.journal_id = journal
         invoice_unicode.action_post()
         self.assertTrue(invoice_unicode.payment_reference, "A payment reference should be generated.")
-        self.assertIn(str(journal.id), invoice_unicode.payment_reference, "The reference should fall back to using the journal ID for non-ASCII codes.")
+        journal_id_alnum = str(journal.id).replace('-', '')
+        self.assertIn(journal_id_alnum, invoice_unicode.payment_reference.replace(' ', ''), "The reference should fall back to using the journal ID for non-ASCII codes.")
 
     def test_changing_journal_company(self):
         ''' Ensure you can't change the company of an account.journal if there are some journal entries '''
@@ -249,7 +252,7 @@ class TestAccountJournal(AccountTestInvoicingCommon, HttpCase):
 
         with self.subTest('wrong_journal_id'):
             journal.incoming_einvoice_notification_email = email
-            res = _unsubscribe(valid_token, journal_id=journal.id + 1)
+            res = _unsubscribe(valid_token, journal_id=uuid7())
             self.assertEqual(res.status_code, 403)
             self.assertEqual(journal.incoming_einvoice_notification_email, email)
 
@@ -347,8 +350,8 @@ class TestAccountJournalAlias(AccountTestInvoicingCommon, MailCommon):
             dict(literal_eval(journal_alias.alias_defaults)),
             {
                 'move_type': 'in_invoice',
-                'company_id': journal.company_id.id,
-                'journal_id': journal.id,
+                'company_id': str(journal.company_id.id),
+                'journal_id': str(journal.id),
             }
         )
         self.assertFalse(journal_alias.alias_force_thread_id, 'Journal alias should create new moves')
@@ -392,8 +395,10 @@ class TestAccountJournalAlias(AccountTestInvoicingCommon, MailCommon):
             dict(literal_eval(journal_alias_2.alias_defaults)),
             {
                 'move_type': 'out_invoice',
-                'company_id': journal.company_id.id,
-                'journal_id': journal.id,
+                # alias_defaults stores ids as strings (UUID primary keys are
+                # serialized via str() so the value is JSON/literal-eval safe)
+                'company_id': str(journal.company_id.id),
+                'journal_id': str(journal.id),
             }
         )
         self.assertFalse(journal_alias_2.alias_force_thread_id, 'Journal alias should create new moves')
@@ -456,9 +461,14 @@ class TestAccountJournalAlias(AccountTestInvoicingCommon, MailCommon):
             journal=journal_latin,
         )
 
-        expected_id = str(invoice_non_latin.journal_id.id)
-        ref_parts_non_latin = invoice_non_latin.payment_reference.split()
-        self.assertEqual(ref_parts_non_latin[1][:len(expected_id)], expected_id, "The reference should start with " + expected_id)
+        # ISO 11649 references are alphanumeric only and rendered in 4-char
+        # groups, so the journal identifier is not a single contiguous token.
+        # With a non-Latin journal code, the reference falls back to the
+        # (hyphen-stripped) journal UUID; rebuild the reference body without
+        # spaces and assert it starts with that identifier.
+        expected_id = str(invoice_non_latin.journal_id.id).replace('-', '')
+        ref_body_non_latin = ''.join(invoice_non_latin.payment_reference.split()[1:])
+        self.assertTrue(ref_body_non_latin.startswith(expected_id), "The reference should start with " + expected_id)
 
         ref_parts_latin = invoice_latin.payment_reference.split()
         self.assertIn(ref_parts_latin[1][:3], latin_code, f"Expected journal code '{latin_code}' in second part of reference")

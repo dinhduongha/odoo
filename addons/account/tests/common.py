@@ -1876,7 +1876,7 @@ class TestTaxCommon(AccountTestInvoicingHttpCommon):
 
         self.env['ir.config_parameter'].set_param(
             'account.tests_shared_js_python',
-            json.dumps([test for test, _expected_values, _assert_function in self.js_tests]),
+            json.dumps([test for test, _expected_values, _assert_function in self.js_tests], default=str),
         )
 
         self.start_tour('/account/init_tests_shared_js_python', 'tests_shared_js_python', login=self.env.user.login)
@@ -2376,9 +2376,14 @@ class TestAccountMergeCommon(AccountTestInvoicingCommon):
         })
 
         # Many2many
+        # Journal code is limited to 5 chars and unique per company; derive a
+        # short unique code from the account's own (per-company unique) code
+        # since the account id is now a non-numeric UUID. ``code`` is
+        # company-dependent, so read it in the account's company context.
+        account_code = account.with_company(account.company_ids[:1]).code or account.id.hex
         journal = self.env['account.journal'].create({
             'name': f'For account {account.id}',
-            'code': f'T{account.id}',
+            'code': f'T{account_code[-4:]}',
             'type': 'general',
             'company_id': account.company_ids.id,
             'x_account_control_ids': [Command.set(account.ids)],
