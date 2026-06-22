@@ -334,7 +334,7 @@ class TestAccessRightsWrite(TestHrHolidaysAccessRightsCommon):
             'holiday_status_id': self.leave_type.id,
             'state': 'confirm',
         }
-        self.employee_hrmanager.leave_manager_id = self.env['res.users'].browse(1)
+        self.employee_hrmanager.leave_manager_id = self.env.ref('base.user_root')
         leave_date = date_utils.start_of(date.today() + relativedelta(days=7), 'week')
         hr_leave = self.request_leave(self.user_hruser_id, leave_date, 1, values)
 

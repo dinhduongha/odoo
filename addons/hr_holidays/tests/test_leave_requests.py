@@ -123,9 +123,9 @@ class TestLeaveRequests(TestHrHolidaysCommon):
         cls.env.cr.execute("""
                        UPDATE
                        hr_employee
-                       SET create_date = '%s'
+                       SET create_date = %s
                        WHERE id = %s
-                       """ % (newdate, _id))
+                       """, (newdate, _id))
 
     @mute_logger('odoo.models.unlink', 'odoo.addons.mail.models.mail_mail')
     def test_overlapping_requests(self):

@@ -48,7 +48,7 @@ class TestHrLeaveTypeTour(HttpCase):
         company_1 = self.env.company
         company_1.name = 'company_1'
         company_2 = self.env['res.company'].create({'name': 'company_2'})
-        self.env["res.users"].browse(2).write({
+        admin_user.write({
             "company_ids": [Command.clear(), Command.link(company_1.id), Command.link(company_2.id)]
         })
 

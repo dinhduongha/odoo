@@ -138,9 +138,9 @@ class TestAccrualAllocations(TestHrHolidaysCommon):
         self.env.cr.execute("""
                        UPDATE
                        hr_leave_allocation
-                       SET create_date = '%s'
+                       SET create_date = %s
                        WHERE id = %s
-                       """ % (date, allocation_id))
+                       """, (date, allocation_id))
 
     def assert_allocation_and_balance(self, allocation, expected_allocation_value, expected_balance_value, msg):
         unit = allocation.accrual_plan_id.added_value_type
