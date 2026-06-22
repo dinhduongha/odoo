@@ -329,7 +329,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
             'start': {'date': str(event.start_date), 'dateTime': None},
             'end': {'date': str(event.stop_date + relativedelta(days=1)), 'dateTime': None},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'declined'}],
-            'extendedProperties': {'private': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'private': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
         })
 
@@ -1485,8 +1485,8 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
             'organizer': {'email': 'c.c@example.com', 'self': False},
             'attendees': [{'email': 'c.c@example.com', 'responseStatus': 'needsAction'},
                           {'email': 'odoobot@example.com', 'responseStatus': 'accepted'},],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id,
-                                              '%s_owner_id' % self.env.cr.dbname: other_user.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id),
+                                              '%s_owner_id' % self.env.cr.dbname: str(other_user.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'transparency': 'opaque',
         }, timeout=3)
@@ -1619,7 +1619,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
             'allday': False,
             'google_id': google_id,
             'need_sync': False,
-            'user_id': self.env.user.partner_id.id,
+            'user_id': self.env.user.id,
             'partner_ids': [(6, 0, [self.env.user.partner_id.id, partner1.id, partner2.id, partner3.id, partner4.id],)]
             # current user is attendee
         })
@@ -1643,7 +1643,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
             'visibility': 'public',
             'attendees': [],
             'reminders': {'useDefault': True},
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id, }},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id), }},
             'recurrence': ['RRULE:FREQ=WEEKLY;COUNT=3;BYDAY=MO'],
             'start': {
                 'dateTime': '2020-01-13T16:00:00+01:00',

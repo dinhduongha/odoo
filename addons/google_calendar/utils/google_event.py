@@ -7,6 +7,7 @@ from typing import Iterator, Mapping
 
 from odoo.tools import email_normalize
 from odoo.tools.misc import ReadonlyDict
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class GoogleEvent(abc.Set):
             raise ValueError("Expected singleton: %s" % self)
         event_id = list(self._events.keys())[0]
         value = self._events[event_id].get(name)
-        json.dumps(value)
+        json.dumps(value, default=str)
         return value
 
     def __repr__(self):
@@ -81,7 +82,7 @@ class GoogleEvent(abc.Set):
         properties = self.extendedProperties and (self.extendedProperties.get('shared', {}) or self.extendedProperties.get('private', {})) or {}
         o_id = properties.get('%s_odoo_id' % dbname)
         if o_id:
-            return int(o_id)
+            return to_uuid(o_id)
 
     def odoo_ids(self, env):
         ids = tuple(e._odoo_id for e in self if e._odoo_id)
@@ -130,12 +131,10 @@ class GoogleEvent(abc.Set):
         # extended property. There is currently no support to "transfert" ownership when
         # userA syncs their calendar the first time.
         real_owner_id = self.extendedProperties and self.extendedProperties.get('shared', {}).get('%s_owner_id' % env.cr.dbname)
-        try:
-            # If we create an event without user_id, the event properties will be 'false'
-            # and python will interpret this a a NoneType, that's why we have the 'except TypeError'
-            real_owner_id = int(real_owner_id)
-        except (ValueError, TypeError):
-            real_owner_id = False
+        # If we create an event without user_id, the event properties will be 'false'
+        # and python will interpret this as a NoneType. The id is stored as a string
+        # in the Google metadata and round-trips back as a UUID string.
+        real_owner_id = to_uuid(real_owner_id) if isinstance(real_owner_id, str) and is_uuid(real_owner_id) else False
         real_owner = real_owner_id and env['res.users'].browse(real_owner_id) or env['res.users']
         if real_owner_id and real_owner.exists():
             return real_owner

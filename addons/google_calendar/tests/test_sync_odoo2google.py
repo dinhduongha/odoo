@@ -57,7 +57,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': alarm.duration_minutes}]},
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'jean-luc@opoo.com', 'responseStatus': 'needsAction'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         })
 
@@ -169,7 +169,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'jean-luc@opoo.com', 'responseStatus': 'needsAction'},
                           {'email': 'phineas@opoo.com', 'responseStatus': 'needsAction'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         })
 
@@ -194,7 +194,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'reminders': {'overrides': [], 'useDefault': False},
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         })
 
@@ -256,7 +256,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
             'recurrence': ['RRULE:FREQ=WEEKLY;COUNT=2;BYDAY=WE'],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: recurrence.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(recurrence.id)}},
             'transparency': 'opaque',
         })
 
@@ -291,7 +291,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
             'recurrence': ['RRULE:FREQ=WEEKLY;COUNT=2;BYDAY=WE'],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.recurrence_id.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.recurrence_id.id)}},
             'transparency': 'opaque',
         }, timeout=3)
 
@@ -337,7 +337,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'guestsCanModify': True,
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.recurrence_id.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.recurrence_id.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'recurrence': ['RRULE:FREQ=WEEKLY;WKST=SU;COUNT=1;BYDAY=WE'],
             'transparency': 'opaque',
@@ -389,7 +389,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'reminders': {'overrides': [], 'useDefault': False},
             'organizer': {'email': 'jean-luc@opoo.com', 'self': True},
             'attendees': [{'email': 'jean-luc@opoo.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         }, timeout=3)
 
@@ -426,7 +426,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
             'recurrence': ['RRULE:FREQ=WEEKLY;WKST=SU;COUNT=2;BYDAY=WE'],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: new_recurrence.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(new_recurrence.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'transparency': 'opaque',
         }, timeout=3)
@@ -555,7 +555,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'guestsCanModify': True,
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'jean-luc@opoo.com', 'responseStatus': 'declined'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'transparency': 'opaque',
         })
@@ -593,7 +593,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
             'recurrence': ['RRULE:FREQ=WEEKLY;WKST=SU;COUNT=2;BYDAY=WE'],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: new_recurrence.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(new_recurrence.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'transparency': 'opaque',
         }, timeout=3)
@@ -636,7 +636,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'guestsCanModify': True,
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event_1.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event_1.id)}},
             'reminders': {'overrides': [], 'useDefault': False},
             'status': 'cancelled',
             'transparency': 'opaque',
@@ -772,7 +772,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'reminders': {'overrides': [], 'useDefault': False},
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'transparent',
         })
 
@@ -798,7 +798,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'reminders': {'overrides': [], 'useDefault': False},
             'organizer': {'email': 'odoobot@example.com', 'self': True},
             'attendees': [{'email': 'odoobot@example.com', 'responseStatus': 'accepted'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         })
 
@@ -848,7 +848,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
                             {'email': self.attendee_user.email, 'responseStatus': 'needsAction'},
                             {'email': self.organizer_user.email, 'responseStatus': 'accepted'}
                          ],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: record.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(record.id)}},
         })
 
     @patch_api
@@ -887,7 +887,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'organizer': {'email': self.organizer_user.email, 'self': True},
             'attendees': [{'email': self.organizer_user.email, 'responseStatus': 'accepted'}],
             'recurrence': ['RRULE:FREQ=WEEKLY;COUNT=1;BYDAY=WE'],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: recurrence.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(recurrence.id)}},
             'transparency': 'opaque',
         }, timeout=3)
 
@@ -945,7 +945,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
                                 {'email': self.attendee_user.email, 'responseStatus': 'needsAction'},
                                 {'email': self.organizer_user.email, 'responseStatus': 'accepted'}
                             ],
-                'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: record.id}},
+                'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(record.id)}},
             })
 
     @patch_api
@@ -977,7 +977,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
         }
         self.assertGoogleEventInsertedMultiTime({
             **event_response_data,
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
         })
 
         event2 = event.copy()
@@ -985,7 +985,7 @@ class TestSyncOdoo2Google(TestSyncGoogle):
         event_response_data['description'] = event2.description
         self.assertGoogleEventInsertedMultiTime({
             **event_response_data,
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event2.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event2.id)}},
         })
 
     def test_event_over_send_updates(self):
@@ -1113,6 +1113,6 @@ class TestSyncOdoo2Google(TestSyncGoogle):
             'guestsCanModify': True,
             'organizer': {'email': 'o.o@example.com', 'self': False},
             'attendees': [{'email': 'a.a@example.com', 'responseStatus': 'accepted'}, {'email': 'o.o@example.com', 'responseStatus': 'needsAction'}],
-            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: event.id}},
+            'extendedProperties': {'shared': {'%s_odoo_id' % self.env.cr.dbname: str(event.id)}},
             'transparency': 'opaque',
         }, timeout=3)

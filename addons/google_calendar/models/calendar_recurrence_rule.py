@@ -236,7 +236,7 @@ class CalendarRecurrence(models.Model):
         property_location = 'shared' if event.user_id else 'private'
         values['extendedProperties'] = {
             property_location: {
-                '%s_odoo_id' % self.env.cr.dbname: self.id,
+                '%s_odoo_id' % self.env.cr.dbname: str(self.id),
             },
         }
         return values

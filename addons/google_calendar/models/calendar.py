@@ -337,7 +337,7 @@ class CalendarEvent(models.Model):
             'attendees': attendee_values,
             'extendedProperties': {
                 'shared': {
-                    '%s_odoo_id' % self.env.cr.dbname: self.id,
+                    '%s_odoo_id' % self.env.cr.dbname: str(self.id),
                 },
             },
             'reminders': {
@@ -357,7 +357,7 @@ class CalendarEvent(models.Model):
             values['status'] = 'cancelled'
         if self.user_id and self.user_id != self.env.user and not bool(self.user_id.sudo().google_calendar_token):
             # The organizer is an Odoo user that do not sync his calendar
-            values['extendedProperties']['shared']['%s_owner_id' % self.env.cr.dbname] = self.user_id.id
+            values['extendedProperties']['shared']['%s_owner_id' % self.env.cr.dbname] = str(self.user_id.id)
         elif not self.user_id:
             # We can't store on the shared properties in that case without getting a 403. It can happen when
             # the owner is not an Odoo user: We don't store the real owner identity (mail)
@@ -369,7 +369,7 @@ class CalendarEvent(models.Model):
             # values['extendedProperties']['private] should be used if the owner is not an odoo user
             values['extendedProperties'] = {
                 'private': {
-                    '%s_odoo_id' % self.env.cr.dbname: self.id,
+                    '%s_odoo_id' % self.env.cr.dbname: str(self.id),
                 },
             }
         return values
