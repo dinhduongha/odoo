@@ -1174,7 +1174,7 @@ class TestLeaveRequests(TestHrHolidaysCommon):
                 'res_model': 'hr.leave',
             })
             leave = self.env['hr.leave'].create({
-                'employee_id': 1,
+                'employee_id': self.employee_emp_id,
                 'state': 'confirm',
                 'holiday_status_id': self.holidays_support_document.id,
                 'request_date_from': '2025-10-24',
