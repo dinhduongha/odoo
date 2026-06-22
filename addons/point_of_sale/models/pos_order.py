@@ -1261,10 +1261,10 @@ class PosOrder(models.Model):
             if existing_order and existing_order.state == 'draft':
                 existing_order._ensure_to_keep_last_preparation_change(order)
                 order_ids.append(self._process_order(order, existing_order))
-                _logger.info("PoS synchronisation #%d order %s updated pos.order #%d", sync_token, order_log_name, order_ids[-1])
+                _logger.info("PoS synchronisation #%d order %s updated pos.order #%s", sync_token, order_log_name, order_ids[-1])
             elif not existing_order:
                 order_ids.append(self._process_order(order, False))
-                _logger.info("PoS synchronisation #%d order %s created pos.order #%d", sync_token, order_log_name, order_ids[-1])
+                _logger.info("PoS synchronisation #%d order %s created pos.order #%s", sync_token, order_log_name, order_ids[-1])
             else:
                 # In theory, this situation is unintended
                 # In practice it can happen when "Tip later" option is used

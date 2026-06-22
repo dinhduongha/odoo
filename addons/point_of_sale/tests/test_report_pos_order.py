@@ -47,7 +47,7 @@ class TestReportPoSOrder(TestPoSCommon):
     def test_report_pos_order_1(self):
         """Test the margin and price_total of a PoS Order with taxes."""
 
-        product1 = self.create_product('Product 1', self.categ_basic, 150, self.taxes['tax10'].id)
+        product1 = self.create_product('Product 1', self.categ_basic, 150, tax_ids=[self.taxes['tax10'].id])
 
         self.open_new_session()
         session = self.pos_session

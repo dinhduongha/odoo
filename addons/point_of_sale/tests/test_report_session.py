@@ -21,8 +21,8 @@ class TestReportSession(TestPoSCommon):
             'amount': 10,
             'price_include_override': 'tax_included',
         })
-        self.product1 = self.create_product('Product A', self.categ_basic, 110, self.tax1.id)
-        product_to_archive = self.create_product('Product to archive', self.categ_basic, 100, self.tax1.id)
+        self.product1 = self.create_product('Product A', self.categ_basic, 110, tax_ids=[self.tax1.id])
+        product_to_archive = self.create_product('Product to archive', self.categ_basic, 100, tax_ids=[self.tax1.id])
 
         self.config.open_ui()
         self.res_users_stock_user.group_ids |= self.env.ref('product.group_product_manager')
@@ -239,7 +239,7 @@ class TestReportSession(TestPoSCommon):
             'amount': 10,
             'price_include_override': 'tax_included',
         })
-        self.product1 = self.create_product('Product A', self.categ_basic, 100, self.tax1.id)
+        self.product1 = self.create_product('Product A', self.categ_basic, 100, tax_ids=[self.tax1.id])
 
         self.bank_pm1.outstanding_account_id = self.outstanding_bank.id
         self.config.open_ui()
@@ -320,7 +320,7 @@ class TestReportSession(TestPoSCommon):
             'amount': 15,
             'price_include': True,
         })
-        self.product1 = self.create_product('Product A', self.categ_basic, 125, self.tax1.id)
+        self.product1 = self.create_product('Product A', self.categ_basic, 125, tax_ids=[self.tax1.id])
 
         self.config.open_ui()
         session_id = self.config.current_session_id.id
@@ -406,7 +406,7 @@ class TestReportSession(TestPoSCommon):
             'fiscal_position_ids': [Command.link(fiscal_position.id)],
             'original_tax_ids': [Command.link(self.tax1.id)],
         })
-        self.product1 = self.create_product('Vanela Gathiya', self.categ_basic, 100, self.tax1.id)
+        self.product1 = self.create_product('Vanela Gathiya', self.categ_basic, 100, tax_ids=[self.tax1.id])
         self.config.open_ui()
         session_id = self.config.current_session_id
         order_info = {
@@ -582,7 +582,7 @@ class TestReportSession(TestPoSCommon):
             'amount': 10,
         })
         # 10.42 + 10% tax = 11.462 → rounded to 11.45
-        product = self.create_product('Product Rounding', self.categ_basic, 10.42, tax.id)
+        product = self.create_product('Product Rounding', self.categ_basic, 10.42, tax_ids=[tax.id])
 
         self.config.open_ui()
         session = self.config.current_session_id
