@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import operator as py_operator
+import uuid
 from ast import literal_eval
 from collections import defaultdict
 from collections.abc import Iterable
@@ -347,7 +348,7 @@ class ProductProduct(models.Model):
             ids = set()
             domains = []
             for item in values:
-                if isinstance(item, int):
+                if isinstance(item, (int, uuid.UUID)):
                     ids.add(item)
                 else:
                     domains.append(Domain(self.env[model]._rec_name, 'ilike', item))
