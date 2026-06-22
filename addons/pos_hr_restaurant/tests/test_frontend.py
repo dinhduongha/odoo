@@ -24,7 +24,7 @@ class TestUi(TestPosHrHttpCommon, TestFrontendCommon):
         self.main_pos_config.order_edit_tracking = True
         self.main_pos_config.open_ui()
         self.start_tour(
-            "/pos/ui?config_id=%d" % self.main_pos_config.id,
+            "/pos/ui?config_id=%s" % self.main_pos_config.id,
             "test_employee_chatter_with_tracked_order",
             login="pos_admin",
         )
