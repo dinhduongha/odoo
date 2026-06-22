@@ -35,11 +35,17 @@ class TestFleet(common.TransactionCase):
         car.with_user(self.manager).plan_to_change_car = True
 
     def test_change_future_driver(self):
+        # The "plan to change" propagation is skipped for source vehicles still
+        # in the "New Request"/"Waiting List" states. The "Waiting List" state
+        # only exists in demo data, so set an explicit non-excluded state on the
+        # source vehicles to exercise the propagation regardless of demo data.
+        registered_state = self.env.ref("fleet.fleet_vehicle_state_registered")
         car1, car2, bike1, bike2 = self.env["fleet.vehicle"].create([
             {
                 "model_id": self.car_model.id,
                 "driver_id": self.user.partner_id.id,
                 "plan_to_change_car": False,
+                "state_id": registered_state.id,
             },
             {
                 "model_id": self.car_model.id,
@@ -50,6 +56,7 @@ class TestFleet(common.TransactionCase):
                 "model_id": self.bike_model.id,
                 "driver_id": self.user.partner_id.id,
                 "plan_to_change_car": False,
+                "state_id": registered_state.id,
             },
             {
                 "model_id": self.bike_model.id,
