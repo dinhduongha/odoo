@@ -41,8 +41,11 @@ class AnalyticMixin(models.AbstractModel):
         super().init()
 
     def _query_analytic_accounts(self, table=False):
+        # Distribution keys are comma-separated analytic account UUIDs. Extract
+        # each full UUID (splitting on non-digits would shatter the UUID into
+        # fragments) and build an array for overlap comparison.
         return SQL(
-            r"""regexp_split_to_array(jsonb_path_query_array(%s, '$.keyvalue()."key"')::text, '\D+')""",
+            r"""ARRAY(SELECT (regexp_matches(jsonb_path_query_array(%s, '$.keyvalue()."key"')::text, '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', 'g'))[1])""",
             self._field_to_sql(table or self._table, 'analytic_distribution'),
         )
 
@@ -129,7 +132,7 @@ class AnalyticMixin(models.AbstractModel):
         if groupby_spec == 'analytic_distribution':
             query._tables = {
                 'distribution': SQL(
-                    r"""(SELECT DISTINCT %s, (regexp_matches(jsonb_object_keys(%s), '\d+', 'g'))[1]::uuid AS account_id FROM %s WHERE %s)""",
+                    r"""(SELECT DISTINCT %s, (regexp_matches(jsonb_object_keys(%s), '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', 'g'))[1]::uuid AS account_id FROM %s WHERE %s)""",
                     self._get_count_id(query),
                     self._field_to_sql(self._table, 'analytic_distribution', query),
                     query.from_clause,

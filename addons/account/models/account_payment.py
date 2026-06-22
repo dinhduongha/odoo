@@ -1,7 +1,14 @@
+import uuid
+
 from itertools import zip_longest
 from odoo import models, fields, api, _, Command
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import SQL
+
+# Sentinel id (nil UUID) used to represent a record under creation/edition that
+# has no database id yet. uuid7 never produces the all-zero UUID, so it can
+# never collide with a real payment id.
+_NEW_RECORD_SENTINEL_ID = uuid.UUID(int=0)
 
 
 class AccountPayment(models.Model):
@@ -811,7 +818,9 @@ class AccountPayment(models.Model):
                 field_name: self._fields[field_name].convert_to_write(self[field_name], self) or None
                 for field_name in used_fields
             }
-            values["id"] = self._origin.id or 0
+            # Sentinel id for a record under creation/edition that has no DB id
+            # yet, so it can be matched against the WHERE clause below.
+            values["id"] = self._origin.id or _NEW_RECORD_SENTINEL_ID
             # The amount total depends on the field line_ids and is calculated upon saving, we needed a way to get it even when the
             # invoices has not been saved yet.
             casted_values = SQL(', ').join(
@@ -838,7 +847,7 @@ class AccountPayment(models.Model):
             """,
             payment_table_and_alias=payment_table_and_alias,
             matching_states=tuple(matching_states),
-            payments=payments.ids or [0],
+            payments=payments.ids or [_NEW_RECORD_SENTINEL_ID],
         )
 
         return {

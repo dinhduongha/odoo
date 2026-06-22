@@ -257,7 +257,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
         :rtype: str
         :raise: AccessError if the provided order or access token is invalid
         """
-        tx_id = self._cast_as_int(tx_id)
+        tx_id = self._cast_as_uuid(tx_id)
         rendering_context = {
             'state': 'error',
             'exit_route': exit_route,

@@ -367,7 +367,7 @@ class ResCompany(models.Model):
                     ('country_id', '=', False),
                     ('country_group_id', 'in', company.country_id.country_group_ids.ids),
                 ]),
-            ).sorted(lambda x: x.country_id.id or float('inf')).sorted('sequence')
+            ).sorted(lambda x: (not x.country_id, x.country_id.id)).sorted('sequence')
             company.domestic_fiscal_position_id = potential_domestic_fps[0] if potential_domestic_fps else False
 
     @api.depends('account_fiscal_country_id')

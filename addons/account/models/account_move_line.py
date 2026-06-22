@@ -3,6 +3,7 @@ from contextlib import contextmanager, ExitStack
 from datetime import date
 import logging
 import re
+import uuid
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError, RedirectWarning
@@ -715,7 +716,7 @@ class AccountMoveLine(models.Model):
                 # Virtual record holds just the differences coming from the onchange
                 # so we need to recover balance of stored lines to calculate correctly the
                 # new line balance.
-                active_line_ids = [lid for lid in self.env.context.get('line_ids', []) if isinstance(lid, int)]
+                active_line_ids = [lid for lid in self.env.context.get('line_ids', []) if isinstance(lid, (int, uuid.UUID))]
                 existing_lines = self.env['account.move.line'].browse(active_line_ids)
                 outdated_lines = line.move_id.line_ids._origin
                 new_lines = line.move_id.line_ids - line

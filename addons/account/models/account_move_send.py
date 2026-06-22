@@ -7,7 +7,7 @@ import uuid
 
 from odoo import Command, _, api, models, modules, tools
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools.uuid_utils import is_uuid
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 _logger = logging.getLogger(__name__)
@@ -79,8 +79,10 @@ class AccountMoveSend(models.AbstractModel):
             'sending_methods': get_setting('sending_methods', default_value=self._get_default_sending_methods(move)) or {},
             'extra_edis': get_setting('extra_edis', default_value=self._get_default_extra_edis(move)) or {},
             'pdf_report': get_setting('pdf_report') or self._get_default_pdf_report_id(move),
-            'author_user_id': get_setting('author_user_id', from_cron=from_cron) or self.env.user.id,
-            'author_partner_id': get_setting('author_partner_id', from_cron=from_cron) or self.env.user.partner_id.id,
+            # ``sending_data`` is a JSON field, so ids stored there round-trip as
+            # strings; coerce them back to UUID to match record ids.
+            'author_user_id': to_uuid(get_setting('author_user_id', from_cron=from_cron)) or self.env.user.id,
+            'author_partner_id': to_uuid(get_setting('author_partner_id', from_cron=from_cron)) or self.env.user.partner_id.id,
         }
         vals['invoice_edi_format'] = get_setting('invoice_edi_format', default_value=self._get_default_invoice_edi_format(move, sending_methods=vals['sending_methods']))
         mail_template = get_setting('mail_template') or self._get_default_mail_template_id(move)

@@ -161,7 +161,7 @@ class AccountChartTemplate(models.AbstractModel):
                 company.name,
                 template_code
             )
-        if isinstance(company, int):
+        if isinstance(company, (int, uuid.UUID)):
             company = self.env['res.company'].browse([company])
 
         template_code = template_code or company and self._guess_chart_template(company.country_id)
@@ -477,7 +477,7 @@ class AccountChartTemplate(models.AbstractModel):
                     and isinstance(values[fname], (list, tuple))
                 ]
                 if x2manyfields:
-                    if isinstance(xmlid, int):
+                    if isinstance(xmlid, (int, uuid.UUID)):
                         rec = self.env[model_name].browse(xmlid).exists()
                     else:
                         rec = self.ref(xmlid, raise_if_not_found=False)
@@ -630,7 +630,7 @@ class AccountChartTemplate(models.AbstractModel):
             def should_delay(created_models, yet_to_be_created_models, model, field_name, field_val, parent_models=None):
                 parent_models = (parent_models or []) + [model]
                 field = self.env[model]._fields.get(field_name)
-                if not field or not field.relational or field.comodel_name in created_models or isinstance(field_val, int):
+                if not field or not field.relational or field.comodel_name in created_models or isinstance(field_val, (int, uuid.UUID)):
                     return False
                 field_yet_to_be_created = field.comodel_name in parent_models + yet_to_be_created_models
                 if not isinstance(field_val, list | tuple):

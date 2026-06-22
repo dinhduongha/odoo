@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models, _
+from odoo.tools.uuid_utils import to_uuid
 
 
 class AccountAnalyticAccount(models.Model):
@@ -27,7 +28,7 @@ class AccountAnalyticAccount(models.Model):
             ['analytic_distribution'],
             ['__count'],
         )
-        data = {int(account_id): move_count for account_id, move_count in data}
+        data = {to_uuid(account_id): move_count for account_id, move_count in data}
         for account in self:
             account.invoice_count = data.get(account.id, 0)
 
@@ -43,7 +44,7 @@ class AccountAnalyticAccount(models.Model):
             ['analytic_distribution'],
             ['__count'],
         )
-        data = {int(account_id): move_count for account_id, move_count in data}
+        data = {to_uuid(account_id): move_count for account_id, move_count in data}
         for account in self:
             account.vendor_bill_count = data.get(account.id, 0)
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
+from odoo.tools.uuid_utils import to_uuid
 from odoo.exceptions import UserError
 from odoo.tools.date_utils import get_fiscal_year
 from odoo.tools.misc import format_date
@@ -126,8 +127,8 @@ class AccountResequenceWizard(models.TransientModel):
                 # compute the new values period by period
                 date_start, date_end, forced_year_start, forced_year_end = period_recs[0]._get_sequence_date_range(sequence_number_reset)
                 for move in period_recs:
-                    new_values[move.id] = {
-                        'id': move.id,
+                    new_values[str(move.id)] = {
+                        'id': str(move.id),
                         'current_name': move.name,
                         'state': move.state,
                         'date': format_date(self.env, move.date),
@@ -145,10 +146,10 @@ class AccountResequenceWizard(models.TransientModel):
 
                 # For all the moves of this period, assign the name by increasing initial name
                 for move, new_name in zip(period_recs.sorted(lambda m: (m.sequence_prefix, m.sequence_number)), new_name_list):
-                    new_values[move.id]['new_by_name'] = new_name
+                    new_values[str(move.id)]['new_by_name'] = new_name
                 # For all the moves of this period, assign the name by increasing date
                 for move, new_name in zip(period_recs.sorted(lambda m: (m.date, m.name or "", m.id)), new_name_list):
-                    new_values[move.id]['new_by_date'] = new_name
+                    new_values[str(move.id)]['new_by_date'] = new_name
 
             record.new_values = json.dumps(new_values)
 
@@ -157,7 +158,7 @@ class AccountResequenceWizard(models.TransientModel):
         if self.move_ids.journal_id and self.move_ids.journal_id.restrict_mode_hash_table:
             if self.ordering == 'date':
                 raise UserError(_('You can not reorder sequence by date when the journal is locked with a hash.'))
-        moves_to_rename = self.env['account.move'].browse(int(k) for k in new_values.keys())
+        moves_to_rename = self.env['account.move'].browse(to_uuid(k) for k in new_values.keys())
         moves_to_rename.name = False
         moves_to_rename.flush_recordset(["name"])
         # If the db is not forcibly updated, the temporary renaming could only happen in cache and still trigger the constraint

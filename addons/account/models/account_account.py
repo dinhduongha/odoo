@@ -1277,7 +1277,7 @@ class AccountAccount(models.Model):
         # Invalidate cache
         self.env.invalidate_all()
 
-        new_account_id_by_company_id = {str(company.id): new_account.id for company, new_account in new_account_by_company.items()}
+        new_account_id_by_company_id = {str(company.id): str(new_account.id) for company, new_account in new_account_by_company.items()}
         new_account_id_by_company_id_json = json.dumps(new_account_id_by_company_id)
         (self | new_accounts).invalidate_recordset()
 
@@ -1452,7 +1452,7 @@ class AccountAccount(models.Model):
 
         # 3.5. Split account xmlids based on the company_id that is present within the xmlid
         self.env['ir.model.data'].invalidate_model()
-        account_id_by_company_id_json = json.dumps({**new_account_id_by_company_id, str(base_company.id): self.id})
+        account_id_by_company_id_json = json.dumps({**new_account_id_by_company_id, str(base_company.id): str(self.id)})
         self.env.cr.execute(SQL(
             """
              UPDATE ir_model_data
@@ -1466,7 +1466,11 @@ class AccountAccount(models.Model):
                 AND name ~ %(xmlid_regex)s
             """,
             account_id_by_company_id_json=account_id_by_company_id_json,
-            xmlid_regex=r'([\d]+)_.*',
+            # XMLids are named ``{company_id}_{template_xmlid}`` (see
+            # ``_build_xmlid``). Company ids are now UUIDs, so capture the
+            # leading UUID (hex + hyphens up to the first underscore) instead of
+            # a run of digits.
+            xmlid_regex=r'([0-9a-fA-F-]+)_.*',
             account_id=self.id,
         ))
 

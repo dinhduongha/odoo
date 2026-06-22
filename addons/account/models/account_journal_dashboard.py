@@ -65,7 +65,7 @@ class AccountJournal(models.Model):
     def _kanban_dashboard(self):
         dashboard_data = self._get_journal_dashboard_data_batched()
         for journal in self:
-            journal.kanban_dashboard = json.dumps(dashboard_data[journal.id])
+            journal.kanban_dashboard = json.dumps(dashboard_data[journal.id], default=str)
 
     @api.depends('current_statement_balance')
     def _kanban_dashboard_graph(self):
@@ -143,7 +143,7 @@ class AccountJournal(models.Model):
         for activity_data in self.env.cr.dictfetchall():
             activities[activity_data['journal_id']].append(self._transform_activity_dict(activity_data))
         for journal in self:
-            journal.json_activity_data = json.dumps({'activities': activities[journal.id]})
+            journal.json_activity_data = json.dumps({'activities': activities[journal.id]}, default=str)
 
     def _query_has_sequence_holes(self):
         self.env['account.move'].flush_model(['journal_id', 'date', 'sequence_prefix', 'made_sequence_gap'])

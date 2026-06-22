@@ -4,6 +4,7 @@ from datetime import date
 import markupsafe
 
 from odoo import Command, models, fields, api, _
+from odoo.addons.account.models.account_payment import _NEW_RECORD_SENTINEL_ID
 from odoo.exceptions import UserError
 from odoo.tools import frozendict, OrderedSet
 from odoo.tools.misc import clean_context
@@ -900,7 +901,10 @@ class AccountPaymentRegister(models.TransientModel):
     def _compute_duplicate_moves(self):
         for wizard in self:
             if wizard.can_edit_wizard:
-                wizard.duplicate_payment_ids = self._fetch_duplicate_reference().get(0, self.env['account.payment'])
+                # The dummy payment built in ``_fetch_duplicate_reference`` is a
+                # new (id-less) record, so its results are keyed by the new-record
+                # sentinel id rather than the legacy integer ``0``.
+                wizard.duplicate_payment_ids = self._fetch_duplicate_reference().get(_NEW_RECORD_SENTINEL_ID, self.env['account.payment'])
             else:
                 wizard.duplicate_payment_ids = self.env['account.payment']
 

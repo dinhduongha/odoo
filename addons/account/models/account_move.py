@@ -12,6 +12,7 @@ import logging
 from markupsafe import Markup
 import re
 import os
+import uuid
 from textwrap import shorten
 
 from odoo import api, fields, models, _, SUPERUSER_ID, modules
@@ -4315,7 +4316,11 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
         journal_identifier = self.journal_id.code if self.journal_id.code.isascii() and self.journal_id.code.isalnum() else self.journal_id.id
-        return format_structured_reference_iso(f'{journal_identifier}{str(self.id).zfill(6)}')
+        number = f'{journal_identifier}{str(self.id).zfill(6)}'
+        # ISO 11649 references are alphanumeric only; UUID identifiers contain
+        # hyphens that the check-digit computation cannot handle, so strip them.
+        number = ''.join(char for char in number if char.isalnum())
+        return format_structured_reference_iso(number)
 
     def _get_invoice_reference_euro_partner(self):
         """ This computes the reference based on the RF Creditor Reference.
@@ -4331,8 +4336,11 @@ class AccountMove(models.Model):
         self.ensure_one()
         journal_identifier = self.journal_id.code if self.journal_id.code.isascii() and self.journal_id.code.isalnum() else self.journal_id.id
         partner_ref = self.partner_id.ref
-        partner_ref_nr = re.sub(r'\D', '', partner_ref or '')[-21:] or str(self.partner_id.id)[-21:]
+        partner_ref_nr = re.sub(r'\D', '', partner_ref or '')[-21:] or str(self.partner_id.id).replace('-', '')[-21:]
         partner_ref_nr = f'{journal_identifier}{partner_ref_nr}'[-21:]
+        # ISO 11649 references are alphanumeric only; strip any hyphen coming
+        # from a UUID journal/partner identifier.
+        partner_ref_nr = ''.join(char for char in partner_ref_nr if char.isalnum())
         return format_structured_reference_iso(partner_ref_nr)
 
     def _get_invoice_reference_number_invoice(self):
@@ -6961,7 +6969,7 @@ class AccountMove(models.Model):
         if route[0] == 'account.move' and len(message_dict['attachments']) < 1:
             # Don't create the move if no attachment.
             company_id = route[2].get('company_id', self.env.company.id)
-            if not isinstance(company_id, int):
+            if not isinstance(company_id, (int, uuid.UUID)):
                 raise ValueError(_("Default value for 'company_id' for %(record)s is not an integer",
                                   record=route[4]))
             journal_alias_company = self.env['res.company'].search([['id', '=', company_id]])

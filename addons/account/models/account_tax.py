@@ -5,6 +5,7 @@ from odoo.tools import frozendict, groupby, html2plaintext, is_html_empty, split
 from odoo.tools.float_utils import float_is_zero, float_repr, float_round, float_compare
 from odoo.tools.misc import clean_context, formatLang
 from odoo.tools.translate import html_translate
+from odoo.tools.uuid_utils import to_uuid
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -261,7 +262,7 @@ class AccountTax(models.Model):
         if 'search_default_domestictax' in self.env.context:
             domain &= Domain('fiscal_position_ids', '=', False) | Domain('fiscal_position_ids.is_domestic', '=', True)
         if fp_id := self.env.context.get('dynamic_fiscal_position_id'):
-            domain &= Domain('fiscal_position_ids', 'in', [False, int(fp_id)])
+            domain &= Domain('fiscal_position_ids', 'in', [False, to_uuid(fp_id)])
         if self.env.context.get('hide_original_tax_ids') and fp_id:
             domain &= Domain('replacing_tax_ids', 'not any', domain) | Domain.custom(
                 to_sql=lambda model, alias, query: SQL(

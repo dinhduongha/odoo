@@ -84,9 +84,9 @@ class PaymentPortal(payment_portal.PaymentPortal):
         :rtype: str
         :raise ValidationError: If the invoice id is invalid.
         """
-        # Cast numeric parameters as int or float and void them if their str value is malformed.
+        # Cast numeric parameters as uuid or float and void them if their str value is malformed.
         amount = self._cast_as_float(amount)
-        invoice_id = self._cast_as_int(invoice_id)
+        invoice_id = self._cast_as_uuid(invoice_id)
         if invoice_id:
             invoice_sudo = request.env['account.move'].sudo().browse(invoice_id).exists()
             if not invoice_sudo:
@@ -124,7 +124,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
             invoice_id=invoice_id, access_token=access_token, **kwargs
         )
         if invoice_id:
-            invoice_id = self._cast_as_int(invoice_id)
+            invoice_id = self._cast_as_uuid(invoice_id)
 
             try:  # Check document access against what could be a portal access token.
                 invoice_sudo = self._document_check_access('account.move', invoice_id, access_token)
