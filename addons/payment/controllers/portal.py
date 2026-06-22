@@ -460,6 +460,8 @@ class PaymentPortal(portal.CustomerPortal):
         :return: The validated value as a `uuid.UUID`, or None if incompatible.
         :rtype: uuid.UUID|None
         """
+        if isinstance(str_value, uuid.UUID):
+            return str_value
         value = to_uuid(str_value) if isinstance(str_value, str) else None
         return value if isinstance(value, uuid.UUID) else None
 
