@@ -21,7 +21,7 @@ class TestMailingListSms(MassSMSCommon):
             'body_plaintext': 'Coucou hibou',
             'mailing_type': 'sms',
             'mailing_model_id': self.env['ir.model']._get_id('res.partner'),
-            'mailing_domain': [('id', '=', partner.id)],
+            'mailing_domain': [('id', '=', str(partner.id))],
             'subject': 'Test',
             'sms_allow_unsubscribe': True,
         })

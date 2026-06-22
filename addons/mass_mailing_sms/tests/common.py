@@ -236,7 +236,7 @@ class MassSMSCase(SMSCase, MockLinkTracker):
             if '/r/' in url:  # shortened link, like 'http://localhost:8069/r/LBG/s/53'
                 parsed_url = werkzeug.urls.url_parse(url)
                 path_items = parsed_url.path.split('/')
-                code, sms_id_int = path_items[2], int(path_items[4])
+                code, sms_id_int = path_items[2], path_items[4]
                 trace_id = self.env['mailing.trace'].sudo().search([('sms_id_int', '=', sms_id_int)]).id
 
                 self.env['link.tracker.click'].sudo().add_click(

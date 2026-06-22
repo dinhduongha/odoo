@@ -57,7 +57,10 @@ class TestMassMailValues(MassSMSCommon):
         mailing.write({
             'contact_list_ids': [(4, self.mailing_list_1.id), (4, self.mailing_list_2.id)]
         })
-        self.assertEqual(literal_eval(mailing.mailing_domain), [('list_ids', 'in', (self.mailing_list_1 | self.mailing_list_2).ids)])
+        self.assertEqual(
+            literal_eval(mailing.mailing_domain),
+            [('list_ids', 'in', [str(_id) for _id in (self.mailing_list_1 | self.mailing_list_2).ids])],
+        )
 
     @users('user_marketing')
     def test_mailing_get_sms_link_replacements_placeholders(self):
