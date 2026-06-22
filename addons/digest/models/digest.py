@@ -229,7 +229,7 @@ class DigestDigest(models.Model):
             try:
                 digest.action_send()
             except MailDeliveryException as e:
-                _logger.warning('MailDeliveryException while sending digest %d. Digest is now scheduled for next cron update.', digest.id)
+                _logger.warning('MailDeliveryException while sending digest %s. Digest is now scheduled for next cron update.', digest.id)
 
     def _get_unsubscribe_token(self, user_id):
         """Generate a secure hash for this digest and user. It allows to
@@ -352,13 +352,13 @@ class DigestDigest(models.Model):
         elif self.periodicity == 'daily' and user.has_group('base.group_erp_manager'):
             preferences.append(Markup('<p>%s<br /><a href="%s" target="_blank" style="color:#017e84; font-weight: bold;">%s</a></p>') % (
                 _('Prefer a broader overview?'),
-                f'/digest/{self.id:d}/set_periodicity?periodicity=weekly',
+                f'/digest/{self.id}/set_periodicity?periodicity=weekly',
                 _('Switch to weekly Digests')
             ))
         if user.has_group('base.group_erp_manager'):
             preferences.append(Markup('<p>%s<br /><a href="%s" target="_blank" style="color:#017e84; font-weight: bold;">%s</a></p>') % (
                 _('Want to customize this email?'),
-                f'/odoo/{self._name}/{self.id:d}',
+                f'/odoo/{self._name}/{self.id}',
                 _('Choose the metrics you care about')
             ))
 

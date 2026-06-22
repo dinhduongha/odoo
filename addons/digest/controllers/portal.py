@@ -6,6 +6,7 @@ from werkzeug.exceptions import Forbidden, NotFound
 from odoo import _
 from odoo.http import Controller, request, Response, route
 from odoo.tools import consteq
+from odoo.tools.uuid_utils import to_uuid
 
 
 class DigestController(Controller):
@@ -42,6 +43,11 @@ class DigestController(Controller):
             raise Forbidden()
 
         digest_sudo = request.env['digest.digest'].sudo().browse(digest_id).exists()
+
+        # user_id arrives as a string from the URL; coerce to UUID so the HMAC
+        # scope and the res.users browse match the values used at token creation
+        if user_id:
+            user_id = to_uuid(user_id)
 
         # new route parameters
         if digest_sudo and token and user_id:
