@@ -66,7 +66,8 @@ class KpiTest(HttpCase):
         ])
         # search_read would be ideal, but we need to convert the date to string
         expected_users = [{
-            'id': u.id,
+            # uuid primary keys round-trip through JSON as strings
+            'id': str(u.id),
             'name': u.name,
             'login': u.login,
             'login_date': fields.Datetime.to_string(u.login_date) if u.login_date else None,
