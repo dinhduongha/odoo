@@ -158,6 +158,12 @@ class Id(Field[IdType | typing.Literal[False]]):
             return str(value)
         if isinstance(value, str):
             return value
+        # _auto=False SQL views (e.g. report models) may expose integer ids
+        # produced by ``row_number() OVER (...) AS id``; pass them through as-is
+        # so that ``id IN (...)`` comparisons against the integer view column
+        # keep working instead of being nullified.
+        if isinstance(value, int) and not isinstance(value, bool):
+            return value
         return None
 
     def to_sql(self, model: BaseModel, alias: str) -> SQL:
