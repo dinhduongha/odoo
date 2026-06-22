@@ -45,7 +45,7 @@ class TestMassMailValues(MassMailCommon):
         def patched_images_to_urls(self, b64images):
             urls = original_images_to_urls(b64images)
             if len(urls) == 1:
-                (attachment_id, attachment_token) = re.search(r'/web/image/(?P<id>[0-9]+)\?access_token=(?P<token>.*)', urls[0]).groups()
+                (attachment_id, attachment_token) = re.search(r'/web/image/(?P<id>[^?]+)\?access_token=(?P<token>.*)', urls[0]).groups()
                 attachment['id'] = attachment_id
                 attachment['token'] = attachment_token
                 return urls
@@ -88,7 +88,7 @@ class TestMassMailValues(MassMailCommon):
         def patched_images_to_urls(self, b64images):
             urls = original_images_to_urls(b64images)
             for url in urls:
-                (attachment_id, attachment_token) = re.search(r'/web/image/(?P<id>[0-9]+)\?access_token=(?P<token>.*)', url).groups()
+                (attachment_id, attachment_token) = re.search(r'/web/image/(?P<id>[^?]+)\?access_token=(?P<token>.*)', url).groups()
                 attachments.append({
                     'id': attachment_id,
                     'token': attachment_token,
@@ -232,7 +232,7 @@ class TestMassMailValues(MassMailCommon):
         mailing.write({
             'contact_list_ids': [(4, self.mailing_list_1.id), (4, self.mailing_list_2.id)]
         })
-        self.assertEqual(literal_eval(mailing.mailing_domain), [('list_ids', 'in', (self.mailing_list_1 | self.mailing_list_2).ids)])
+        self.assertEqual(literal_eval(mailing.mailing_domain), [('list_ids', 'in', [str(list_id) for list_id in (self.mailing_list_1 | self.mailing_list_2).ids])])
 
         # reset mailing model -> reset domain and reply to mode
         mailing.write({
@@ -598,7 +598,7 @@ class TestMassMailingMailServer(MassMailCommon):
         mailing = self.env['mailing.mailing'].create({
             'body_html': '<p>x</p>',
             'email_from': 'user_marketing@test.mycompany.com',
-            'mailing_domain': [('id', '=', recipient.id)],
+            'mailing_domain': repr([('id', '=', str(recipient.id))]),
             'mailing_model_id': self.env['ir.model']._get_id('res.partner'),
             'name': 'M',
             'subject': 'S',
@@ -711,7 +711,7 @@ class TestMassMailFeatures(MassMailCommon, CronMixinCase):
             'name': 'Knock knock',
             'subject': "Who's there?",
             'mailing_model_id': self.env['ir.model']._get('res.partner').id,
-            'mailing_domain': [('id', '=', partner.id)],
+            'mailing_domain': repr([('id', '=', str(partner.id))]),
             'body_html': 'The marketing mailing test.',
             'schedule_type': 'scheduled',
         }
@@ -823,7 +823,7 @@ class TestMassMailFeatures(MassMailCommon, CronMixinCase):
             'name': 'One',
             'subject': 'One',
             'mailing_model_id': self.env['ir.model']._get('res.partner').id,
-            'mailing_domain': [('id', 'in', (partner_a | partner_b).ids)],
+            'mailing_domain': repr([('id', 'in', [str(rid) for rid in (partner_a | partner_b).ids])]),
             'body_html': 'This is mass mail marketing demo'
         })
         self.assertEqual(mailing.user_id, self.user_marketing)

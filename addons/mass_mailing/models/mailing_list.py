@@ -351,7 +351,7 @@ class MailingList(models.Model):
     # ------------------------------------------------------
 
     def _mailing_get_default_domain(self, mailing):
-        return [('list_ids', 'in', mailing.contact_list_ids.ids)]
+        return [('list_ids', 'in', [str(list_id) for list_id in mailing.contact_list_ids.ids])]
 
     def _mailing_get_opt_out_list(self, mailing):
         """ Check subscription on all involved mailing lists. If user is opt_out

@@ -26,7 +26,7 @@ class MailMail(models.Model):
 
     @api.model
     def _generate_mail_recipient_token(self, mail_id):
-        return tools.hmac(self.env(su=True), 'mass_mailing-mail_mail-open', mail_id)
+        return tools.hmac(self.env(su=True), 'mass_mailing-mail_mail-open', str(mail_id))
 
     def _filter_mail_mail_servers(self, mail_servers):
         mail_servers = super()._filter_mail_mail_servers(mail_servers)

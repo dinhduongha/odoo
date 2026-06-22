@@ -34,6 +34,8 @@ class MassMailController(http.Controller):
             document_id, as it indicates it comes from a mailing email and
             is used when comparing hashes;
         """
+        if mailing_id and not tools.uuid_utils.is_uuid(mailing_id):
+            mailing_id = None
         if not hash_token:
             if request.env.user._is_public():
                 raise BadRequest()
@@ -454,7 +456,12 @@ class MassMailController(http.Controller):
             raise Unauthorized() from e
 
         # do not force lang, will simply use user context
-        document_id = int(document_id) if document_id and document_id.isdigit() else 0
+        if document_id and tools.uuid_utils.is_uuid(document_id):
+            document_id = tools.uuid_utils.to_uuid(document_id)
+        elif document_id and document_id.isdigit():
+            document_id = int(document_id)
+        else:
+            document_id = 0
         html_markupsafe = mailing_sudo._render_field(
             'body_html',
             [document_id],

@@ -72,11 +72,13 @@ class MailingMailing(models.Model):
     @api.model
     def _get_default_mail_server_id(self):
         server_id = self.env['ir.config_parameter'].sudo().get_param('mass_mailing.mail_server_id')
-        try:
-            server_id = literal_eval(server_id) if server_id else False
-            return self.env['ir.mail_server'].search([('id', '=', server_id)]).id
-        except ValueError:
+        if not server_id or server_id in ('False', 'None'):
             return False
+        try:
+            server_id = tools.uuid_utils.to_uuid(server_id)
+        except (ValueError, TypeError):
+            return False
+        return self.env['ir.mail_server'].search([('id', '=', server_id)]).id
 
     active = fields.Boolean(default=True, tracking=True)
     subject = fields.Char(
@@ -1533,5 +1535,5 @@ class MailingMailing(models.Model):
         self.ensure_one()
         assert isinstance(email, str)
         secret = self.env["ir.config_parameter"].sudo().get_param("database.secret")
-        token = (self.env.cr.dbname, self.id, int(document_id), email)
+        token = (self.env.cr.dbname, self.id, str(document_id), email)
         return hmac.new(secret.encode('utf-8'), repr(token).encode('utf-8'), hashlib.sha512).hexdigest()
