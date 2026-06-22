@@ -69,7 +69,7 @@ class HrEmployee(models.Model):
 
     def action_timesheet_from_employee(self):
         action = self.env["ir.actions.act_window"]._for_xml_id("hr_timesheet.timesheet_action_from_employee")
-        context = literal_eval(action['context'].replace('active_id', str(self.id)))
+        context = literal_eval(action['context'].replace('active_id', repr(str(self.id))))
         context['create'] = context.get('create', True) and self.active
         action['context'] = context
         return action
