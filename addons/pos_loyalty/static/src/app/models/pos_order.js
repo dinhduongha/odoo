@@ -2,7 +2,11 @@ import { PosOrder } from "@point_of_sale/app/models/pos_order";
 import { patch } from "@web/core/utils/patch";
 import { floatIsZero } from "@web/core/utils/numbers";
 import { _t } from "@web/core/l10n/translation";
-import { loyaltyIdsGenerator } from "@pos_loyalty/app/services/pos_store";
+import {
+    loyaltyIdsGenerator,
+    isNewCouponId,
+    isExistingCouponId,
+} from "@pos_loyalty/app/services/pos_store";
 const { DateTime } = luxon;
 
 function _newRandomRewardCode() {
@@ -86,7 +90,7 @@ patch(PosOrder.prototype, {
                     delete this.uiState.couponPointChanges[key];
                     continue;
                 }
-                if (pe.coupon_id > 0) {
+                if (isExistingCouponId(pe.coupon_id)) {
                     continue;
                 }
                 const newId = loyaltyIdsGenerator();
@@ -348,7 +352,7 @@ patch(PosOrder.prototype, {
             let [won, spent, total] = [0, 0, 0];
             const balance = loyaltyCard.points;
             won += points - this._getPointsCorrection(program);
-            if (coupon_id !== 0) {
+            if (coupon_id) {
                 for (const line of this._get_reward_lines()) {
                     if (line.coupon_id.id === coupon_id) {
                         spent += line.points_cost;
@@ -902,7 +906,7 @@ patch(PosOrder.prototype, {
             const change = this.uiState.couponPointChanges[key];
             return (
                 (change.existing_code === code && change.manual) ||
-                (change.code === code && change.coupon_id < 0)
+                (change.code === code && isNewCouponId(change.coupon_id))
             );
         });
     },

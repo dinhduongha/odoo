@@ -4,7 +4,30 @@
 from collections import defaultdict
 from odoo import _, models
 from odoo.tools import float_compare
+from odoo.tools.uuid_utils import to_uuid
 import base64
+
+
+def _normalize_coupon_key(key):
+    """Normalize a coupon key coming from the POS frontend / rpc.
+
+    Existing loyalty.card ids are uuids (possibly stringified by rpc) -> uuid.
+    New coupons are identified by a negative int sentinel (possibly stringified
+    by rpc) -> int. Anything else is returned unchanged.
+    """
+    key = to_uuid(key)
+    if isinstance(key, str):
+        try:
+            return int(key)
+        except ValueError:
+            pass
+    return key
+
+
+def _is_new_coupon_key(key):
+    """A coupon key is a "new coupon" sentinel (negative int from the POS
+    frontend) rather than an existing loyalty.card id (a uuid)."""
+    return isinstance(key, int) and key < 0
 
 
 class PosOrder(models.Model):
@@ -17,7 +40,7 @@ class PosOrder(models.Model):
         This will check the balance for any pre-existing coupon to make sure that the rewards are in fact all claimable.
         This will also check that any set code for coupons do not exist in the database.
         """
-        point_changes = {int(k): v for k, v in point_changes.items()}
+        point_changes = {_normalize_coupon_key(k): v for k, v in point_changes.items()}
         coupon_ids_from_pos = set(point_changes.keys())
         coupons = self.env['loyalty.card'].browse(coupon_ids_from_pos).exists().filtered('program_id.active')
         coupon_difference = set(coupons.ids) ^ coupon_ids_from_pos
@@ -54,15 +77,16 @@ class PosOrder(models.Model):
         }
 
     def add_loyalty_history_lines(self, coupon_data, coupon_updates):
-        id_mapping = {item['old_id']: int(item['id']) for item in coupon_updates}
+        id_mapping = {_normalize_coupon_key(item['old_id']): _normalize_coupon_key(item['id']) for item in coupon_updates}
         history_lines_create_vals = []
         for coupon in coupon_data:
-            card_id = id_mapping.get(int(coupon['card_id']), False) or int(coupon['card_id'])
-            if not self.env['loyalty.card'].browse(card_id).exists():
+            raw_card_id = _normalize_coupon_key(coupon['card_id'])
+            card_id = id_mapping.get(raw_card_id, False) or raw_card_id
+            if _is_new_coupon_key(card_id) or not self.env['loyalty.card'].browse(card_id).exists():
                 continue
             issued = coupon['won']
             cost = coupon['spent']
-            if (issued or cost) and card_id > 0:
+            if issued or cost:
                 history_lines_create_vals.append({
                     'card_id': card_id,
                     'order_model': self._name,
@@ -82,18 +106,19 @@ class PosOrder(models.Model):
         It will also return the points of all concerned coupons to be updated in the cache.
         """
         get_partner_id = lambda partner_id: partner_id and self.env['res.partner'].browse(partner_id).exists() and partner_id or False
-        # Keys are stringified when using rpc
-        coupon_data = {int(k): v for k, v in coupon_data.items()}
+        # Keys are stringified when using rpc. Existing coupons are keyed by
+        # their uuid id; new coupons by a negative int sentinel from the POS.
+        coupon_data = {_normalize_coupon_key(k): v for k, v in coupon_data.items()}
 
         self._check_existing_loyalty_cards(coupon_data)
         self._remove_duplicate_coupon_data(coupon_data)
         self._process_existing_gift_cards(coupon_data)
 
         # Map negative id to newly created ids.
-        coupon_new_id_map = {k: k for k in coupon_data.keys() if k > 0}
+        coupon_new_id_map = {k: k for k in coupon_data.keys() if not _is_new_coupon_key(k)}
 
         # Create the coupons that were awarded by the order.
-        coupons_to_create = {k: v for k, v in coupon_data.items() if k < 0 and (v.get('points') or v.get('line_codes'))}
+        coupons_to_create = {k: v for k, v in coupon_data.items() if _is_new_coupon_key(k) and (v.get('points') or v.get('line_codes'))}
         coupon_create_vals = [{
             'program_id': p['program_id'],
             'partner_id': get_partner_id(p.get('partner_id', self.partner_id.id)),
@@ -194,11 +219,15 @@ class PosOrder(models.Model):
             program_id = self.env['loyalty.program'].browse(coupon_vals['program_id'])
             if program_id.program_type == 'gift_card':
                 updated = False
-                gift_card = self.env['loyalty.card'].search([
-                    ('|'),
-                    ('code', '=', coupon_vals.get('code', '')),
-                    ('id', '=', coupon_vals.get('coupon_id', False))
-                ])
+                # A "new coupon" sentinel (negative int) is not a real card id;
+                # only search by id when it is an actual (uuid) id.
+                existing_coupon_id = _normalize_coupon_key(coupon_vals.get('coupon_id', False))
+                domain = ['|', ('code', '=', coupon_vals.get('code', ''))]
+                if existing_coupon_id and not _is_new_coupon_key(existing_coupon_id):
+                    domain.append(('id', '=', existing_coupon_id))
+                else:
+                    domain.append(('id', '=', False))
+                gift_card = self.env['loyalty.card'].search(domain)
                 if not gift_card.exists():
                     continue
 
@@ -212,7 +241,7 @@ class PosOrder(models.Model):
                         'issued': gift_card.points,
                     })
 
-                if len([id for id in gift_card.history_ids.mapped('order_id') if id != 0]) == 0:
+                if len([id for id in gift_card.history_ids.mapped('order_id') if id]) == 0:
                     updated = True
                     gift_card.source_pos_order_id = self.id
                     gift_card.history_ids.create({

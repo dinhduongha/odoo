@@ -5,6 +5,7 @@ import { ask } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { useService } from "@web/core/utils/hooks";
 import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { ManageGiftCardPopup } from "@pos_loyalty/app/components/popups/manage_giftcard_popup/manage_giftcard_popup";
+import { isExistingCouponId } from "@pos_loyalty/app/services/pos_store";
 import { logPosMessage } from "@point_of_sale/app/utils/pretty_console_log";
 
 patch(OrderSummary.prototype, {
@@ -79,7 +80,7 @@ patch(OrderSummary.prototype, {
             const coupon = selectedLine.coupon_id;
             if (
                 coupon &&
-                coupon.id > 0 &&
+                isExistingCouponId(coupon.id) &&
                 this.currentOrder._code_activated_coupon_ids.find((c) => c.code === coupon.code)
             ) {
                 coupon.delete();

@@ -1,4 +1,5 @@
 import OrderPaymentValidation from "@point_of_sale/app/utils/order_payment_validation";
+import { isExistingCouponId } from "@pos_loyalty/app/services/pos_store";
 import { patch } from "@web/core/utils/patch";
 import { _t } from "@web/core/l10n/translation";
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
@@ -8,7 +9,7 @@ patch(OrderPaymentValidation.prototype, {
         const pointChanges = {};
         const newCodes = [];
         for (const pe of Object.values(this.order.uiState.couponPointChanges)) {
-            if (pe.coupon_id > 0) {
+            if (isExistingCouponId(pe.coupon_id)) {
                 pointChanges[pe.coupon_id] = pe.points;
             } else if (pe.barcode && !pe.giftCardId) {
                 // New coupon with a specific code, validate that it does not exist
@@ -16,7 +17,7 @@ patch(OrderPaymentValidation.prototype, {
             }
         }
         for (const line of this.order._get_reward_lines()) {
-            if (line.coupon_id.id < 1) {
+            if (!isExistingCouponId(line.coupon_id.id)) {
                 continue;
             }
             if (!pointChanges[line.coupon_id.id]) {
