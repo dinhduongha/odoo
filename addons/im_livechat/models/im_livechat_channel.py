@@ -11,6 +11,7 @@ from odoo.exceptions import AccessError, ValidationError
 from odoo.fields import Domain
 from odoo.addons.bus.websocket import WebsocketConnectionHandler
 from odoo.addons.mail.tools.discuss import Store
+from odoo.tools.uuid_utils import to_uuid
 
 BUFFER_TIME = 120  # Time in seconds between two sessions assigned to the same operator. Not enforced if the operator is the best suited.
 
@@ -369,6 +370,9 @@ class Im_LivechatChannel(models.Model):
         # It dictates which operator model is selected when multiple are configured.
         operator_model = ''
 
+        # chatbot_script_id may arrive as a str (JSON round-trip); cast to UUID
+        # so the membership check against record ids succeeds.
+        chatbot_script_id = to_uuid(chatbot_script_id)
         if chatbot_script_id and chatbot_script_id in self.rule_ids.chatbot_script_id.ids:
             chatbot_script = (
                 self.env["chatbot.script"]
