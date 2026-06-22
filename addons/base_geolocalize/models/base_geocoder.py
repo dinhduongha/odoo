@@ -4,6 +4,7 @@ import logging
 from odoo import api, fields, models, modules, tools, _
 from odoo.exceptions import UserError
 from odoo.http import request
+from odoo.tools.uuid_utils import to_uuid
 
 
 _logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class BaseGeocoder(models.AbstractModel):
     def _get_provider(self):
         prov_id = self.env['ir.config_parameter'].sudo().get_param('base_geolocalize.geo_provider')
         if prov_id:
-            provider = self.env['base.geo_provider'].browse(int(prov_id))
+            provider = self.env['base.geo_provider'].browse(to_uuid(prov_id))
         if not prov_id or not provider.exists():
             provider = self.env['base.geo_provider'].search([], limit=1)
         return provider
