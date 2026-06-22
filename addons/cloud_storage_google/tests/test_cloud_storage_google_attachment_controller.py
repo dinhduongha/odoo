@@ -39,7 +39,7 @@ class TestCloudStorageAttachmentController(HttpCaseWithUserDemo, TestCloudStorag
                 json.loads(content),
                 {
                     "data": {
-                        "attachment_id": attachment.id,
+                        "attachment_id": str(attachment.id),
                         "store_data": {
                             "ir.attachment": [
                                 {
@@ -49,7 +49,7 @@ class TestCloudStorageAttachmentController(HttpCaseWithUserDemo, TestCloudStorag
                                     ),
                                     "file_size": 0,
                                     "has_thumbnail": False,
-                                    "id": attachment.id,
+                                    "id": str(attachment.id),
                                     "mimetype": "text/x-python",
                                     "name": "__init__.py",
                                     "ownership_token": attachment._get_ownership_token(),
