@@ -17,7 +17,9 @@ class TestSparseFields(common.TransactionCase):
             ('float', 3.14),
             ('char', 'John'),
             ('selection', 'two'),
-            ('partner', partner.id),
+            # the partner id is a UUID; it is stored in (and read back from) the
+            # serialized JSON field as its string representation
+            ('partner', str(partner.id)),
         ]
         for n, (key, val) in enumerate(values):
             record.write({key: val})
