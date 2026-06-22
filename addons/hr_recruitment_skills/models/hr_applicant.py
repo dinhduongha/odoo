@@ -140,7 +140,7 @@ class HrApplicant(models.Model):
             }
         )
         action = self.env["ir.actions.actions"]._for_xml_id("hr_recruitment.action_hr_job_applications")
-        action["context"] = literal_eval(action["context"].replace("active_id", str(self.job_id.id)))
+        action["context"] = literal_eval(action["context"].replace("active_id", repr(str(self.job_id.id))))
         return action
 
     @api.model_create_multi
