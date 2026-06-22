@@ -147,7 +147,7 @@ class test_challenge(TestGamificationCommon):
             'name': 'test',
             'state': 'draft',
             'user_domain': '[("active", "=", True)]', #Include all active users to get a least one participant
-            'reward_id': 1,
+            'reward_id': self.env.ref('gamification.badge_good_job').id,
         })
 
         model = self.env['ir.model'].search([('model', '=', 'gamification.badge')])[0]
@@ -180,7 +180,7 @@ class test_challenge(TestGamificationCommon):
             'name': 'Test Challenge',
             'state': 'draft',
             'user_domain': '[("active", "=", True)]',
-            'reward_id': 1,
+            'reward_id': self.env.ref('gamification.badge_good_job').id,
         })
 
         model = self.env['ir.model'].search([('model', '=', 'gamification.badge')], limit=1)
@@ -249,7 +249,7 @@ class test_challenge(TestGamificationCommon):
             'name': 'test1',
             'state': 'draft',
             'user_domain': '[("active", "=", True)]',
-            'reward_id': 1,
+            'reward_id': self.env.ref('gamification.badge_good_job').id,
             'visibility_mode': 'ranking'
         })
 

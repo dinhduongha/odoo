@@ -174,6 +174,23 @@ class SetDefinitions:
             return Leaf(UnknownId(ref), ref)
         return self.__leaves[ref]
 
+    @staticmethod
+    def _coerce_ids(ids: Iterable[uuid.UUID]) -> list:
+        """ Leaf ids are ``uuid.UUID`` objects, but callers (e.g. search
+        domains generated from ``str(ref(...))``) may pass them as strings.
+        Coerce such string uuids so dict lookups against ``__leaves`` match.
+        """
+        coerced = []
+        for id_ in ids:
+            if isinstance(id_, str):
+                try:
+                    coerced.append(uuid.UUID(id_))
+                    continue
+                except ValueError:
+                    pass
+            coerced.append(id_)
+        return coerced
+
     def get_superset_ids(self, ids: Iterable[uuid.UUID]) -> list[uuid.UUID]:
         """ Returns the supersets matching the provided list of ids.
 
@@ -182,7 +199,7 @@ class SetDefinitions:
         """
         return sorted({
             sup_id
-            for id_ in ids
+            for id_ in self._coerce_ids(ids)
             if id_ in self.__leaves
             for sup_id in self.__leaves[id_].supersets
             if sup_id != id_
@@ -196,7 +213,7 @@ class SetDefinitions:
         """
         return sorted({
             sub_id
-            for id_ in ids
+            for id_ in self._coerce_ids(ids)
             if id_ in self.__leaves
             for sub_id in self.__leaves[id_].subsets
             if sub_id != id_
@@ -210,7 +227,7 @@ class SetDefinitions:
         """
         return sorted({
             disjoint_id
-            for id_ in ids
+            for id_ in self._coerce_ids(ids)
             if id_ in self.__leaves
             for disjoint_id in self.__leaves[id_].disjoints
         })
