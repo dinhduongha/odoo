@@ -3,6 +3,7 @@
 import json
 import functools
 import itertools
+import uuid
 from typing import NamedTuple
 
 import pytz
@@ -518,7 +519,12 @@ class IrFieldsConverter(models.AbstractModel):
             if isinstance(value, str) and not self._str_to_boolean(model, field, value, savepoint=savepoint)[0]:
                 return False, warnings
             try:
-                tentative_id = int(value)
+                # Primary keys are UUIDs; fall back to int() only for legacy
+                # integer-id models so non-UUID database ids still import.
+                if RelatedModel._fields['id'].type == 'uuid':
+                    tentative_id = value if isinstance(value, uuid.UUID) else uuid.UUID(str(value))
+                else:
+                    tentative_id = int(value)
             except ValueError:
                 raise self._format_import_error(
                     ValueError,

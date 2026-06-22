@@ -147,6 +147,17 @@ class Many2oneReference(Field[uuid.UUID]):
 
         return id_    
 
+    def _update_inverse(self, records, value):
+        """ Update the cache of this (many2one_reference) field for ``records``
+        to point at the new record ``value``.
+
+        Called by a one2many field whose inverse is this many2one_reference
+        when integrating new (NewId) records into the relation, e.g. linking
+        new ``ir.attachment`` records into ``account.move.attachment_ids``.
+        """
+        for record in records:
+            self._update_cache(record, self.convert_to_cache(value, record, validate=False))
+
     def _update_inverses(self, records: BaseModel, value):
         if not value:
             return

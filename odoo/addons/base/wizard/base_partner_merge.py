@@ -262,13 +262,16 @@ class BasePartnerMergeAutomaticWizard(models.TransientModel):
             ))
 
         # merge the fallback values for company dependent many2one fields
+        # ``json_value`` stores the id JSON-encoded, e.g. a UUID primary key is
+        # a quoted string ``"019e..."``. Unwrap it with ``#>> '{}'`` before
+        # casting to uuid, and re-encode the destination id with ``to_jsonb``.
         self.env.cr.execute(SQL(
             """
             UPDATE ir_default
             SET json_value =
                 CASE
-                    WHEN json_value::uuid IN %(src_record_ids)s
-                    THEN %(dest_record_id)s
+                    WHEN (json_value::jsonb #>> '{}')::uuid IN %(src_record_ids)s
+                    THEN to_jsonb(%(dest_record_id)s::uuid)::text
                     ELSE json_value
                 END
             FROM ir_model_fields f
@@ -276,7 +279,7 @@ class BasePartnerMergeAutomaticWizard(models.TransientModel):
             AND f.company_dependent
             AND f.relation = %(model_name)s
             AND f.ttype = 'many2one'
-            AND json_value ~ '^[0-9]+$';
+            AND (json_value::jsonb #>> '{}') ~ '^[0-9a-fA-F-]{36}$';
             """,
             src_record_ids=tuple(src_records.ids),
             dest_record_id=str(dst_record.id),
