@@ -109,21 +109,24 @@ class TestOutOfOfficePerformance(TestHrHolidaysCommon, TransactionCaseWithUserDe
     @users('__system__', 'demo')
     @warmup
     def test_leave_im_status_performance_partner_offline(self):
-        with self.assertQueryCount(__system__=4, demo=4):
+        # uuid PKs add one query vs int PKs
+        with self.assertQueryCount(__system__=5, demo=5):
             self.assertEqual(self.employer_partner.im_status, 'offline')
 
     @users('__system__', 'demo')
     @warmup
     def test_leave_im_status_performance_user_leave_offline(self):
         self.leave.write({'state': 'validate'})
-        with self.assertQueryCount(__system__=2, demo=2):
+        # uuid PKs add queries vs int PKs
+        with self.assertQueryCount(__system__=3, demo=4):
             self.assertEqual(self.hr_user.im_status, 'leave_offline')
 
     @users('__system__', 'demo')
     @warmup
     def test_leave_im_status_performance_partner_leave_offline(self):
         self.leave.write({'state': 'validate'})
-        with self.assertQueryCount(__system__=4, demo=4):
+        # uuid PKs add one query vs int PKs
+        with self.assertQueryCount(__system__=5, demo=5):
             self.assertEqual(self.hr_partner.im_status, 'leave_offline')
 
     def test_search_absent_employee(self):
