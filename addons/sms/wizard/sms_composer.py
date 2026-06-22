@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from ast import literal_eval
 from uuid import uuid4
 
 from odoo import api, fields, models, _
+from odoo.addons.mail.tools.parser import parse_res_ids
 from odoo.addons.sms.tools.sms_tools import sms_content_to_rendered_html
 from odoo.exceptions import UserError
 
@@ -88,7 +88,7 @@ class SmsComposer(models.TransientModel):
     @api.depends('res_model', 'res_id', 'res_ids')
     def _compute_res_ids_count(self):
         for composer in self:
-            composer.res_ids_count = len(literal_eval(composer.res_ids)) if composer.res_ids else 0
+            composer.res_ids_count = len(parse_res_ids(composer.res_ids, composer.env)) if composer.res_ids else 0
 
     @api.depends('res_id', 'composition_mode')
     def _compute_comment_single_recipient(self):
@@ -403,7 +403,7 @@ class SmsComposer(models.TransientModel):
         if not self.res_model:
             return None
         if self.res_ids:
-            records = self.env[self.res_model].browse(literal_eval(self.res_ids))
+            records = self.env[self.res_model].browse(parse_res_ids(self.res_ids, self.env))
         elif self.res_id:
             records = self.env[self.res_model].browse(self.res_id)
         else:
