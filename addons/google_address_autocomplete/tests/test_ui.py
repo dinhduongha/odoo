@@ -153,15 +153,19 @@ class TestUI(HttpCase):
         )
 
         res = json.loads(res.content)
+        australia = self.env["res.country"].search([("code", "=", "AU")], limit=1)
+        nsw = self.env["res.country.state"].search(
+            [("country_id", "=", australia.id), ("code", "=", "NSW")], limit=1
+        )
         self.assertEqual(
             res["result"],
             {
-                "country": [13, "Australia"],
+                "country": [str(australia.id), "Australia"],
                 "number": "48",
                 "city": "Pyrmont",
                 "street": "Pirrama Road",
                 "zip": "2009",
-                "state": [2, "New South Wales"],
+                "state": [str(nsw.id), "New South Wales"],
                 "formatted_street_number": "48 Pirrama Road",
             },
         )
