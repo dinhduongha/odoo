@@ -31,12 +31,15 @@ class TestMassMailEventValues(EventCase):
             'event_id': test_event.id,
         })
 
+        # ids are serialized as strings in domains coming from the web client
+        # (uuid primary keys are not literal_eval-able as raw UUID(...) objects)
+        event_ids = [str(event_id) for event_id in test_event.ids]
         mailing_form = Form(self.env['mailing.mailing'].with_context(
             default_mailing_model_id=self.env['ir.model']._get('event.registration').id,
-            default_mailing_domain=f"[('event_id', 'in', {test_event.ids}), ('state', 'not in', ['cancel', 'draft'])]",
+            default_mailing_domain=f"[('event_id', 'in', {event_ids!r}), ('state', 'not in', ['cancel', 'draft'])]",
         ), view='mass_mailing_sms.mailing_mailing_view_form_mixed')
         mailing_form.mailing_type = 'sms'
         self.assertEqual(
             literal_eval(mailing_form.mailing_domain),
-            ['&', ('event_id', 'in', test_event.ids), ('state', 'not in', ['cancel', 'draft'])],
+            ['&', ('event_id', 'in', event_ids), ('state', 'not in', ['cancel', 'draft'])],
         )
