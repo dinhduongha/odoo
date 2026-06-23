@@ -3,6 +3,7 @@
 import ast
 import logging
 import re
+import uuid
 from collections import defaultdict
 from datetime import date
 from http import HTTPStatus
@@ -23,6 +24,19 @@ from odoo.tools.safe_eval import safe_eval
 from .utils import get_action_triples
 
 _logger = logging.getLogger(__name__)
+
+
+def _domain_url_safe(value):
+    """ Make a domain (or any nested structure) safe to serialize with repr()
+    and to round-trip through ast.literal_eval in the request querystring.
+    With uuidv7 primary keys, domain leaf values may be UUID objects whose
+    repr() (``UUID('...')``) is not a python literal; render them as strings.
+    """
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, (list, tuple)):
+        return type(value)(_domain_url_safe(v) for v in value)
+    return value
 
 
 class WebJsonController(http.Controller):
@@ -114,7 +128,7 @@ class WebJsonController(http.Controller):
         else:
             default_domain = get_default_domain(model, action, context, eval_context)
             if default_domain and not Domain(default_domain).is_true():
-                kwargs['domain'] = repr(list(default_domain))
+                kwargs['domain'] = repr(_domain_url_safe(list(default_domain)))
             domains.append(default_domain)
         try:
             limit = int(kwargs.get('limit', 0)) or action.limit

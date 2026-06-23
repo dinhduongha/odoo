@@ -75,6 +75,11 @@ class IrHttp(models.AbstractModel):
         """ Extract slug and id from a string.
             Always return a 2-tuple (str|None, int|None)
         """
+        # uuidv7 PKs: a bare uuid contains dashes, which the optional slug-name
+        # prefix of _UNSLUG_RE would greedily eat (leaving only the trailing
+        # digits as the identifier). Recognize a full uuid value first.
+        if is_uuid(value):
+            return None, to_uuid(value)
         m = _UNSLUG_RE.match(value)
         if not m:
             return None, None

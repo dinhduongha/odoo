@@ -1153,7 +1153,15 @@ class Session(collections.abc.MutableMapping):
         return self.__data[item]
 
     def __setitem__(self, item, value):
-        value = json.loads(json.dumps(value, default=str))
+        # uuidv7 PKs: allow UUID values (e.g. the session uid) to be stored by
+        # coercing them to their string form. Every other non-JSON-native type
+        # must still be rejected so that session data stays strictly
+        # serializable (see test_session07_serializable).
+        def _uuid_only_default(obj):
+            if isinstance(obj, uuid.UUID):
+                return str(obj)
+            raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
+        value = json.loads(json.dumps(value, default=_uuid_only_default))
         if item not in self.__data or self.__data[item] != value:
             self.is_dirty = True
         self.__data[item] = value

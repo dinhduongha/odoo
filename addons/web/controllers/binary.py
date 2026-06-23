@@ -279,7 +279,8 @@ class Binary(http.Controller):
                     'id': attachment.id,
                     'size': attachment.file_size
                 })
-        return out % (json.dumps(clean(callback)), json.dumps(args)) if callback else json.dumps(args)
+        # ids are uuids; serialize them as strings in the JSON response
+        return out % (json.dumps(clean(callback)), json.dumps(args, default=str)) if callback else json.dumps(args, default=str)
 
     @http.route([
         '/web/binary/company_logo',
@@ -296,7 +297,8 @@ class Binary(http.Controller):
             response = http.Stream.from_path(file_path('web/static/img/logo.png')).get_response()
         else:
             try:
-                company = int(kw['company']) if kw and kw.get('company') else False
+                # company ids are uuids; coerce the url param to a uuid
+                company = to_uuid(kw['company']) if kw and kw.get('company') else False
                 if company:
                     request.env.cr.execute("""
                         SELECT logo_web, write_date

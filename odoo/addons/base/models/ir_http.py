@@ -59,8 +59,11 @@ class RequestUID(object):
 
 
 class ModelConverter(werkzeug.routing.BaseConverter):
-    # uuidv7 PKs: accept uuid ids as well as legacy integer ids
-    regex = r'[0-9]+|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+    # uuidv7 PKs: accept uuid ids as well as legacy integer ids. The uuid
+    # alternative MUST come first and the whole thing be grouped, otherwise
+    # werkzeug's combined route regex can match only the trailing digits of a
+    # uuid (e.g. ".../...-000000009999" would capture "9999").
+    regex = r'(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9]+)'
 
     def __init__(self, url_map, model=False):
         super().__init__(url_map)

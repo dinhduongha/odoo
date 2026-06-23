@@ -604,6 +604,10 @@ class IrAttachment(models.Model):
                     yield res_model, res_id
                 continue
             records = self.env[res_model].browse(res_ids)
+            # uuidv7 PKs: res_ids may hold str representations of uuid ids while
+            # ``records._ids`` holds the coerced UUID objects; align them so the
+            # difference below works (str != UUID would wrongly forbid access).
+            res_ids = OrderedSet(records._ids)
             if res_model == 'res.users' and len(records) == 1 and self.env.uid == records.id:
                 # by default a user cannot write on itself, despite the list of writeable fields
                 # e.g. in the case of a user inserting an image into his image signature

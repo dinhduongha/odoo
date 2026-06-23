@@ -15,6 +15,7 @@ from odoo.modules import module
 from odoo.exceptions import AccessError, UserError, AccessDenied
 from odoo.http import request
 from odoo.tools.translate import _
+from odoo.tools.uuid_utils import to_uuid
 
 
 _logger = logging.getLogger(__name__)
@@ -44,7 +45,9 @@ class Session(http.Controller):
 
             credential = {'login': login, 'password': password, 'type': 'password'}
             auth_info = request.session.authenticate(env, credential)
-            if auth_info['uid'] != request.session.uid:
+            # uuidv7 PKs: session.uid is stored as a JSON string while
+            # auth_info['uid'] is a UUID object; compare their canonical forms
+            if to_uuid(auth_info['uid']) != to_uuid(request.session.uid):
                 # Crapy workaround for unupdatable Odoo Mobile App iOS (Thanks Apple :@) and Android
                 # Correct behavior should be to raise AccessError("Renewing an expired session for user that has multi-factor-authentication is not supported. Please use /web/login instead.")
                 return {'uid': None}
