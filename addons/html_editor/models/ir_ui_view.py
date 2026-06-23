@@ -9,7 +9,7 @@ from odoo import api, models, _
 from odoo.exceptions import ValidationError, MissingError
 from odoo.fields import Domain
 from odoo.addons.base.models.ir_ui_view import MOVABLE_BRANDING
-from odoo.tools.uuid_utils import uuid7, is_uuid
+from odoo.tools.uuid_utils import uuid7, is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 

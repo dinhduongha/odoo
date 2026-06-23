@@ -12,6 +12,7 @@ from odoo import api, fields, models, tools, http
 from odoo.fields import Domain
 from odoo.tools import escape_psql, SQL
 from odoo.tools.translate import _
+from odoo.tools.uuid_utils import to_uuid
 
 logger = logging.getLogger(__name__)
 

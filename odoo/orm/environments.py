@@ -64,7 +64,7 @@ class Environment(Mapping[str, "BaseModel"]):
         warnings.warn("Since 19.0, use directly `transaction.reset()`", DeprecationWarning)
         self.transaction.reset()
 
-    def __new__(cls, cr: BaseCursor, uid: UUID, context: dict, su: bool = False):
+    def __new__(cls, cr: BaseCursor, uid: uuid.UUID, context: dict, su: bool = False):
         assert isinstance(cr, BaseCursor)
         if isinstance(uid, BaseModel):
             # Nếu ai đó truyền vào res.users record
