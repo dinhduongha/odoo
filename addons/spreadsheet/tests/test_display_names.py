@@ -1,4 +1,5 @@
 from odoo.tests.common import TransactionCase, new_test_user
+from odoo.tools.uuid_utils import uuid7
 
 
 class TestDisplayNames(TransactionCase):
@@ -23,9 +24,10 @@ class TestDisplayNames(TransactionCase):
         self.assertEqual(display_name, ["Alice", "Bob"])
 
     def test_get_missing_id_display_name(self):
-        self.assertFalse(self.env["res.partner"].browse(9999).exists())
+        missing_id = uuid7()
+        self.assertFalse(self.env["res.partner"].browse(missing_id).exists())
         display_name = self.env["spreadsheet.mixin"].get_display_names_for_spreadsheet([
-            {"model": "res.partner", "id": 9999}
+            {"model": "res.partner", "id": missing_id}
         ])
         self.assertEqual(display_name, [None])
 
@@ -33,7 +35,7 @@ class TestDisplayNames(TransactionCase):
         bob = self.env["res.partner"].create({"name": "Bob"})
         display_name = self.env["spreadsheet.mixin"].get_display_names_for_spreadsheet([
             {"model": "res.partner", "id": bob.id},
-            {"model": "res.partner", "id": 9999},
+            {"model": "res.partner", "id": uuid7()},
         ])
         self.assertEqual(display_name, ["Bob", None])
 

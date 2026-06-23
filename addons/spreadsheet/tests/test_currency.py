@@ -1,4 +1,5 @@
 from odoo.tests.common import TransactionCase
+from odoo.tools.uuid_utils import uuid7
 
 class TestCurrencyRates(TransactionCase):
     @classmethod
@@ -48,6 +49,6 @@ class TestCurrencyRates(TransactionCase):
             }
         )
         self.assertEqual(
-            self.env["res.currency"].get_company_currency_for_spreadsheet(123456),
+            self.env["res.currency"].get_company_currency_for_spreadsheet(uuid7()),
             False
         )
