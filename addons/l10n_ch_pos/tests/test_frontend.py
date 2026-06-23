@@ -32,7 +32,11 @@ class TestUi(TestPointOfSaleHttpCommon):
         self.partner_test_1.write({
             "email": "test@partner1.com",
             "vat": "CHE-123.456.788 TVA",
-            "contact_address_complete": "street 1, street 2, 23432 Zürich, Argovie, Switzerland"
+            "street": "street 1",
+            "street2": "street 2",
+            "zip": "23432",
+            "city": "Zürich",
+            "country_id": self.env.ref("base.ch").id,
         })
         self.main_pos_config.with_user(self.pos_admin).open_ui()
         current_session = self.main_pos_config.current_session_id
