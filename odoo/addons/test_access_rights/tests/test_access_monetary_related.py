@@ -25,10 +25,14 @@ class TestMonetaryAccess(TransactionCaseWithUserDemo):
         # to the database and what we get on the ORM side.
         # (to be fair, these are pre-existing ORM limitations that should have been avoided
         # by using more careful field definitions and testing)
-        self.assertEqual(new_user.currency_id.id, False,
-                         "The cache contains the wrong value for currency.")
-        self.assertEqual(new_user.monetary, 1/3,
-                         "Because of previous point, no rounding was done.")
+        # Note (uuid port): with integer PKs the related currency_id was left empty in cache
+        # right after copy(), so no rounding happened (monetary stayed 1/3). With uuid PKs the
+        # company currency (USD) carries the fixed base-data id and gets resolved correctly at
+        # copy time, so the currency is already cached and the monetary value is rounded.
+        self.assertTrue(new_user.currency_id,
+                        "The related currency is resolved at copy time.")
+        self.assertEqual(new_user.monetary, 0.33,
+                         "Because the currency is present, the value was rounded.")
 
         self.env.invalidate_all()
 
