@@ -225,9 +225,9 @@ class AccountAnalyticLine(models.Model):
             return super()._timesheet_preprocess_get_accounts(vals)
 
         company = self.env['res.company'].browse(vals.get('company_id'))
-        accounts = self.env['account.analytic.account'].browse([
-            int(account_id) for account_id in next(iter(distribution)).split(',')
-        ]).exists()
+        accounts = self.env['account.analytic.account'].browse(
+            next(iter(distribution)).split(',')
+        ).exists()
 
         if not accounts:
             return super()._timesheet_preprocess_get_accounts(vals)
