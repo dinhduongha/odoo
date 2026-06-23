@@ -116,7 +116,7 @@ class AccountEdiProxyClientUser(models.Model):
                 # b64encode returns a bytestring, we need it as a string
                 response = self._make_request(self._get_server_url(proxy_type, edi_mode) + '/api/nemhandel/1/connect', params={
                     'dbuuid': company.env['ir.config_parameter'].get_param('database.uuid'),
-                    'company_id': company.id,
+                    'company_id': str(company.id),
                     'nemhandel_identifier': nemhandel_identifier,
                     'public_key': private_key_sudo._get_public_key_bytes(encoding='pem').decode(),
                 })

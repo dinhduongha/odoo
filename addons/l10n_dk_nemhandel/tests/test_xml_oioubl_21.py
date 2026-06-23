@@ -238,7 +238,19 @@ class TestUBLDKOIOUBL21(TestUBLCommon, TestAccountMoveSendCommon):
         self.assertTrue(invoice.ubl_cii_xml_id)
         self._assert_invoice_attachment(invoice.ubl_cii_xml_id, xpaths=None, expected_file_path="from_odoo/oioubl_out_invoice_discount.xml")
         new_invoice = invoice.journal_id._create_document_from_attachment(invoice.ubl_cii_xml_id.ids)
-        self.assertRecordValues(new_invoice.invoice_line_ids, [line_vals])
+        # On import, the tax is matched only by its rate (25%); several DK sale taxes
+        # share that rate, so we cannot assert the exact tax id (the one returned by
+        # search(limit=1) is order-dependent). Assert the rest of the line strictly and
+        # the imported tax by its rate.
+        line_vals_without_tax = {k: v for k, v in line_vals.items() if k != 'tax_ids'}
+        self.assertRecordValues(new_invoice.invoice_line_ids, [line_vals_without_tax])
+        imported_taxes = new_invoice.invoice_line_ids.tax_ids
+        self.assertEqual(len(imported_taxes), 1)
+        self.assertRecordValues(imported_taxes, [{
+            'amount': self.dk_local_sale_tax_1.amount,
+            'amount_type': self.dk_local_sale_tax_1.amount_type,
+            'type_tax_use': self.dk_local_sale_tax_1.type_tax_use,
+        }])
 
     @freeze_time('2017-01-01')
     def test_oioubl_export_should_raise_an_error_when_partner_building_number_is_missing(self):
