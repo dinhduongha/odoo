@@ -12,6 +12,7 @@ from odoo.addons.mail.models.mail_message import MailMessage
 from odoo.addons.mail.tests.common import MailCommon, mail_new_test_user
 from odoo.addons.test_mail.models.test_mail_corner_case_models import MailTestMultiCompanyWithActivity
 from odoo.addons.test_mail.tests.common import TestRecipients
+from odoo.tools.uuid_utils import to_uuid
 from odoo.exceptions import AccessError
 from odoo.tests import tagged, users, HttpCase
 from odoo.tests.common import JsonRpcException
@@ -505,4 +506,5 @@ class TestMultiCompanyControllers(TestMailMCCommon, HttpCase):
         result = self.make_jsonrpc_request("/mail/message/post", payload)
         message_data = result["store_data"]["mail.message"][0]
         self.assertEqual(message_data["body"], ["markup", "<p>Reply from inbox</p>"])
-        self.assertTrue(record_c1.message_ids.filtered(lambda m: m.id == message_data["id"]))
+        # uuid PKs: JSON-RPC round-trips the message id to a string
+        self.assertTrue(record_c1.message_ids.filtered(lambda m: m.id == to_uuid(message_data["id"])))

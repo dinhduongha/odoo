@@ -10,6 +10,7 @@ from odoo.addons.mail.tools.discuss import Store
 from odoo.exceptions import UserError
 from odoo.tests.common import tagged, users, HttpCase
 from odoo.tools import is_html_empty, mute_logger, formataddr
+from odoo.tools.uuid_utils import to_uuid
 
 
 @tagged('mail_message', 'mail_controller', 'post_install', '-at_install')
@@ -79,7 +80,8 @@ class TestMessageHelpersRobustness(MailCommon, HttpCase):
         self.authenticate(self.user_employee.login, self.user_employee.login)
         with contextlib.suppress(Exception), mute_logger('odoo.http', 'odoo.sql_db'):  # suppress logged error due to readonly route doing an update
             result = self.make_jsonrpc_request("/mail/data", {"fetch_params": ["failures"]})
-        self.assertEqual(sorted(r['thread']['id'] for r in result['mail.message']), sorted(self.test_records_simple[:2].ids))
+        # uuid PKs: JSON-RPC round-trips thread ids to strings
+        self.assertEqual(sorted(to_uuid(r['thread']['id']) for r in result['mail.message']), sorted(self.test_records_simple[:2].ids))
         self.assertEqual(
             sorted(self.env['mail.notification'].search([('author_id', '=', self.partner_employee.id)]).mapped('mail_message_id.res_id')),
             sorted((self.test_records_simple - self.deleted_record).ids),
@@ -115,8 +117,9 @@ class TestMessageHelpersRobustness(MailCommon, HttpCase):
 
         self.authenticate(self.user_employee_2.login, self.user_employee_2.login)
         result = self.make_jsonrpc_request("/mail/inbox/messages", {})['data']
+        # uuid PKs: JSON-RPC round-trips thread ids to strings
         self.assertEqual(
-            {r['thread']['id'] if r['thread'] else False for r in result['mail.message']},
+            {to_uuid(r['thread']['id']) if r['thread'] else False for r in result['mail.message']},
             set((self.test_records_simple - self.deleted_record).ids + [False]),
             'Currently reading message on missing record, crash avoided, void thread for missing record'
         )

@@ -28,6 +28,7 @@ from requests import Session
 from werkzeug import urls
 
 from odoo import _, api, exceptions, fields, models, tools
+from odoo.addons.mail.models.mail_alias import _normalize_uuid_repr
 from odoo.addons.mail.tools.discuss import Store
 from odoo.addons.mail.tools.web_push import (
     push_to_end_point, DeviceUnreachableError,
@@ -1285,7 +1286,9 @@ class MailThread(models.AbstractModel):
                 routes = []
                 for alias in dest_aliases:
                     user_id = self._mail_find_user_for_gateway(email_from, alias=alias).id or self.env.uid
-                    route = (alias.sudo().alias_model_id.model, alias.alias_force_thread_id, ast.literal_eval(alias.alias_defaults), user_id, alias)
+                    # uuid PKs: alias_defaults may contain uuid ids serialised as
+                    # their repr UUID('...') which literal_eval cannot parse
+                    route = (alias.sudo().alias_model_id.model, alias.alias_force_thread_id, ast.literal_eval(_normalize_uuid_repr(alias.alias_defaults)), user_id, alias)
                     AliasModel = self.env[route[0]] if route[0] in self.env and hasattr(self.env[route[0]], '_routing_check_route') else self
                     route = AliasModel._routing_check_route(message, message_dict, route, raise_exception=True)
                     if route:

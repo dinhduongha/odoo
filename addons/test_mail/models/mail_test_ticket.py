@@ -1,6 +1,7 @@
 import ast
 
 from odoo import api, fields, models, _
+from odoo.addons.mail.models.mail_alias import _normalize_uuid_repr
 from odoo.tools import email_normalize
 
 
@@ -244,7 +245,8 @@ class MailTestContainer(models.Model):
         values['alias_model_id'] = self.env['ir.model']._get('mail.test.ticket').id
         values['alias_force_thread_id'] = False
         if self.id:
-            values['alias_defaults'] = defaults = ast.literal_eval(self.alias_defaults or "{}")
+            # uuid PKs: alias_defaults may contain uuid ids serialised as UUID('...')
+            values['alias_defaults'] = defaults = ast.literal_eval(_normalize_uuid_repr(self.alias_defaults))
             defaults['container_id'] = self.id
         return values
 

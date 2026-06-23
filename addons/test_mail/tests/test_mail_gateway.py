@@ -611,7 +611,8 @@ class TestMailgateway(MailGatewayCommon):
             'alias_name': 'valid',
             'alias_model_id': test_model_track.id,
             'alias_contact': 'everyone',
-            'alias_defaults': f"{{'container_id': {container_custom.id}}}",
+            # uuid PKs: quote the id so the literal parses (a bare uuid is invalid Python)
+            'alias_defaults': f"{{'container_id': '{container_custom.id}'}}",
         })
         self.assertEqual(alias_valid.create_uid, self.user_admin)
 

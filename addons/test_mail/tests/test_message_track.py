@@ -1083,9 +1083,11 @@ class TestTrackingInternals(MailCommon):
         )
         self.assertTracking(
             record_other.message_ids[0],
-            [('customer_id', 'integer', False, self.test_partner.id),
+            # uuid PKs: m2o tracking values are stored in the uuid columns, declare
+            # them as many2one and pass the records (assertTracking reads .id)
+            [('customer_id', 'many2one', False, self.test_partner),
              ('email_from', 'char', 'email.from.1@example.com', 'email.from.2@example.com'),
-             ('user_id', 'integer', False, self.env.user.id)],
+             ('user_id', 'many2one', False, self.env.user)],
             strict=True,
         )
         self.assertTracking(

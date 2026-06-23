@@ -975,7 +975,9 @@ class TestAPI(ThreadRecipients):
             suggested = test_record._message_get_suggested_recipients(reply_discussion=True, no_create=True)
             expected = base_expected + expected_add
             # as we can't use sorted directly, reorder manually, hey
-            expected.sort(key=lambda item: item['partner_id'], reverse=True)
+            # uuid PKs: partner_id mixes False and UUID which are not orderable,
+            # sort on the string form (False -> '') to keep a stable ordering
+            expected.sort(key=lambda item: str(item['partner_id'] or ''), reverse=True)
             with self.subTest(message=post_values['body']):
                 for sugg, expected_sugg in zip(suggested, expected, strict=True):
                     self.assertDictEqual(sugg, expected_sugg)

@@ -44,6 +44,7 @@ class TestMessageController(MailControllerThreadCommon):
                         "thread_model": record._name,
                     }
                 },
+                default=str,
             ),
         )
         self.assertNotIn(
@@ -61,7 +62,8 @@ class TestMessageController(MailControllerThreadCommon):
                         "thread_id": self.test_public_record.id,
                         "emails": ["john@test.be"],
                     },
-                }
+                },
+                default=str,
             ),
             headers={"Content-Type": "application/json"},
         )
@@ -81,7 +83,8 @@ class TestMessageController(MailControllerThreadCommon):
                         "thread_id": self.test_public_record.id,
                         "emails": ["john@test.be"],
                     },
-                }
+                },
+                default=str,
             ),
             headers={"Content-Type": "application/json"},
         )
@@ -105,7 +108,8 @@ class TestMessageController(MailControllerThreadCommon):
                             "partner_emails": ["john2@test.be"],
                         },
                     },
-                }
+                },
+                default=str,
             ),
             headers={"Content-Type": "application/json"},
         )
@@ -128,7 +132,8 @@ class TestMessageController(MailControllerThreadCommon):
                             "partner_emails": ["john2@test.be"],
                         },
                     },
-                }
+                },
+                default=str,
             ),
             headers={"Content-Type": "application/json"},
         )
