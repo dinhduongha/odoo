@@ -77,4 +77,4 @@ class TestSafaricomHttpCommon(TestPointOfSaleHttpCommon):
 
         with patch.object(PosPaymentMethod, 'mpesa_express_send_payment_request', mocked_mpesa_express_send_payment_request):
             self.main_pos_config.open_ui()
-            self.start_tour("/pos/ui/%d" % self.main_pos_config.id, 'MpesaExpressTour', login="accountman")
+            self.start_tour("/pos/ui/%s" % self.main_pos_config.id, 'MpesaExpressTour', login="accountman")
