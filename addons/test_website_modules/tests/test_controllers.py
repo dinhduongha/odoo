@@ -33,7 +33,7 @@ class TestWebEditorController(HttpCaseWithUserDemo, HttpCaseWithUserPortal):
             }
             if attachment.res_id:
                 params['res_model'] = attachment.res_model
-                params['res_id'] = attachment.res_id
+                params['res_id'] = str(attachment.res_id)
             response = self.url_open(
                 f'/html_editor/modify_image/{attachment.id}',
                 headers={'Content-Type': 'application/json'},

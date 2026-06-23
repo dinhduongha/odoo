@@ -286,10 +286,10 @@ class WebsiteBlog(http.Controller):
         }
         response = request.render("website_blog.blog_post_complete", values)
 
-        if blog_post.id not in request.session.get('posts_viewed', []):
+        if str(blog_post.id) not in request.session.get('posts_viewed', []):
             if sql.increment_fields_skiplock(blog_post, 'visits'):
                 if not request.session.get('posts_viewed'):
                     request.session['posts_viewed'] = []
-                request.session['posts_viewed'].append(blog_post.id)
+                request.session['posts_viewed'].append(str(blog_post.id))
                 request.session.touch()
         return response

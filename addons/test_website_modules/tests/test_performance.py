@@ -239,10 +239,10 @@ class TestWebsiteAllPerformance(TestWebsitePerformanceCommon, TestWebsitePriceLi
             "jsonrpc": "2.0",
             "method": "call",
             "params": {
-                "product_template_id": self.productC.product_tmpl_id.id,
-                "product_id": self.productC.id,
+                "product_template_id": str(self.productC.product_tmpl_id.id),
+                "product_id": str(self.productC.id),
                 "quantity": 1,
-                "uom_id": 1,
+                "uom_id": str(self.productC.uom_id.id),
                 "product_custom_attribute_values": [],
                 "no_variant_attribute_value_ids": [],
                 "linked_products": []
@@ -266,8 +266,8 @@ class TestWebsiteAllPerformance(TestWebsitePerformanceCommon, TestWebsitePriceLi
             "jsonrpc": "2.0",
             "method": "call",
             "params": {
-                "line_id": self.env['sale.order'].search([], limit=1).order_line.id,
-                "product_id": self.productC.id,
+                "line_id": str(self.env['sale.order'].search([], limit=1).order_line.id),
+                "product_id": str(self.productC.id),
                 "quantity": 0
             }
         })
@@ -328,7 +328,7 @@ class TestWebsiteAllPerformance(TestWebsitePerformanceCommon, TestWebsitePriceLi
             query_count += 1
             queries['product_product'] += 1
 
-        tax = self.env.ref('account.1_sale_tax_template', raise_if_not_found=False)
+        tax = self.env.ref(f'account.{self.env.company.id}_sale_tax_template', raise_if_not_found=False)
         if tax and tax.name == '15%':
             query_count += 2
             queries['account_tax_repartition_line'] = 2
@@ -338,6 +338,16 @@ class TestWebsiteAllPerformance(TestWebsitePerformanceCommon, TestWebsitePriceLi
             queries['product_product'] += 2
             queries['ir_attachment'] += 1
             queries['product_ribbon'] += 1
+            # The extra product_ribbon query only happens when a published shop
+            # product actually carries a ribbon. Depending on the installed demo
+            # data set, no product may reference a ribbon.
+            if not self.env['product.template'].search_count([
+                ('is_published', '=', True),
+                ('sale_ok', '=', True),
+                ('website_ribbon_id', '!=', False),
+            ], limit=1):
+                query_count -= 1
+                queries['product_ribbon'] -= 1
         else:
             query_count += 3
             queries['product_template_attribute_value'] += 3

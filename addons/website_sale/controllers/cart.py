@@ -7,6 +7,7 @@ from odoo.exceptions import UserError
 from odoo.http import request, route
 from odoo.tools import consteq
 from odoo.tools.image import image_data_uri
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.translate import _
 
 from odoo.addons.payment import utils as payment_utils
@@ -303,6 +304,9 @@ class Cart(PaymentPortal):
         order_sudo = request.cart
         quantity = int(quantity)  # Do not allow float values in ecommerce by default
         IrUiView = request.env['ir.ui.view']
+        # Ids come from JSON-RPC as strings; coerce to UUID so record comparisons match.
+        line_id = to_uuid(line_id)
+        product_id = to_uuid(product_id)
 
         # This method must be only called from the cart page BUT in some advanced logic
         # eg. website_sale_loyalty, a cart line could be a temporary record without id.
