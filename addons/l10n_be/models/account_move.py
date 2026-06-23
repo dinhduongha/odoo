@@ -28,7 +28,8 @@ class AccountMove(models.Model):
             be used.
         """
         self.ensure_one()
-        bbacomm = (re.sub(r'\D', '', self.partner_id.ref or '') or str(self.partner_id.id))[-10:].rjust(10, '0')
+        partner_id_digits = re.sub(r'\D', '', str(self.partner_id.id))
+        bbacomm = (re.sub(r'\D', '', self.partner_id.ref or '') or partner_id_digits)[-10:].rjust(10, '0')
         base = int(bbacomm)
         mod = base % 97 or 97
         reference = '+++%s/%s/%s%02d+++' % (bbacomm[:3], bbacomm[3:7], bbacomm[7:], mod)
@@ -43,7 +44,7 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
         base = self.id
-        bbacomm = str(base).rjust(10, '0')
+        bbacomm = re.sub(r'\D', '', str(base))[-10:].rjust(10, '0')
         base = int(bbacomm)
         mod = base % 97 or 97
         reference = '+++%s/%s/%s%02d+++' % (bbacomm[:3], bbacomm[3:7], bbacomm[7:], mod)
