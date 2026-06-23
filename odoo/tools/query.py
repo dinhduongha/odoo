@@ -204,8 +204,16 @@ class Query:
             if not self._ids:
                 # in case we have nothing, we want to use a sub_query with no records
                 # because an empty tuple leads to a syntax error
-                # and a tuple containing just None creates issues for `NOT IN`
-                return SQL("(SELECT 1 WHERE FALSE)")
+                # and a tuple containing just None creates issues for `NOT IN`.
+                # We select the table's actual id column (filtered out by WHERE
+                # FALSE) so the result type matches the comparison column, which
+                # matters for typed primary keys (e.g. uuid) where an untyped
+                # literal like 1 or NULL would raise "operator does not exist".
+                return SQL(
+                    "(SELECT %s FROM %s WHERE FALSE)",
+                    SQL.identifier(self.table, 'id'),
+                    self.from_clause,
+                )
             return SQL("%s", self._ids)
 
         if self.limit or self.offset:
