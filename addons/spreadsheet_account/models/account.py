@@ -59,7 +59,7 @@ class AccountAccount(models.Model):
 
         # Determine account domain based on tags or codes
         if 'account_tag_ids' in formula_params:
-            tag_ids = [int(tag_id) for tag_id in formula_params["account_tag_ids"]]
+            tag_ids = [tag_id for tag_id in formula_params["account_tag_ids"] if tag_id]
             account_id_domain = Domain('account_id.tag_ids', 'in', tag_ids) if tag_ids else Domain.FALSE
         elif 'codes' in formula_params:
             codes = [code for code in formula_params.get("codes", []) if code]
@@ -84,7 +84,7 @@ class AccountAccount(models.Model):
 
         domain = Domain.AND([account_id_domain, period_domain, [("company_id", "=", company_id)], posted_domain])
 
-        partner_ids = [int(partner_id) for partner_id in formula_params.get('partner_ids', []) if partner_id]
+        partner_ids = [partner_id for partner_id in formula_params.get('partner_ids', []) if partner_id]
         if partner_ids:
             domain &= Domain("partner_id", "in", partner_ids)
 

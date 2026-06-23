@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.tests.common import TransactionCase
+from odoo.tools.uuid_utils import uuid7
 
 from datetime import date
 
@@ -91,7 +92,7 @@ class SpreadsheetFiscalYearTest(TransactionCase):
         self.assertEqual(
             self.env["res.company"].get_fiscal_dates(
                 [
-                    {"company_id": 999, "date": "2020-02-04"},
+                    {"company_id": str(uuid7()), "date": "2020-02-04"},
                     {"company_id": None, "date": "2020-02-04"},
                 ]
             ),
