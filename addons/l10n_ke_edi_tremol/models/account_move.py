@@ -7,6 +7,7 @@ from datetime import datetime
 
 from odoo import models, fields, _, api
 from odoo.exceptions import UserError
+from odoo.tools.uuid_utils import to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -283,7 +284,7 @@ class AccountMove(models.Model):
         to the fact that they originate from the control unit.
         """
         for response in responses:
-            move = self.browse(int(response['move_id']))
+            move = self.browse(to_uuid(response['move_id']))
             replies = [msg for msg in response['replies']]
             move.update({
                 'l10n_ke_cu_serial_number': response['serial_number'],
