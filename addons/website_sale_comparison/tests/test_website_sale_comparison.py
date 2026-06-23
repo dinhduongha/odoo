@@ -23,8 +23,9 @@ class TestWebsiteSaleComparison(TransactionCase):
         `_remove_copied_views`. The problematic view that has to be removed is
         `product_attributes_body` because it has a reference to `add_to_compare`.
         """
+        website = self.env.ref('website.default_website')
         Website0 = self.env['website'].with_context(website_id=None)
-        Website1 = self.env['website'].with_context(website_id=1)
+        Website1 = self.env['website'].with_context(website_id=website.id)
 
         # Create a generic inherited view, with a key not starting with
         # `website_sale_comparison` otherwise the unlink will work just based on
@@ -41,12 +42,12 @@ class TestWebsiteSaleComparison(TransactionCase):
         # Retrieve the generic view
         product = Website0.viewref('website_sale.product')
         # Trigger COW to create specific views of the whole tree
-        product.with_context(website_id=1).write({'name': 'Trigger COW'})
+        product.with_context(website_id=website.id).write({'name': 'Trigger COW'})
 
         # Verify initial state: the specific views exist
-        self.assertEqual(Website1.viewref('website_sale.product').website_id.id, 1)
-        self.assertEqual(Website1.viewref('website_sale_comparison.product_attributes_body').website_id.id, 1)
-        self.assertEqual(Website1.viewref(test_view_key).website_id.id, 1)
+        self.assertEqual(Website1.viewref('website_sale.product').website_id.id, website.id)
+        self.assertEqual(Website1.viewref('website_sale_comparison.product_attributes_body').website_id.id, website.id)
+        self.assertEqual(Website1.viewref(test_view_key).website_id.id, website.id)
 
         # Remove the module (use `module_uninstall` because it is enough to test
         # what we want here, no need/can't use `button_immediate_uninstall`
@@ -177,8 +178,9 @@ class TestWebsiteSaleComparisonUi(HttpCase):
 
     def test_02_attribute_multiple_lines(self):
         # Case product page with "Product attributes table" disabled (website_sale standard case)
+        slug = self.env['ir.http']._slug
         self.env['website'].viewref('website_sale_comparison.product_attributes_body').active = False
-        res = self.url_open('/shop/%d' % self.template_margaux.id)
+        res = self.url_open('/shop/%s' % slug(self.template_margaux))
         self.assertEqual(res.status_code, 200)
         root = etree.fromstring(res.content, etree.HTMLParser())
 
@@ -188,7 +190,7 @@ class TestWebsiteSaleComparisonUi(HttpCase):
 
         # Case product page with "Product attributes table" enabled
         self.env['website'].viewref('website_sale_comparison.product_attributes_body').active = True
-        res = self.url_open('/shop/%d' % self.template_margaux.id)
+        res = self.url_open('/shop/%s' % slug(self.template_margaux))
         self.assertEqual(res.status_code, 200)
         root = etree.fromstring(res.content, etree.HTMLParser())
 

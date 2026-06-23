@@ -40,11 +40,11 @@ export class ProductComparison extends Interaction {
         if (this._checkMaxComparisonProducts()) return;
 
         const el = ev.currentTarget;
-        let productId = parseInt(el.dataset.productProductId);
+        let productId = el.dataset.productProductId;
         const form = wSaleUtils.getClosestProductForm(el);
         if (!productId) {
             productId = await this.waitFor(rpc('/sale/create_product_variant', {
-                product_template_id: parseInt(el.dataset.productTemplateId),
+                product_template_id: el.dataset.productTemplateId,
                 product_template_attribute_value_ids: wSaleUtils.getSelectedAttributeValues(form),
             }));
         }
@@ -68,7 +68,7 @@ export class ProductComparison extends Interaction {
         const button = input.closest('.js_product')?.querySelector('[data-action="o_comparelist"]');
         if (button) {
             const isDisabled = comparisonUtils.getComparisonProductIds().includes(
-                parseInt(productId)
+                productId
             );
             comparisonUtils.updateDisabled(button, isDisabled);
             button.dataset.productProductId = productId;
@@ -81,7 +81,7 @@ export class ProductComparison extends Interaction {
      * @param {Event} ev
      */
     removeProduct(ev) {
-        const productId = parseInt(ev.currentTarget.dataset.productProductId);
+        const productId = ev.currentTarget.dataset.productProductId;
         comparisonUtils.removeComparisonProduct(productId, this.bus);
 
         const productIds = comparisonUtils.getComparisonProductIds();

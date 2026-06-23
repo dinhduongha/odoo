@@ -133,8 +133,8 @@ export class ComparisonPage extends Interaction {
      */
     addToCart(ev) {
         const button = ev.currentTarget;
-        const productId = parseInt(button.dataset.productProductId);
-        const productTemplateId = parseInt(button.dataset.productTemplateId);
+        const productId = button.dataset.productProductId;
+        const productTemplateId = button.dataset.productTemplateId;
         const showQuantity = Boolean(button.dataset.showQuantity);
 
         this.services['cart'].add({
@@ -151,7 +151,7 @@ export class ComparisonPage extends Interaction {
      * @param {Event} ev
      */
     removeProduct(ev) {
-        const productId = parseInt(ev.currentTarget.dataset.productProductId);
+        const productId = ev.currentTarget.dataset.productProductId;
         comparisonUtils.removeComparisonProduct(productId, null); // No bus needed on comparison page
 
         const productIds = comparisonUtils.getComparisonProductIds();

@@ -1,13 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.http import Controller, request, route
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class WebsiteSaleProductComparison(Controller):
 
     @route('/shop/compare', type='http', auth='public', website=True, sitemap=False)
     def product_compare(self, **post):
-        product_ids = [int(i) for i in post.get('products', '').split(',') if i.isdigit()]
+        product_ids = [to_uuid(i) for i in post.get('products', '').split(',') if is_uuid(i)]
         if not product_ids:
             return request.redirect('/shop')
 
