@@ -45,12 +45,15 @@ class TestPoSSaleReport(TestPoSCommon, TestPointOfSaleHttpCommon):
 
         session.action_pos_session_closing_control()
 
-        # PoS Orders have negative IDs to avoid conflict, so reports[0] will correspond to the newest order
-        reports = self.env['sale.report'].sudo().search([('product_id', '=', self.product0.id)], order='id', limit=2)
-        self.assertEqual(reports[0].weight, 3)
-        self.assertEqual(reports[0].volume, 4)
-        self.assertEqual(reports[1].weight, 18)
-        self.assertEqual(reports[1].volume, 24)
+        # With UUID primary keys the report id is no longer a negatable integer, so the
+        # ordering used to single out a specific order no longer applies. Assert on the
+        # full set of (weight, volume) pairs instead, which preserves the test intent.
+        reports = self.env['sale.report'].sudo().search([('product_id', '=', self.product0.id)])
+        self.assertEqual(len(reports), 2)
+        self.assertEqual(
+            {(r.weight, r.volume) for r in reports},
+            {(3, 4), (18, 24)},
+        )
 
     def test_refund_line_report_prices_sign(self):
         test_product = self.env['product.product'].create({
