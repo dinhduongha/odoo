@@ -13,4 +13,4 @@ class TestMultiCompany(HttpCase):
         company = self.env['res.company'].create({'name': "Adaa"})
         website.company_id = company
         response = self.url_open('/multi_company_website')
-        self.assertEqual(response.json()[0], company.id)
+        self.assertEqual(response.json()[0], str(company.id))
