@@ -25,25 +25,34 @@ class TestHttpModels(TestHttpBase):
 
     def test_models0_galaxy_ok(self):
         milky_way = self.env.ref('test_http.milky_way')
+        earth = self.env.ref('test_http.earth')
+        abydos = self.env.ref('test_http.abydos')
+        dakara = self.env.ref('test_http.dakara')
 
         res = self.url_open(f"/test_http/{milky_way.id}")
 
         self.assertEqual(res.status_code, 200)
+        # ids are uuids, so the rendered hrefs and designations must be
+        # derived from the actual records rather than hardcoded int ids.
+        expected_items = ''.join(
+            f'<li><a href="/test_http/{milky_way.id}/{gate.id}">'
+            f'{gate.name} ({gate.sgc_designation})</a></li>'
+            for gate in (earth, abydos, dakara)
+        )
         self.assertEqual(
             HtmlTokenizer.tokenize(res.text),
-            HtmlTokenizer.tokenize('''\
+            HtmlTokenizer.tokenize(f'''\
                 <p>Milky Way</p>
                 <ul>
-                    <li><a href="/test_http/1/1">Earth (P4X-126)</a></li>
-                    <li><a href="/test_http/1/2">Abydos (P2X-125)</a></li>
-                    <li><a href="/test_http/1/3">Dakara (P5C-113)</a></li>
+                    {expected_items}
                 </ul>
                 ''')
             )
 
     @mute_logger('odoo.http')
     def test_models1_galaxy_ko(self):
-        res = self.url_open("/test_http/404")  # unknown galaxy
+        # ids are uuids; use a well-formed but non-existent uuid
+        res = self.url_open("/test_http/00000000-0000-0000-0000-000000000404")  # unknown galaxy
         self.assertEqual(res.status_code, HTTPStatus.UNPROCESSABLE_ENTITY)
         self.assertIn('The Ancients did not settle there.', res.text)
 
@@ -56,11 +65,11 @@ class TestHttpModels(TestHttpBase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(
             HtmlTokenizer.tokenize(res.text),
-            HtmlTokenizer.tokenize('''\
+            HtmlTokenizer.tokenize(f'''\
                 <dl>
                     <dt>name</dt><dd>Earth</dd>
                     <dt>address</dt><dd>sq5Abt</dd>
-                    <dt>sgc_designation</dt><dd>P4X-126</dd>
+                    <dt>sgc_designation</dt><dd>{earth.sgc_designation}</dd>
                 </dl>
             ''')
         )
@@ -68,7 +77,8 @@ class TestHttpModels(TestHttpBase):
     def test_models3_stargate_ko(self):
         milky_way = self.env.ref('test_http.milky_way')
         with self.assertLogs("odoo.http", level="WARNING") as logs:
-            res = self.url_open(f'/test_http/{milky_way.id}/9999')  # unknown gate
+            # ids are uuids; use a well-formed but non-existent uuid
+            res = self.url_open(f'/test_http/{milky_way.id}/00000000-0000-0000-0000-000000009999')  # unknown gate
         self.assertEqual(res.status_code, HTTPStatus.UNPROCESSABLE_ENTITY)
         self.assertIn("The goauld destroyed the gate", res.text)
         self.assertEqual(logs.output, ["WARNING:odoo.http:The goauld destroyed the gate"])
@@ -121,8 +131,10 @@ class TestHttpModels(TestHttpBase):
         with self.assertLogs('werkzeug', logging.INFO) as capture:
             with mute_logger('odoo.addons.rpc.controllers.xmlrpc'):
                 self.xmlrpc_object.execute_kw(
-                    get_db_name(), self.jackoneill.id, 'jackoneill',
-                   'res.users', 'read', [self.jackoneill.id, ['login']]
+                    # ids are uuids; the stdlib xmlrpc client cannot marshal
+                    # UUID objects, so pass their string form
+                    get_db_name(), str(self.jackoneill.id), 'jackoneill',
+                   'res.users', 'read', [str(self.jackoneill.id), ['login']]
                 )
             res = self.url_open('/test_http/wsgi_environ')
             res.raise_for_status()

@@ -130,7 +130,11 @@ class TestHttpWebJson_1(TestHttpBase):
             self.assertIn("expected action at word 1 but found “5”", res.text)
 
         with self.subTest(bad='record_id'):
-            res = self.url_open_json('/test_http.stargate/1/2', expected_code=400)
+            # record ids are uuids; the first id is consumed as a record_id so
+            # the trailing word is the one that must fail to resolve as action
+            res = self.url_open_json(
+                '/test_http.stargate/00000000-0000-0000-0000-000000000001/2',
+                expected_code=400)
             self.assertEqual(res.headers['Content-Type'], CT_HTML)
             self.assertIn("expected action at word 3 but found “2”", res.text)
 
@@ -143,7 +147,7 @@ class TestHttpWebJson_1(TestHttpBase):
     def test_webjson_form(self):
         self.authenticate_demo()
         res = self.url_open_json(f'/test_http.stargate/{self.earth.id}')
-        self.assertEqual(res.json(), {
+        self.assertEqual(res.json(), self.json_normalize({
             'id': self.earth.id,
             'name': self.earth.name,
             'sgc_designation': self.earth.sgc_designation,
@@ -151,39 +155,39 @@ class TestHttpWebJson_1(TestHttpBase):
                           'display_name': self.earth.galaxy_id.name},
             'glyph_attach': self.gizeh_b64,
             'glyph_inline': self.gizeh_b64,
-        })
+        }))
 
     def test_webjson_form_subtree(self):
         env = self.authenticate_demo()
         res = self.url_open_json(f'/test_http.galaxy/{self.milky_way.id}')
         self.assertEqual(
             res.json(),
-            self.milky_way.with_env(env).web_read({
+            self.json_normalize(self.milky_way.with_env(env).web_read({
                 'name': {},
                 'stargate_ids': {'fields': {
                     'name': {},
                     'sgc_designation': {}
                 }},
-            })[0],
+            })[0]),
         )
 
     def test_webjson_form_viewtype_list(self):
         self.authenticate_demo()
         url = f'/test_http.stargate/{self.earth.id}'
         res = self.url_open_json(f'{url}?view_type=list')
-        self.assertEqual(res.json(), {
+        self.assertEqual(res.json(), self.json_normalize({
             'id': self.earth.id,
             'name': self.earth.name,
             'sgc_designation': self.earth.sgc_designation,
-        })
+        }))
 
     def test_webjson_list(self):
         env = self.authenticate_demo()
         res = self.url_open_json('/test_http.stargate')
         self.assertEqual(
             res.json(),
-            env['test_http.stargate']
-                .web_search_read([], {'name': {}, 'sgc_designation': {}})
+            self.json_normalize(env['test_http.stargate']
+                .web_search_read([], {'name': {}, 'sgc_designation': {}}))
         )
 
     def test_webjson_list_limit_offset(self):
@@ -195,22 +199,22 @@ class TestHttpWebJson_1(TestHttpBase):
         )['records']
 
         res_limit = self.url_open_json(f'{url}?limit=1')
-        self.assertEqual(res_limit.json(), {
+        self.assertEqual(res_limit.json(), self.json_normalize({
             'length': len(stargates),
             'records': stargates[:1]
-        })
+        }))
 
         res_offset = self.url_open_json(f'{url}?offset=1')
-        self.assertEqual(res_offset.json(), {
+        self.assertEqual(res_offset.json(), self.json_normalize({
             'length': len(stargates),
             'records': stargates[1:]
-        })
+        }))
 
         res_limit_offset = self.url_open_json(f'{url}?limit=1&offset=1')
-        self.assertEqual(res_limit_offset.json(), {
+        self.assertEqual(res_limit_offset.json(), self.json_normalize({
             'length': len(stargates),
             'records': stargates[1:2]
-        })
+        }))
 
     def test_webjson_list_domain(self):
         env = self.authenticate_demo()
@@ -218,8 +222,8 @@ class TestHttpWebJson_1(TestHttpBase):
         res = self.url_open_json(f'/test_http.stargate?domain={domain!r}')
         self.assertEqual(
             res.json(),
-            env['test_http.stargate']
-                .web_search_read(domain, {'name': {}, 'sgc_designation': {}})
+            self.json_normalize(env['test_http.stargate']
+                .web_search_read(domain, {'name': {}, 'sgc_designation': {}}))
         )
 
     def test_webjson_list_domain_default_filter(self):
@@ -261,8 +265,8 @@ class TestHttpWebJson_1(TestHttpBase):
         res = self.url_open_json('/test_http.stargate')
         self.assertEqual(
             res.json(),
-            env['test_http.stargate']
-                .web_search_read(domain, {'name': {}, 'sgc_designation': {}})
+            self.json_normalize(env['test_http.stargate']
+                .web_search_read(domain, {'name': {}, 'sgc_designation': {}}))
         )
         self.assertEqual(len(res.history), 1, "should had been redirected")
         self.assertEqual(res.history[0].status_code, HTTPStatus.TEMPORARY_REDIRECT)
@@ -277,14 +281,14 @@ class TestHttpWebJson_1(TestHttpBase):
         res = self.url_open_json('/test_http.stargate?view_type=pivot')
         self.assertEqual(
             res.json(),
-            read_group_list(
-                env['test_http.stargate'], [], ['galaxy_id', 'has_galaxy_crystal'], ['availability:avg']),
+            self.json_normalize(read_group_list(
+                env['test_http.stargate'], [], ['galaxy_id', 'has_galaxy_crystal'], ['availability:avg'])),
         )
 
         res = self.url_open_json('/test_http.stargate?view_type=pivot&groupby=has_galaxy_crystal&fields=availability:min')
         self.assertEqual(
             res.json(),
-            read_group_list(env['test_http.stargate'], [], ['has_galaxy_crystal'], ['availability:min']),
+            self.json_normalize(read_group_list(env['test_http.stargate'], [], ['has_galaxy_crystal'], ['availability:min'])),
         )
 
         user_domain = [('availability', '>=', 0.95)]
@@ -297,7 +301,7 @@ class TestHttpWebJson_1(TestHttpBase):
         res = self.url_open_json('/test_http.stargate?view_type=pivot&groupby=has_galaxy_crystal&fields=availability:min')
         self.assertEqual(
             res.json(),
-            read_group_list(env['test_http.stargate'], user_domain, ['has_galaxy_crystal'], ['availability:min']),
+            self.json_normalize(read_group_list(env['test_http.stargate'], user_domain, ['has_galaxy_crystal'], ['availability:min'])),
         )
 
     def test_webjson_graph(self):
@@ -305,7 +309,7 @@ class TestHttpWebJson_1(TestHttpBase):
         res = self.url_open_json('/test_http.stargate?view_type=graph')
         self.assertEqual(
             res.json(),
-            read_group_list(env['test_http.stargate'], [], ['galaxy_id']),
+            self.json_normalize(read_group_list(env['test_http.stargate'], [], ['galaxy_id'])),
         )
 
     def test_webjson_activity(self):

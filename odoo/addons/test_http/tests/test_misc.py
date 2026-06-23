@@ -91,7 +91,8 @@ class TestHttpMisc(TestHttpBase):
 
         payload = json.dumps({'jsonrpc': '2.0', 'method': 'call', 'id': None, 'params': {
             'service': 'object', 'method': 'execute', 'args': [
-                get_db_name(), jack.id, 'jackoneill', 'test_http.galaxy', 'render', milky_way.id
+                # ids are uuids; serialize them as strings for JSON-RPC
+                get_db_name(), str(jack.id), 'jackoneill', 'test_http.galaxy', 'render', str(milky_way.id)
             ]
         }})
 

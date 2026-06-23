@@ -1,5 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import json
 from datetime import datetime, timezone
 from unittest.mock import patch
 
@@ -55,6 +56,14 @@ class TestHttpBase(HttpCaseWithUserDemo):
             db_filter.side_effect = lambda dbs, host=None: [db for db in dbs if db in dblist]
             Registry.return_value = self.registry
             return self.url_open(url, *args, allow_redirects=allow_redirects, **kwargs)
+
+    @staticmethod
+    def json_normalize(value):
+        """ Round-trip a python value through JSON so that uuid PKs (and
+        other non-JSON-native types) are rendered exactly as they appear in
+        an HTTP JSON response (e.g. UUID objects become their string form).
+        """
+        return json.loads(json.dumps(value, default=str))
 
     def parse_http_cache_control(self, cache_control):
         return parse_cache_control_header(cache_control, None, ResponseCacheControl)

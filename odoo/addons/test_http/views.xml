@@ -13,7 +13,7 @@
 
         <template id="tmpl_stargate">
             <dl>
-                <t t-if="gate.galaxy_id.id != 1">
+                <t t-if="gate.galaxy_id.name != 'Milky Way'">
                     <dt>galaxy</dt><dd><t t-out="gate.galaxy_id.name"/></dd>
                 </t>
                 <t t-foreach="('name', 'address', 'sgc_designation')" t-as="field">

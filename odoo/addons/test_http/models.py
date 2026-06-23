@@ -50,10 +50,12 @@ class Test_HttpStargate(models.Model):
                 gate.sgc_designation = False
                 continue
 
+            # ids are uuids; use their integer value to pick a region
+            gate_id_int = gate.id.int if hasattr(gate.id, 'int') else gate.id
             region_part = (
-                PEGASUS_REGIONS[gate.id % len(PEGASUS_REGIONS)]
+                PEGASUS_REGIONS[gate_id_int % len(PEGASUS_REGIONS)]
                 if gate.galaxy_id.name == 'Pegasus'
-                else MILKY_WAY_REGIONS[gate.id % len(MILKY_WAY_REGIONS)]
+                else MILKY_WAY_REGIONS[gate_id_int % len(MILKY_WAY_REGIONS)]
             )
             local_part = str(int.from_bytes(gate.address.encode(), 'big'))[:3]
             gate.sgc_designation = f'{region_part}-{local_part}'

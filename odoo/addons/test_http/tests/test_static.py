@@ -721,7 +721,8 @@ class TestHttpStaticUpload(TestHttpStaticCommon):
         self.assertEqual(res.json(), [{
             'filename': 'gizeh.png',
             'mimetype': 'image/png',
-            'id': capture.records.id,
+            # ids are uuids; the JSON response renders them as strings
+            'id': str(capture.records.id),
             'size': file_size,
         }])
 

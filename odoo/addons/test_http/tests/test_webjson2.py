@@ -194,10 +194,11 @@ class TestHttpWebJson_2(TestHttpBase):
     def test_webjson2_good(self):
         res = self.db_url_open(
             '/json/2/res.users/search',
-            data=r'{"domain": [["id","=",%d]]}' % self.jackoneill.id,
+            # ids are uuids: pass them as JSON strings, not integers
+            data=r'{"domain": [["id","=","%s"]]}' % self.jackoneill.id,
             headers=CT_JSON | self.bearer_header,
         )
-        self.assertEqual(res.text, f"[{self.jackoneill.id}]")
+        self.assertEqual(res.text, f'["{self.jackoneill.id}"]')
         self.assertEqual(res.status_code, HTTPStatus.OK)
         self.assertEqual(res.headers.get('Content-Type'), 'application/json; charset=utf-8')
 
@@ -248,7 +249,8 @@ class TestHttpWebJson_2(TestHttpBase):
                 json={
                     '__model__': body_model,  # trick
                     '__method__': method,
-                    'domain': [('id', '=', 1)],
+                    # ids are uuids; use a well-formed (non-existent) one
+                    'domain': [('id', '=', '00000000-0000-0000-0000-000000000001')],
                 })
             url_search.assert_called()
             body_search.assert_not_called()
