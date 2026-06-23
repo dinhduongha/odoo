@@ -126,7 +126,7 @@ class TestPropertiesExportImport(HttpCase):
             "/web/export/get_fields",
             data=json.dumps({"params": {"model": 'import.properties',
                                         'import_compat': True,
-                                        'domain': [('id', 'in', self.properties_records[0].ids)]}}),
+                                        'domain': [('id', 'in', self.properties_records[0].ids)]}}, default=str),
             headers={"Content-Type": "application/json"}
         )
         dict_fields = json.loads(res.content)['result']
@@ -179,7 +179,7 @@ class TestPropertiesExportImport(HttpCase):
             "/web/export/get_fields",
             data=json.dumps({"params": {"model": 'import.properties.inherits',
                                         'import_compat': True,
-                                        'domain': [('id', 'in', inherits_records[0].ids)]}}),
+                                        'domain': [('id', 'in', inherits_records[0].ids)]}}, default=str),
             headers={"Content-Type": "application/json"}
         )
         dict_fields = json.loads(res.content)['result']

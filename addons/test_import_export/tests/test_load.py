@@ -9,6 +9,11 @@ from odoo.tools.misc import file_open, mute_logger
 from odoo.tools.translate import code_translations
 
 
+# A syntactically valid UUID that is guaranteed not to exist in the database,
+# used to exercise the "database id not found" path (formerly a bogus int like 42/66).
+MISSING_DB_ID = '00000000-0000-7000-8000-000000000042'
+
+
 def message(msg, type_='error', from_=0, to_=0, record=0, field='value', **kwargs):
     return dict(kwargs, type=type_, rows={'from': from_, 'to': to_}, record=record, field=field, message=msg)
 
@@ -819,17 +824,17 @@ class test_m2o(ImporterCase):
         )
         self.assertIs(result['ids'], False)
 
-        result = self.import_(['value/.id'], [['66']])
+        result = self.import_(['value/.id'], [[MISSING_DB_ID]])
         self.assertEqual(
             result['messages'],
             [
                 message(
-                    "No matching record found for database id '66' in field 'Value'",
+                    "No matching record found for database id '%s' in field 'Value'" % MISSING_DB_ID,
                     moreinfo=moreaction(res_model='ir.model.data', domain=[('model', '=', 'export.integer')]),
                     field_name='Value',
                     field_path=['value', '.id'],
                     field_type="database id",
-                    value="66",
+                    value=MISSING_DB_ID,
                 )
             ],
         )
@@ -919,10 +924,10 @@ class test_m2m(ImporterCase):
         result = self.import_(
             ['value/.id'],
             [
-                ['%d,%d' % (id1, id2)],
-                ['%d,%d,%d' % (id1, id3, id4)],
-                ['%d,%d,%d' % (id1, id2, id3)],
-                ['%d' % id5],
+                ['%s,%s' % (id1, id2)],
+                ['%s,%s,%s' % (id1, id3, id4)],
+                ['%s,%s,%s' % (id1, id2, id3)],
+                ['%s' % id5],
             ],
         )
         self.assertFalse(result['messages'])
@@ -939,17 +944,17 @@ class test_m2m(ImporterCase):
         self.assertEqual(values(b[2].value), [3, 44, 84])
 
     def test_noids(self):
-        result = self.import_(['value/.id'], [['42']])
+        result = self.import_(['value/.id'], [[MISSING_DB_ID]])
         self.assertEqual(
             result['messages'],
             [
                 message(
-                    "No matching record found for database id '42' in field 'Value'",
+                    "No matching record found for database id '%s' in field 'Value'" % MISSING_DB_ID,
                     moreinfo=moreaction(res_model='ir.model.data', domain=[('model', '=', 'export.many2many.other')]),
                     field_name='Value',
                     field_path=['value', '.id'],
                     field_type="database id",
-                    value='42',
+                    value=MISSING_DB_ID,
                 )
             ],
         )
@@ -1041,10 +1046,10 @@ class test_m2m(ImporterCase):
         id4 = self.env['export.many2many.other'].create({'value': 9, 'str': 'record3'}).id
 
         xid = 'myxid'
-        result = self.import_(['id', 'value/.id'], [[xid, '%d,%d' % (id1, id2)]])
+        result = self.import_(['id', 'value/.id'], [[xid, '%s,%s' % (id1, id2)]])
         self.assertFalse(result['messages'])
         self.assertEqual(len(result['ids']), 1)
-        result = self.import_(['id', 'value/.id'], [[xid, '%d,%d' % (id3, id4)]])
+        result = self.import_(['id', 'value/.id'], [[xid, '%s,%s' % (id3, id4)]])
         self.assertFalse(result['messages'])
         self.assertEqual(len(result['ids']), 1)
 
@@ -1164,7 +1169,7 @@ class test_o2m(ImporterCase):
         result = self.import_(
             ['const', 'value/.id'],
             [
-                ['42', '%d,%d' % (id1, id2)],
+                ['42', '%s,%s' % (id1, id2)],
             ],
         )
         self.assertFalse(result['messages'])

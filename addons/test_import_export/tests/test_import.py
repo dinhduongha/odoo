@@ -1122,7 +1122,7 @@ foo3,US,0,persons\n""",
             },
         ])
         file_content = generate_xlsx({
-            "Property Definition": [def_record.id, def_record.id],
+            "Property Definition": [str(def_record.id), str(def_record.id)],
             f"TextType ({def_record.display_name})": [datetime.datetime(2020, 1, 6, 8, 10), datetime.date(2025, 7, 1)],
             f"DateType ({def_record.display_name})": [datetime.datetime(2020, 2, 6, 8, 10), datetime.date(2025, 7, 2)],
         })

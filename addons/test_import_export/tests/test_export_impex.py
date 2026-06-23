@@ -1,5 +1,6 @@
 import itertools
 import pstats
+import re
 from cProfile import Profile
 
 from odoo import fields, Command
@@ -261,7 +262,7 @@ class test_m2o(CreatorCase):
         record = self.env['export.integer'].create({'value': 42})
         # Expecting the m2o target model name in the external id,
         # not this model's name
-        self.assertRegex(self.export(record.id, fields=['value/id'])[0][0], '__export__.export_integer_%d_[0-9a-f]{8}' % record.id)
+        self.assertRegex(self.export(record.id, fields=['value/id'])[0][0], '__export__.export_integer_%s_[0-9a-f]{8}' % re.escape(str(record.id)))
 
     def test_identical(self):
         m2o = self.env['export.integer'].create({'value': 42}).id
@@ -269,7 +270,7 @@ class test_m2o(CreatorCase):
         self.env.invalidate_all()
         xp = [r[0] for r in records._export_rows([['value', 'id']])]
         self.assertEqual(len(xp), 4)
-        self.assertRegex(xp[0], '__export__.export_integer_%d_[0-9a-f]{8}' % m2o)
+        self.assertRegex(xp[0], '__export__.export_integer_%s_[0-9a-f]{8}' % re.escape(str(m2o)))
         self.assertEqual(set(xp), {xp[0]})
 
 

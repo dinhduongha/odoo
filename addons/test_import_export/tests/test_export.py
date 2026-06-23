@@ -56,7 +56,7 @@ class XlsxCreatorCase(common.HttpCase):
             self.url_open(
                 '/web/export/xlsx',
                 data={
-                    'data': json.dumps(dict(self.default_params, **params)),
+                    'data': json.dumps(dict(self.default_params, **params), default=str),
                     'csrf_token': http.Request.csrf_token(self),
                 },
             )
@@ -109,7 +109,7 @@ class TestExport(XlsxCreatorCase):
         def get_namelist(export_id):
             res = self.url_open(
                 "/web/export/namelist",
-                data=json.dumps({"params": {"model": 'res.users', 'export_id': export_id}}),
+                data=json.dumps({"params": {"model": 'res.users', 'export_id': export_id}}, default=str),
                 headers={"Content-Type": "application/json"}
             )
             return json.loads(res.content)['result']

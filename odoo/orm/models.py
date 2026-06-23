@@ -1347,17 +1347,23 @@ class BaseModel(metaclass=MetaModel):
             # dbid
             dbid = False
             if record.get('.id'):
-                try:
-                    dbid = uuid.UUID(record['.id'])
-                except ValueError:
+                raw_dbid = record['.id']
+                id_type = self._fields['id'].column_type[0]
+                if id_type == 'uuid':
+                    try:
+                        dbid = uuid.UUID(raw_dbid)
+                    except ValueError:
+                        # not a valid uuid: definitely not an existing identifier
+                        dbid = None
+                else:
                     # in case of overridden id column
-                    dbid = record['.id']
-                if not self.search([('id', '=', dbid)]):
+                    dbid = raw_dbid
+                if dbid is None or not self.search([('id', '=', dbid)]):
                     log(dict(extras,
                         type='error',
                         record=stream_index,
                         field='.id',
-                        message=_(u"Unknown database identifier '%s'", dbid)))
+                        message=_(u"Unknown database identifier '%s'", raw_dbid)))
                     dbid = False
 
             converted = convert(record, functools.partial(_log, extras, stream_index))

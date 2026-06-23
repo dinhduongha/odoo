@@ -7,6 +7,7 @@ import itertools
 import json
 import logging
 import operator
+import uuid
 from collections import defaultdict, OrderedDict
 
 from werkzeug.exceptions import InternalServerError
@@ -580,12 +581,16 @@ class ExportFormat(object):
                 SearchModel = Model
             groups_data = SearchModel.formatted_read_group(domain, groupby, ['__count', 'id:array_agg'])
 
-            # Build a map from record ID to its export rows
+            # Build a map from record ID to its export rows. The exported `.id`
+            # column is a string; coerce it back to the same type as the model's
+            # primary key so it matches the ids returned by `formatted_read_group`
+            # (UUID objects for uuid-keyed models, ints otherwise).
+            id_is_uuid = Model._fields['id'].type == 'uuid'
             record_rows = {}
             current_id = None
             for row in export_data:
                 if row[0]:  # First column is the record ID
-                    current_id = int(row[0])
+                    current_id = uuid.UUID(row[0]) if id_is_uuid else int(row[0])
                     record_rows[current_id] = []
                 record_rows[current_id].append(row[1:])
 
