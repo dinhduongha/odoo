@@ -837,7 +837,7 @@ class ReportMrpReport_Mo_Overview(models.AbstractModel):
             for product in unknown_products:
                 extra_docs = self._get_extra_replenishments(product)
                 # Sorting the extra documents so that the ones flagged with an explicit production_id are on top of the list.
-                extra_docs.sort(key=lambda ex: ex.get('production_id', False), reverse=True)
+                extra_docs.sort(key=lambda ex: bool(ex.get('production_id', False)), reverse=True)
                 product_forecast_lines = list(filter(lambda line: line.get('product', {}).get('id') == product.id, forecast_lines))
                 updated_forecast_lines = self._add_extra_in_forecast(product_forecast_lines, extra_docs, product.uom_id.rounding)
                 replenish_data = self._set_replenish_data(updated_forecast_lines, product, replenish_data)
