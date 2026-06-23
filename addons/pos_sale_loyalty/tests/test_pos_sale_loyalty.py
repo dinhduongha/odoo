@@ -91,7 +91,7 @@ class TestPoSSaleLoyalty(TestPointOfSaleHttpCommon):
         sale_order.action_open_reward_wizard()
         self.assertEqual(sale_order.amount_total, 90)
         self.main_pos_config.open_ui()
-        self.start_tour("/pos/web?config_id=%d" % self.main_pos_config.id, "test_pos_sale_loyalty_ignored_in_pos", login="accountman")
+        self.start_tour("/pos/web?config_id=%s" % self.main_pos_config.id, "test_pos_sale_loyalty_ignored_in_pos", login="accountman")
 
     def test_sale_order_loyalty_card_can_be_used_in_pos(self):
         """Create loyalty program & card → Confirm sale order → Verify loyalty card usable in POS"""
