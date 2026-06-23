@@ -4,6 +4,7 @@ from odoo import api, Command, fields, models, _
 from odoo.addons.mail.tools.discuss import Store
 from odoo.exceptions import UserError
 from odoo.tools import get_lang
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.sql import column_exists, create_column
 
 
@@ -29,7 +30,7 @@ class WebsiteVisitor(models.Model):
             [("livechat_visitor_id", "in", self.ids), ("livechat_end_dt", "=", False)],
             ["livechat_visitor_id", "livechat_operator_id"],
         )
-        visitor_operator_map = {int(result['livechat_visitor_id'][0]): int(result['livechat_operator_id'][0]) for result in results}
+        visitor_operator_map = {to_uuid(result['livechat_visitor_id'][0]): to_uuid(result['livechat_operator_id'][0]) for result in results}
         for visitor in self:
             visitor.livechat_operator_id = visitor_operator_map.get(visitor.id, False)
 
@@ -64,7 +65,7 @@ class WebsiteVisitor(models.Model):
         for visitor in self:
             operator = self.env.user
             country = visitor.country_id
-            visitor_name = "Visitor #%d (%s)" % (visitor.id, country.name) if country else f"Visitor #{visitor.id}"
+            visitor_name = "Visitor #%s (%s)" % (visitor.id, country.name) if country else f"Visitor #{visitor.id}"
             members_to_add = [Command.link(operator.partner_id.id)]
             if visitor.partner_id:
                 members_to_add.append(Command.link(visitor.partner_id.id))
@@ -86,7 +87,7 @@ class WebsiteVisitor(models.Model):
                     {
                         "country_id": country.id,
                         "lang": get_lang(channel.env).code,
-                        "name": _("Visitor #%d", channel.livechat_visitor_id.id),
+                        "name": _("Visitor #%s", channel.livechat_visitor_id.id),
                         "timezone": visitor.timezone,
                     }
                 )

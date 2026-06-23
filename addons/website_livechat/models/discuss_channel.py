@@ -57,7 +57,7 @@ class DiscussChannel(models.Model):
     def _get_visitor_leave_message(self, operator=False, cancel=False):
         if not cancel:
             if self.livechat_visitor_id.id:
-                return _("Visitor #%(id)d left the conversation.", id=self.livechat_visitor_id.id)
+                return _("Visitor #%(id)s left the conversation.", id=self.livechat_visitor_id.id)
             return _("Visitor left the conversation.")
         return _(
             "%(visitor)s started a conversation with %(operator)s.\nThe chat request has been cancelled",
