@@ -10,6 +10,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Command, Domain
 from odoo.http import request
 from odoo.tools import float_is_zero, str2bool
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.website_sale.models.website import (
     FISCAL_POSITION_SESSION_CACHE_KEY,
@@ -623,7 +624,7 @@ class SaleOrder(models.Model):
         # add is_custom attribute values that were not received
         custom_values = product_custom_attribute_values or []
         received_custom_values = product.env['product.template.attribute.value'].browse([
-            int(ptav['custom_product_template_attribute_value_id'])
+            to_uuid(ptav['custom_product_template_attribute_value_id'])
             for ptav in custom_values
         ])
 

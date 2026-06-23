@@ -6,6 +6,7 @@ from functools import partial
 from odoo import _, api, fields, models
 from odoo.fields import Domain
 from odoo.http import request
+from odoo.tools.uuid_utils import to_uuid
 
 
 class WebsiteSnippetFilter(models.Model):
@@ -249,7 +250,7 @@ class WebsiteSnippetFilter(models.Model):
     ):
         products = self.env['product.product']
         current_template = self.env['product.template'].browse(
-            product_template_id and int(product_template_id)
+            product_template_id and to_uuid(product_template_id)
         ).exists()
         if current_template:
             sale_orders = self.env['sale.order'].sudo().search([
@@ -275,7 +276,7 @@ class WebsiteSnippetFilter(models.Model):
     def _get_products_accessories(self, website, limit, domain, product_template_id=None, **kwargs):
         products = self.env['product.product']
         current_template = self.env['product.template'].browse(
-            product_template_id and int(product_template_id)
+            product_template_id and to_uuid(product_template_id)
         ).exists()
         if current_template:
             cart_products = request.cart.order_line.product_id
@@ -296,7 +297,7 @@ class WebsiteSnippetFilter(models.Model):
     ):
         products = self.env['product.product']
         current_template = self.env['product.template'].browse(
-            product_template_id and int(product_template_id)
+            product_template_id and to_uuid(product_template_id)
         ).exists()
         if current_template:
             cart_products = request.cart.order_line.product_id

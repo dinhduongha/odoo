@@ -13,7 +13,7 @@ class IrHttp(models.AbstractModel):
         super()._pre_dispatch(rule, args)
         affiliate_id = request.httprequest.args.get('affiliate_id')
         if affiliate_id:
-            request.session['affiliate_id'] = int(affiliate_id)
+            request.session['affiliate_id'] = affiliate_id
 
     @api.model
     def get_frontend_session_info(self):

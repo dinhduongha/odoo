@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
+from odoo.tools.uuid_utils import to_uuid
 
 
 class WebsiteVisitor(models.Model):
@@ -43,6 +44,7 @@ class WebsiteVisitor(models.Model):
     def _add_viewed_product(self, product_id):
         """ add a website_track with a page marked as viewed"""
         self.ensure_one()
+        product_id = to_uuid(product_id)
         if product_id and self.env['product.product'].browse(product_id)._is_variant_possible():
             domain = [('product_id', '=', product_id)]
             website_track_values = {'product_id': product_id}

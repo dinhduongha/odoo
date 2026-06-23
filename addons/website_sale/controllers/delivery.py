@@ -4,6 +4,8 @@ from odoo import _
 from odoo.exceptions import UserError, ValidationError
 from odoo.http import request, route
 
+from odoo.tools.uuid_utils import to_uuid
+
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 
@@ -45,7 +47,7 @@ class Delivery(WebsiteSale):
         if not (order_sudo := request.cart):
             return {}
 
-        dm_id = dm_id
+        dm_id = to_uuid(dm_id)
         if dm_id in order_sudo._get_delivery_methods().ids and dm_id != order_sudo.carrier_id.id:
             for tx_sudo in order_sudo.transaction_ids:
                 if tx_sudo.state not in ('draft', 'cancel', 'error'):
@@ -97,6 +99,7 @@ class Delivery(WebsiteSale):
         if not (order_sudo := request.cart):
             raise ValidationError(_("Your cart is empty."))
 
+        dm_id = to_uuid(dm_id)
         if dm_id not in order_sudo._get_delivery_methods().ids:
             raise UserError(_(
                 "It seems that a delivery method is not compatible with your address. Please"

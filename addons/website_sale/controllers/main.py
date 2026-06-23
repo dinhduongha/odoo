@@ -3,6 +3,7 @@
 import base64
 import itertools
 import json
+import uuid
 from datetime import datetime
 
 from werkzeug import urls
@@ -14,6 +15,7 @@ from odoo.exceptions import ValidationError
 from odoo.fields import Command, Domain
 from odoo.http import request, route
 from odoo.tools import SQL, clean_context, float_round, groupby, lazy, str2bool
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.json import scriptsafe as json_scriptsafe
 from odoo.tools.translate import LazyTranslate, _
 
@@ -566,10 +568,10 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
         if pricelist is not None:
             try:
-                pricelist_id = int(pricelist)
+                pricelist_id = uuid.UUID(str(pricelist))
             except ValueError:
                 raise ValidationError(request.env._(
-                    "Wrong format: got `pricelist=%s`, expected an integer", pricelist,
+                    "Wrong format: got `pricelist=%s`, expected an identifier", pricelist,
                 ))
             if not self._apply_selectable_pricelist(pricelist_id):
                 return request.redirect(self._get_shop_path(category))
@@ -638,7 +640,10 @@ class WebsiteSale(payment_portal.PaymentPortal):
         # Compatibility pre-v14
         # Redirect to the "correct" product URL, which doesn't include `/product`, and where the
         # category has been removed from the query parameters and added to the path.
-        category = int(category) if str(category).isdigit() else False
+        try:
+            category = uuid.UUID(str(category)) if category else False
+        except ValueError:
+            category = False
         category = self._validate_and_get_category(category)
         query = self._get_filtered_query_string(
             request.httprequest.query_string.decode(), keys_to_remove=['category']
@@ -831,7 +836,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
             keep = QueryURL(self._get_shop_path(original_category))
 
         if attribute_values := kwargs.get('attribute_values', ''):
-            attribute_value_ids = {int(i) for i in attribute_values.split(',')}
+            attribute_value_ids = {to_uuid(i) for i in attribute_values.split(',')}
             combination = product.attribute_line_ids.mapped(
                 lambda ptal: (
                     ptal.product_template_value_ids.filtered(
@@ -1448,7 +1453,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 )
             # Process the delivery method.
             if shipping_option:
-                dm_id = int(shipping_option['id'])
+                dm_id = to_uuid(shipping_option['id'])
                 available_dms = order_sudo._get_delivery_methods()
                 order_sudo._set_delivery_method(available_dms.filtered(lambda dm: dm.id == dm_id))
 
@@ -1965,10 +1970,17 @@ class WebsiteSale(payment_portal.PaymentPortal):
         :rtype: product.public.category
         """
         ProductCategory = request.env['product.public.category']
-        if not isinstance(category, ProductCategory.__class__) and category and not str(category).isdigit():
-            raise ValidationError(_("Invalid category."))
+        if isinstance(category, ProductCategory.__class__):
+            category_id = category.id
+        elif category:
+            try:
+                category_id = uuid.UUID(str(category))
+            except ValueError:
+                raise ValidationError(_("Invalid category."))
+        else:
+            category_id = None
         if (
-            (category := ProductCategory.browse(category and category).exists())
+            (category := ProductCategory.browse(category_id).exists())
             and category.can_access_from_current_website()
         ):
             return category
@@ -2013,6 +2025,6 @@ class WebsiteSale(payment_portal.PaymentPortal):
         """
         attribute_value_pairs = [value.split('-') for value in attribute_values if value]
         return {
-            int(pair[0]): [value_id for value_id in pair[1].split(',')]
+            to_uuid(pair[0]): [to_uuid(value_id) for value_id in pair[1].split(',')]
             for pair in attribute_value_pairs
         }
