@@ -60,7 +60,7 @@ class TestPurchaseProductCatalog(AccountTestInvoicingCommon, HttpCase):
                     'product_ids': other_product.ids + company_product.ids,
                     'res_model': 'purchase.order'
                 }
-            }),
+            }, default=str),
             headers={'Content-Type': 'application/json'},
         )
         self.assertEqual(resp.status_code, 200)
@@ -80,7 +80,7 @@ class TestPurchaseProductCatalog(AccountTestInvoicingCommon, HttpCase):
                     'quantity': 1,
                     'res_model': 'purchase.order'
                 }
-            }),
+            }, default=str),
             headers={'Content-Type': 'application/json'},
         )
         self.assertEqual(resp.status_code, 200)
@@ -96,7 +96,7 @@ class TestPurchaseProductCatalog(AccountTestInvoicingCommon, HttpCase):
                     'quantity': 1,
                     'res_model': 'purchase.order'
                 }
-            }),
+            }, default=str),
             headers={'Content-Type': 'application/json'},
         )
         self.assertEqual(resp.status_code, 200)
