@@ -91,7 +91,8 @@ class TestWebsiteResetPassword(HttpCase):
 
         # The most specific user should be selected
         self.authenticate("bobo@mail.com", "bobo@mail.com")
-        self.assertEqual(self.session["uid"], user2.id)
+        # uid is stored in the session as the stringified uuid
+        self.assertEqual(self.session["uid"], str(user2.id))
 
     def test_multi_website_reset_password_user_specific_user_account(self):
         # Create same user on different websites with 'Specific User Account'

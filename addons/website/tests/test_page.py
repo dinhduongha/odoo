@@ -172,8 +172,8 @@ class TestPage(common.TransactionCase):
         self.assertEqual(bool(self.page_1.website_id), False)
 
         new_page = Page.search([('url', '=', '/page_1'), ('id', '!=', self.page_1.id)])
-        self.assertEqual(new_page.website_id.id, 1)
-        self.assertEqual(new_page.view_id.inherit_children_ids[0].website_id.id, 1)
+        self.assertEqual(new_page.website_id.id, self.env.ref('website.default_website').id)
+        self.assertEqual(new_page.view_id.inherit_children_ids[0].website_id.id, self.env.ref('website.default_website').id)
         self.assertEqual(new_page.arch, '<div>website 1 content</div>')
 
     def test_cow_extension_view(self):
@@ -204,9 +204,9 @@ class TestPage(common.TransactionCase):
         self.assertEqual(self.extension_view.arch, '<div>modified extension content</div>')
         self.assertEqual(bool(self.page_1.website_id), False)
 
-        new_view = View.search([('name', '=', 'Extension'), ('website_id', '=', 1)])
+        new_view = View.search([('name', '=', 'Extension'), ('website_id', '=', self.env.ref('website.default_website').id)])
         self.assertEqual(new_view.arch, '<div>website 1 content</div>')
-        self.assertEqual(new_view.website_id.id, 1)
+        self.assertEqual(new_view.website_id.id, self.env.ref('website.default_website').id)
 
     def test_cou_page_backend(self):
         Page = self.env['website.page']
@@ -231,7 +231,7 @@ class TestPage(common.TransactionCase):
         # currently the view unlink of website.page can't handle views with inherited views
         self.extension_view.unlink()
 
-        website_id = 1
+        website_id = self.env.ref('website.default_website').id
         self.page_1.with_context(website_id=website_id).unlink()
 
         self.assertEqual(bool(self.base_view.exists()), False)
@@ -283,18 +283,20 @@ class WithContext(HttpCase):
     @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_search(self):
         dbname = common.get_db_name()
-        admin_uid = self.env.ref('base.user_admin').id
+        # uids and record ids travel over the wire as strings: stock
+        # xmlrpc.client cannot serialize a uuid.UUID on the request side.
+        admin_uid = str(self.env.ref('base.user_admin').id)
         website = self.env['website'].get_current_website()
 
         robot = self.xmlrpc_object.execute(
             dbname, admin_uid, 'admin',
-            'website', 'search_pages', [website.id], 'info'
+            'website', 'search_pages', [str(website.id)], 'info'
         )
         self.assertIn({'loc': '/website/info'}, robot)
 
         pages = self.xmlrpc_object.execute(
             dbname, admin_uid, 'admin',
-            'website', 'search_pages', [website.id], 'page'
+            'website', 'search_pages', [str(website.id)], 'page'
         )
         self.assertIn(
             '/page_1',
@@ -640,12 +642,12 @@ class WithContext(HttpCase):
         generic_page = self.page
         generic_page.arch = '<div>content</div>'
 
-        specific_page = Page.search([('url', '=', self.page.url), ('website_id', '=', 1)])
+        specific_page = Page.search([('url', '=', self.page.url), ('website_id', '=', self.env.ref('website.default_website').id)])
         self.assertFalse(specific_page, "For this test, the specific page should not exist yet")
 
         # COW a generic page
         generic_page.view_id.with_context(website_id=self.env.ref('website.default_website').id).save(specific_arch, xpath='/div')
-        specific_page = Page.search([('url', '=', self.page.url), ('website_id', '=', 1)])
+        specific_page = Page.search([('url', '=', self.page.url), ('website_id', '=', self.env.ref('website.default_website').id)])
         self.assertEqual(specific_page.arch.replace('\n', ''), specific_arch)
         self.assertEqual(generic_page.arch, '<div>content</div>')
         # Change the URL of the specific page

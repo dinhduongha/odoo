@@ -555,7 +555,7 @@ class TestCowViewSaving(TestViewSavingCommon, HttpCase):
         self.assertEqual((v1 + v2 + v4).mapped('website_id').ids, [])
         self.assertEqual((v2 + v4).mapped('inherit_id'), v1)
         # Check specific tree
-        self.assertEqual((v6 + v7 + v8 + v9).mapped('website_id').ids, [1])
+        self.assertEqual((v6 + v7 + v8 + v9).mapped('website_id').ids, [self.env.ref('website.default_website').id])
         self.assertEqual((v7 + v8 + v9).mapped('inherit_id'), v6)
         # Check key
         self.assertEqual(v6.key == v1.key, True)
@@ -1419,7 +1419,7 @@ class TestCowViewSaving(TestViewSavingCommon, HttpCase):
             'field_name': 'arch_db',
             'translations': {french.code: {sha: 'contenu de base'}},
         })
-        self.url_open('/website/field/translation/update', data=json.dumps(payload), headers=self.headers)
+        self.url_open('/website/field/translation/update', data=json.dumps(payload, default=str), headers=self.headers)
         new_specific_views = View.search([('website_id', '!=', None)])
         self.assertEqual(len(old_specific_views), len(new_specific_views), "No additional specific view must have been created")
         self.assertTrue(view.arch.index('contenu de base') > 0, "New translation must appear in view")

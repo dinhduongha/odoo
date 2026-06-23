@@ -473,7 +473,7 @@ class TestUi(HttpCaseWithWebsiteUser):
             snippet_key='s_carousel',
             template_key='website.snippets')
         self.start_tour('/@/', 'snippet_cache_across_websites', login='admin', cookies={
-            'websiteIdMapping': json.dumps({'Test Website': website.id})
+            'websiteIdMapping': json.dumps({'Test Website': str(website.id)})
         })
 
     def test_26_website_media_dialog_icons(self):

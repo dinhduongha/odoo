@@ -4,6 +4,7 @@ import re
 import odoo.tests
 
 from odoo.tools import config
+from odoo.tools.uuid_utils import uuid7
 
 
 @odoo.tests.common.tagged('post_install', '-at_install')
@@ -69,11 +70,11 @@ class TestWebsiteAssets(odoo.tests.HttpCase):
     def test_02_t_cache_invalidation(self):
         self.authenticate(None, None)
         page = self.url_open('/').text # add to cache
-        public_assets_links = re.findall(r'(/web/assets/\d+/\w{7}/web.assets_frontend\..+)"/>', page)
+        public_assets_links = re.findall(r'(/web/assets/[0-9a-fA-F-]+/\w{7}/web.assets_frontend\..+)"/>', page)
         self.assertTrue(public_assets_links)
         self.authenticate('admin', 'admin')
         page = self.url_open('/').text
-        admin_assets_links = re.findall(r'(/web/assets/\d+/\w{7}/web.assets_frontend\..+)"/>', page)
+        admin_assets_links = re.findall(r'(/web/assets/[0-9a-fA-F-]+/\w{7}/web.assets_frontend\..+)"/>', page)
         self.assertTrue(admin_assets_links)
 
         self.assertEqual(public_assets_links, admin_assets_links)
@@ -89,7 +90,7 @@ class TestWebsiteAssets(odoo.tests.HttpCase):
         self.assertNotEqual(write_dates, snippets.mapped('write_date'))
 
         page = self.url_open('/').text
-        new_admin_assets_links = re.findall(r'(/web/assets/\d+/\w{7}/web.assets_frontend\..+)"/>', page)
+        new_admin_assets_links = re.findall(r'(/web/assets/[0-9a-fA-F-]+/\w{7}/web.assets_frontend\..+)"/>', page)
         self.assertTrue(new_admin_assets_links)
 
         self.assertEqual(public_assets_links, admin_assets_links)
@@ -98,7 +99,7 @@ class TestWebsiteAssets(odoo.tests.HttpCase):
         self.authenticate(None, None)
         page = self.url_open('/').text
 
-        new_public_assets_links = re.findall(r'(/web/assets/\d+/\w{7}/web.assets_frontend\..+)"/>', page)
+        new_public_assets_links = re.findall(r'(/web/assets/[0-9a-fA-F-]+/\w{7}/web.assets_frontend\..+)"/>', page)
         self.assertEqual(new_admin_assets_links, new_public_assets_links, "caches should have been invalidated for public user too")
 
     def test_invalid_unlink(self):
@@ -164,7 +165,7 @@ class TestWebAssets(odoo.tests.HttpCase):
                 "js cannot have `rtl` has extra",
             )
             self.assertEqual(
-                self.url_open(f'/web/{website_id+1}/assets/debug/web.assets_frontend.css', allow_redirects=False).status_code,
+                self.url_open(f'/web/{uuid7()}/assets/debug/web.assets_frontend.css', allow_redirects=False).status_code,
                 404,
                 "website_id does not exist",
             )

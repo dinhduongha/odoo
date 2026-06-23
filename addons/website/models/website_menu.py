@@ -10,6 +10,7 @@ from odoo.exceptions import UserError
 from odoo.fields import Domain
 from odoo.http import request
 from odoo.tools.translate import html_translate
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class WebsiteMenu(models.Model):
@@ -300,8 +301,10 @@ class WebsiteMenu(models.Model):
             self.browse(to_delete).unlink()
         for menu in data['data']:
             mid = menu['id']
-            # new menu are prefixed by new-
-            if isinstance(mid, str):
+            # New menus carry a placeholder string id (e.g. "menu_<isodate>")
+            # from the editor; existing menus carry their uuid (object or its
+            # string form over JSON). Treat anything that is not a uuid as new.
+            if isinstance(mid, str) and not is_uuid(mid):
                 new_menu = self.create({'name': menu['name'], 'website_id': website_id})
                 replace_id(mid, new_menu.id)
         for menu in data['data']:
@@ -331,9 +334,9 @@ class WebsiteMenu(models.Model):
                 if page:
                     menu['page_id'] = page.id
                     menu['url'] = page.url
-                    if isinstance(menu.get('parent_id'), str):
+                    if isinstance(menu.get('parent_id'), str) and is_uuid(menu['parent_id']):
                         # Avoid failure if parent_id is sent as a string from a customization.
-                        menu['parent_id'] = int(menu['parent_id'])
+                        menu['parent_id'] = to_uuid(menu['parent_id'])
                 elif menu_id.page_id:
                     try:
                         # a page shouldn't have the same url as a controller

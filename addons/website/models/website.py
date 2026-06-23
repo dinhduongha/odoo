@@ -1477,7 +1477,10 @@ class Website(models.Model):
 
     def _force_website(self, website_id):
         if request:
-            request.session['force_website_id'] = website_id and str(website_id).isdigit() and int(website_id)
+            # Store the website uuid as a string so it stays JSON-serializable
+            # in the session. browse() in get_current_website() accepts the
+            # stringified uuid. A falsy value clears the forced website.
+            request.session['force_website_id'] = str(website_id) if website_id else website_id
 
     @api.model
     def is_public_user(self):

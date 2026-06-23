@@ -100,9 +100,9 @@ class WebsiteForm(http.Controller):
 
         request.session['form_builder_model_model'] = model_record.model
         request.session['form_builder_model'] = model_record.name
-        request.session['form_builder_id'] = id_record
+        request.session['form_builder_id'] = str(id_record)
 
-        return json.dumps({'id': id_record})
+        return json.dumps({'id': str(id_record)})
 
     # Constants string to make metadata readable on a text field
 

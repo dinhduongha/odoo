@@ -51,7 +51,7 @@ class TestMenu(common.TransactionCase):
                 'is_mega_menu': False,
             }
         ]
-        Menu.save(1, {'data': data, 'to_delete': []})
+        Menu.save(self.env.ref('website.default_website').id, {'data': data, 'to_delete': []})
 
         self.assertEqual(total_menu_items + 2, Menu.search_count([]), "Creating 2 new menus should create only 2 menus records")
 
@@ -341,10 +341,10 @@ class TestMenuHttp(common.HttpCase):
             "params": {
                 'model': 'website.menu',
                 'method': 'save',
-                'args': [1, {'data': [data], 'to_delete': to_delete or []}],
+                'args': [self.env.ref('website.default_website').id, {'data': [data], 'to_delete': to_delete or []}],
                 'kwargs': {},
             },
-        }), headers={"Content-Type": "application/json", "Referer": self.page.get_base_url() + self.page_url})
+        }, default=str), headers={"Content-Type": "application/json", "Referer": self.page.get_base_url() + self.page_url})
 
     def test_01_menu_page_m2o(self):
         # Ensure that the M2o relation tested later in the test is properly set.
