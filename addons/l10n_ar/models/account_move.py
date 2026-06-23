@@ -271,8 +271,13 @@ class AccountMove(models.Model):
     def _get_last_sequence_domain(self, relaxed=False):
         where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
         if self.company_id.account_fiscal_country_id.code == "AR" and self.l10n_latam_use_documents:
-            where_string += " AND l10n_latam_document_type_id = %(l10n_latam_document_type_id)s"
-            param['l10n_latam_document_type_id'] = self.l10n_latam_document_type_id.id or 0
+            if self.l10n_latam_document_type_id:
+                where_string += " AND l10n_latam_document_type_id = %(l10n_latam_document_type_id)s"
+                param['l10n_latam_document_type_id'] = self.l10n_latam_document_type_id.id
+            else:
+                # No document type selected yet: match no existing move (original int
+                # sentinel `= 0` never matched a real id; keep that "no last sequence" semantics).
+                where_string += " AND FALSE"
         return where_string, param
 
     def _l10n_ar_get_amounts(self, base_lines=None):
