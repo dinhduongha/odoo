@@ -832,7 +832,7 @@ class _RelationalMulti(_Relational):
                 origin = rec._origin
                 if not origin:
                     values = rec._convert_to_write({
-                        name: rec[name] if rec._fields[name].type == 'reference' else _get_id(rec[name])
+                        name: rec[name]
                         for name in rec._cache
                         if name not in inv_names
                     })
@@ -842,7 +842,7 @@ class _RelationalMulti(_Relational):
                     result[0][2].append(_get_id(origin.id))
                     if rec != origin:
                         values = rec._convert_to_write({
-                            name: rec[name] if rec._fields[name].type == 'reference' else _get_id(rec[name])
+                            name: rec[name]
                             for name in rec._cache
                             if name not in inv_names and get_origin(rec[name]) != origin[name]
                         })
