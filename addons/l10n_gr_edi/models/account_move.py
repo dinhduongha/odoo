@@ -97,7 +97,7 @@ class AccountMove(models.Model):
             ('l10n_gr_edi_state', 'varchar'),
             ('l10n_gr_edi_inv_type', 'varchar'),
             ('l10n_gr_edi_payment_method', 'varchar'),
-            ('l10n_gr_edi_attachment_id', 'int4'),
+            ('l10n_gr_edi_attachment_id', 'uuid'),
         ):
             if not column_exists(self.env.cr, 'account_move', column_name):
                 create_column(self.env.cr, 'account_move', column_name, column_type)
