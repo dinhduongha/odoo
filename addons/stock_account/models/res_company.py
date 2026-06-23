@@ -341,7 +341,6 @@ class ResCompany(models.Model):
         closing = self.env['account.move']
         while not closing and closing_ids:
             closing_id = closing_ids.pop(-1)
-            closing_id = int(closing_id)
             closing = self.env['account.move'].browse(closing_id).exists().filtered(lambda am: am.state == 'posted')
         if not closing:
             return False

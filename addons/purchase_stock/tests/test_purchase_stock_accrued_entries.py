@@ -161,7 +161,7 @@ class TestAccruedPurchaseStock(AccountTestInvoicingCommon):
                 move_form = Form(self.env['account.move'].with_context(default_move_type='in_invoice', default_date=date))
                 move_form.invoice_date = date
                 move_form.partner_id = self.partner_a
-                move_form.purchase_vendor_bill_id = self.env['purchase.bill.union'].browse(-purchase_order.id)
+                move_form.purchase_vendor_bill_id = self.env['purchase.bill.union'].browse(purchase_order.id)
                 return move_form.save()
 
         account_receivable = self.company_data['default_account_receivable']

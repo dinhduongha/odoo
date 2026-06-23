@@ -14,12 +14,12 @@ class TestRoutes(TransactionCase):
 
         location_1 = self.env['stock.location'].create({
             'name': 'loc1',
-            'location_id': warehouse.id
+            'location_id': warehouse.view_location_id.id
         })
 
         location_2 = self.env['stock.location'].create({
             'name': 'loc2',
-            'location_id': warehouse.id
+            'location_id': warehouse.view_location_id.id
         })
 
         receipt_1 = self.env['stock.picking.type'].create({
