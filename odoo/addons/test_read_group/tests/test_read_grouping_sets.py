@@ -655,7 +655,9 @@ class TestFormattedReadGroupingSets(common.TransactionCase):
             ],
         )
 
-        aggregates_sets = [['__count'], ['__count', 'id:sum'], ['id:max']]
+        # 'id:sum' is not valid on uuid primary keys; use 'id:count' to keep a
+        # second aggregate alongside '__count'. 'id:max' works on uuid (ordering).
+        aggregates_sets = [['__count'], ['__count', 'id:count'], ['id:max']]
         grouping_sets = [['bar_id.base_ids'], ['bar_id'], []]
 
         for aggregates in aggregates_sets:
