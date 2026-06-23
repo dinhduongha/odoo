@@ -14,10 +14,10 @@ class HrEmployeeCV(Controller):
 
     @route(["/print/cv"], type='http', auth='user')
     def print_employee_cv(self, employee_ids='', color_primary='#666666', color_secondary='#666666', **post):
-        if not request.env.user._is_internal() or not employee_ids or re.search("[^0-9|,]", employee_ids):
+        if not request.env.user._is_internal() or not employee_ids or re.search("[^0-9a-fA-F|,-]", employee_ids):
             return request.not_found()
 
-        ids = [int(s) for s in employee_ids.split(',')]
+        ids = [s for s in employee_ids.split(',') if s]
         employees = request.env['hr.employee'].browse(ids)
         if not request.env.user.has_group('hr.group_hr_user') and employees.ids != request.env.user.employee_id.ids:
             return request.not_found()
