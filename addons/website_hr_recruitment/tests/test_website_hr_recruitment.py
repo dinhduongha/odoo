@@ -79,7 +79,7 @@ class TestWebsiteHrRecruitmentForm(odoo.tests.HttpCase):
             },
         ])
         WebsiteHrRecruitmentController = WebsiteHrRecruitment()
-        with MockRequest(self.env, website=self.env['website'].browse(1)):
+        with MockRequest(self.env, website=self.env['website'].search([], limit=1)):
             response = WebsiteHrRecruitmentController.jobs()
         self.assertEqual(response.status, '200 OK')
 

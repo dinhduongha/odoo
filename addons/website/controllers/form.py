@@ -7,6 +7,7 @@ import psycopg2
 from markupsafe import Markup
 from psycopg2 import IntegrityError
 import re
+import uuid
 from werkzeug.exceptions import BadRequest
 
 from odoo import http, SUPERUSER_ID
@@ -116,6 +117,12 @@ class WebsiteForm(http.Controller):
     def integer(self, field_label, field_input):
         return int(field_input)
 
+    def many2one(self, field_label, field_input):
+        # Record ids are uuids, not integers. Coerce a uuid string to a UUID
+        # object (raising ValueError on an invalid value, like the integer
+        # filter did for ids, so it ends up in error_fields).
+        return uuid.UUID(field_input)
+
     def floating(self, field_label, field_input):
         return float(field_input)
 
@@ -129,7 +136,8 @@ class WebsiteForm(http.Controller):
         return base64.b64encode(field_input.read())
 
     def one2many(self, field_label, field_input):
-        return [int(i) for i in field_input.split(',')]
+        # Record ids are uuids, not integers.
+        return [uuid.UUID(i) for i in field_input.split(',')]
 
     def many2many(self, field_label, field_input, *args):
         return [(args[0] if args else (6, 0)) + (self.one2many(field_label, field_input),)]
@@ -147,7 +155,7 @@ class WebsiteForm(http.Controller):
         'html': html,
         'date': identity,
         'datetime': identity,
-        'many2one': integer,
+        'many2one': many2one,
         'one2many': one2many,
         'many2many': many2many,
         'selection': identity,
