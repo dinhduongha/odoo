@@ -6,6 +6,7 @@ import werkzeug
 from odoo.addons.test_mail_full.tests.common import TestMailFullCommon
 from odoo.tests.common import users
 from odoo.tools import mute_logger
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tests import tagged
 
 
@@ -52,7 +53,7 @@ class TestMassMailing(TestMailFullCommon):
             + recipient_void_1 + recipient_falsy_1
         )
 
-        mailing.write({'mailing_domain': [('id', 'in', recipients_all.ids)]})
+        mailing.write({'mailing_domain': repr([('id', 'in', [str(rid) for rid in recipients_all.ids])])})
         mailing.action_put_in_queue()
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()
@@ -112,7 +113,7 @@ class TestMassMailing(TestMailFullCommon):
                     unsubscribe_href = self._get_href_from_anchor_id(email['body'], "url6")
                     unsubscribe_url = werkzeug.urls.url_parse(unsubscribe_href)
                     unsubscribe_params = unsubscribe_url.decode_query().to_dict(flat=True)
-                    self.assertEqual(int(unsubscribe_params['document_id']), recipient.id)
+                    self.assertEqual(to_uuid(unsubscribe_params['document_id']), recipient.id)
                     self.assertEqual(unsubscribe_params['email'], recipient.email_normalized)
                     self.assertEqual(
                         mailing._generate_mailing_recipient_token(unsubscribe_params['document_id'], (unsubscribe_params['email'])),
@@ -125,7 +126,7 @@ class TestMassMailing(TestMailFullCommon):
                     view_href = self._get_href_from_anchor_id(email['body'], "url6")
                     view_url = werkzeug.urls.url_parse(view_href)
                     view_params = view_url.decode_query().to_dict(flat=True)
-                    self.assertEqual(int(view_params['document_id']), recipient.id)
+                    self.assertEqual(to_uuid(view_params['document_id']), recipient.id)
                     self.assertEqual(view_params['email'], recipient.email_normalized)
                     self.assertEqual(
                         mailing._generate_mailing_recipient_token(view_params['document_id'], (view_params['email'])),

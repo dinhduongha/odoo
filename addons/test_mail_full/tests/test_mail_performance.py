@@ -193,9 +193,9 @@ class TestPortalFormatPerformance(FullBaseMailPerformance):
                     (0, 0, {
                         'field_id': user_id_field.id,
                         'new_value_char': 'new 1',
-                        'new_value_integer': record.user_id.id,
+                        'new_value_uuid': record.user_id.id,
                         'old_value_char': 'old 1',
-                        'old_value_integer': cls.user_admin.id,
+                        'old_value_uuid': cls.user_admin.id,
                     }),
                 ]
             }

@@ -11,6 +11,7 @@ from odoo.exceptions import AccessError
 from odoo.tests import tagged, users
 from odoo.tests.common import HttpCase
 from odoo.tools import html_escape, mute_logger
+from odoo.tools.uuid_utils import to_uuid, uuid7
 
 
 @tagged('portal')
@@ -46,7 +47,7 @@ class TestPortalControllers(TestPortal):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get('Content-Type'), 'image/svg+xml; charset=utf-8')
-        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-\d+-author_avatar\.svg')
+        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-[\w-]+-author_avatar\.svg')
 
         placeholder_response = self.url_open(
             f'/mail/avatar/mail.message/{mail_record.id}/author_avatar/50x50?access_token={token + "a"}'
@@ -70,10 +71,10 @@ class TestPortalControllers(TestPortal):
             json={
                 'params': {
                     'thread_model': self.record_portal._name,
-                    'thread_id': self.record_portal.id,
+                    'thread_id': str(self.record_portal.id),
                     'post_data': {'body': "Test"},
                     'hash': _hash,
-                    'pid': pid,
+                    'pid': str(pid),
                 },
             },
         )
@@ -90,7 +91,7 @@ class TestPortalControllers(TestPortal):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get('Content-Type'), 'image/svg+xml; charset=utf-8')
-        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-\d+-author_avatar\.svg')
+        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-[\w-]+-author_avatar\.svg')
 
         placeholder_response = self.url_open(
             f'/mail/avatar/mail.message/{message.id}/author_avatar/50x50?_hash={_hash + "a"}&pid={pid}'
@@ -111,11 +112,11 @@ class TestPortalControllers(TestPortal):
             json={
                 'params': {
                     'thread_model': self.record_portal._name,
-                    'thread_id': self.record_portal.id,
+                    'thread_id': str(self.record_portal.id),
                     'post_data': {'body': "Test"},
                     'token': self.record_portal.access_token,
                     'hash': self.record_portal._sign_token(self.partner_2.id),
-                    'pid': self.partner_2.id,
+                    'pid': str(self.partner_2.id),
                 },
             },
         )
@@ -147,7 +148,7 @@ class TestPortalControllers(TestPortal):
             url=f"{self.record_portal.get_base_url()}/mail/chatter_fetch",
             json={
                 "params": {
-                    "thread_id": self.record_portal.id,
+                    "thread_id": str(self.record_portal.id),
                     "thread_model": self.record_portal._name,
                     "token": self.record_portal.access_token,
                 },
@@ -156,16 +157,16 @@ class TestPortalControllers(TestPortal):
         res.raise_for_status()
         fetched_ids = res.json()["result"]["messages"]
         self.assertIn(
-            msg_custom.id,
+            str(msg_custom.id),
             fetched_ids,
             "Non-internal non-comment subtype should be included.",
         )
         self.assertIn(
-            msg_comment.id,
+            str(msg_comment.id),
             fetched_ids,
             "Non-internal comment subtype should be included.",
         )
-        self.assertNotIn(msg_note.id, fetched_ids, "Internal subtype should be excluded.")
+        self.assertNotIn(str(msg_note.id), fetched_ids, "Internal subtype should be excluded.")
 
 
 @tagged('-at_install', 'post_install', 'portal', 'mail_controller')
@@ -233,16 +234,12 @@ class TestPortalFlow(MailCommon, HttpCase):
         cls.record_read_url_base = f'{base_url}/mail/view?model={cls.record_read._name}&res_id={cls.record_read.id}'
         cls.record_public_act_url_base = f'{base_url}/mail/view?model={cls.record_public_act_url._name}&res_id={cls.record_public_act_url.id}'
 
-        max_internal_id = cls.env['mail.test.track'].search([], order="id desc", limit=1).id
-        max_portal_id = cls.env['mail.test.portal'].search([], order="id desc", limit=1).id
-        max_read_id = cls.env['mail.test.simple'].search([], order="id desc", limit=1).id
-        max_public_act_url_id = cls.env['mail.test.portal.public.access.action'].search([], order="id desc", limit=1).id
-        cls.record_internal_url_no_exists = f'{base_url}/mail/view?model={cls.record_internal._name}&res_id={max_internal_id + 1}'
-        cls.record_portal_url_no_exists = f'{base_url}/mail/view?model={cls.record_portal._name}&res_id={max_portal_id + 1}'
-        cls.record_read_url_no_exists = f'{base_url}/mail/view?model={cls.record_read._name}&res_id={max_read_id + 1}'
-        cls.record_public_act_url_url_no_exists = f'{base_url}/mail/view?model={cls.record_public_act_url._name}&res_id={max_public_act_url_id + 1}'
+        cls.record_internal_url_no_exists = f'{base_url}/mail/view?model={cls.record_internal._name}&res_id={uuid7()}'
+        cls.record_portal_url_no_exists = f'{base_url}/mail/view?model={cls.record_portal._name}&res_id={uuid7()}'
+        cls.record_read_url_no_exists = f'{base_url}/mail/view?model={cls.record_read._name}&res_id={uuid7()}'
+        cls.record_public_act_url_url_no_exists = f'{base_url}/mail/view?model={cls.record_public_act_url._name}&res_id={uuid7()}'
 
-        cls.record_url_no_model = f'{cls.record_portal.get_base_url()}/mail/view?model=this.should.not.exists&res_id=1'
+        cls.record_url_no_model = f'{cls.record_portal.get_base_url()}/mail/view?model=this.should.not.exists&res_id={uuid7()}'
 
         # find portal + auth data url
         for group_name, group_func, group_data in cls.record_portal.sudo()._notify_get_recipients_groups(
@@ -303,7 +300,7 @@ class TestPortalFlow(MailCommon, HttpCase):
                 url_params.append(params)
                 # Note that pid, hash and auth_signup_token are not tested by this test but may be present in the URL (config).
                 self.assertEqual(params.get('model'), 'mail.test.portal')
-                self.assertEqual(int(params.get('res_id')), self.record_portal.id)
+                self.assertEqual(to_uuid(params.get('res_id')), self.record_portal.id)
                 self.assertTrue(params.get('access_token'))
         self.assertNotEqual(url_params[0]['access_token'], url_params[1]['access_token'])
         self.assertEqual(
