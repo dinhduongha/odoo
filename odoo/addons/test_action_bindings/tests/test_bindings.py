@@ -6,8 +6,13 @@ class TestActionBindings(common.TransactionCase):
         """ check the action bindings on models """
         Actions = self.env['ir.actions.actions']
 
-        # first make sure there is no bound action
-        self.env.ref('base.action_partner_merge').unlink()
+        # first make sure there is no bound action; clear every action/report
+        # currently bound to res.partner (extra installed modules may bind
+        # several, e.g. merge, send email/sms, vcard, privacy lookup, portal)
+        partner_model = self.env['ir.model']._get('res.partner')
+        self.env['ir.actions.actions'].search([
+            ('binding_model_id', '=', partner_model.id),
+        ]).unlink()
         bindings = Actions.get_bindings('res.partner')
         self.assertFalse(bindings.get('action'))
         self.assertFalse(bindings.get('report'))
