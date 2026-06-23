@@ -525,9 +525,9 @@ class TestAliasCompany(TestMailAliasCommon):
         self.assertEqual(self.company_2.alias_domain_id, mail_alias_domain_c2)
 
         # cannot unlink alias domain as there are aliases linked to it
-        # (ondelete='restrict' raises RestrictViolation, a sibling of
-        # ForeignKeyViolation under IntegrityError; both mean the FK blocks delete)
-        with self.assertRaises((psycopg2.errors.ForeignKeyViolation, psycopg2.errors.RestrictViolation)), mute_logger('odoo.sql_db'):
+        # uuid PKs: the FK uses ondelete='restrict', which raises RestrictViolation
+        # (not ForeignKeyViolation); both are IntegrityError, the FK blocks the delete
+        with self.assertRaises(psycopg2.errors.RestrictViolation), mute_logger('odoo.sql_db'):
             mail_alias_domain.unlink()
 
         # eject linked aliases then remove alias domain of first company; should
