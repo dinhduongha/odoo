@@ -11,7 +11,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools.mail import is_html_empty, email_normalize, email_split_and_format
 from odoo.tools.misc import clean_context
-from odoo.addons.mail.tools.parser import parse_res_ids
+from odoo.addons.mail.tools.parser import parse_res_ids, _UUID_REPR_RE
 
 
 def _reopen(self, res_id, model, context=None):
@@ -1565,7 +1565,17 @@ class MailComposeMessage(models.TransientModel):
         try:
             domain = self.res_domain
             if isinstance(self.res_domain, str):
-                domain = ast.literal_eval(domain)
+                try:
+                    domain = ast.literal_eval(domain)
+                except (ValueError, SyntaxError):
+                    # uuid PKs: a domain with uuid ids assigned to this Text field
+                    # is stored via repr, e.g. "[('id', 'in', [UUID('019ee...')])]".
+                    # ast.literal_eval cannot parse UUID(...) (a call), so normalise
+                    # it to quoted strings before evaluating.
+                    if 'UUID(' in domain:
+                        domain = ast.literal_eval(_UUID_REPR_RE.sub(r"\1", domain))
+                    else:
+                        raise
 
             domain = Domain(domain)
             domain.validate(self.env[self.model])

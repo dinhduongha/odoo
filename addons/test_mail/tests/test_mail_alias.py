@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import psycopg2
+import re
 
 from ast import literal_eval
 
@@ -10,6 +11,22 @@ from odoo.addons.mail.tests.common import MailCommon
 from odoo.tests import tagged
 from odoo.tests.common import users
 from odoo.tools import formataddr, mute_logger
+from odoo.tools.uuid_utils import to_uuid
+
+# uuid PKs: ids stored in a python-literal dict (e.g. alias_defaults) are serialised
+# as their repr "UUID('019ee...')", which ast.literal_eval cannot read. Normalise to a
+# quoted string so the literal parses, then coerce known id keys back to UUID.
+_UUID_REPR_RE = re.compile(r"UUID\((('[0-9a-fA-F-]+')|(\"[0-9a-fA-F-]+\"))\)")
+
+
+def _literal_eval_defaults(value):
+    parsed = literal_eval(_UUID_REPR_RE.sub(r"\1", value or "{}"))
+    if isinstance(parsed, dict):
+        return {
+            k: to_uuid(v) if k.endswith('_id') and isinstance(v, str) else v
+            for k, v in parsed.items()
+        }
+    return parsed
 
 
 class TestMailAliasCommon(MailCommon):
@@ -508,7 +525,9 @@ class TestAliasCompany(TestMailAliasCommon):
         self.assertEqual(self.company_2.alias_domain_id, mail_alias_domain_c2)
 
         # cannot unlink alias domain as there are aliases linked to it
-        with self.assertRaises(psycopg2.errors.ForeignKeyViolation), mute_logger('odoo.sql_db'):
+        # (ondelete='restrict' raises RestrictViolation, a sibling of
+        # ForeignKeyViolation under IntegrityError; both mean the FK blocks delete)
+        with self.assertRaises((psycopg2.errors.ForeignKeyViolation, psycopg2.errors.RestrictViolation)), mute_logger('odoo.sql_db'):
             mail_alias_domain.unlink()
 
         # eject linked aliases then remove alias domain of first company; should
@@ -926,12 +945,12 @@ class TestMailAliasMixin(TestMailAliasCommon):
         self.assertTrue(record_w_alias.alias_id, 'Alias record created as alias_name was given')
         self.assertEqual(record_w_alias.alias_id.alias_name, 'alias-name', 'Alias name should go through sanitize')
         self.assertEqual(
-            literal_eval(record_w_alias.alias_id.alias_defaults),
+            _literal_eval_defaults(record_w_alias.alias_id.alias_defaults),
             {'company_id': self.env.company.id}
         )
         self.assertEqual(record_w_alias.alias_name, 'alias-name', 'Alias name should go through sanitize')
         self.assertEqual(
-            literal_eval(record_w_alias.alias_defaults),
+            _literal_eval_defaults(record_w_alias.alias_defaults),
             {'company_id': self.env.company.id}
         )
 
@@ -946,12 +965,12 @@ class TestMailAliasMixin(TestMailAliasCommon):
         self.assertTrue(record_wo_alias.alias_id, 'Alias record should have been created to store the name')
         self.assertEqual(record_wo_alias.alias_id.alias_name, 'trying-a-name')
         self.assertEqual(
-            literal_eval(record_wo_alias.alias_id.alias_defaults),
+            _literal_eval_defaults(record_wo_alias.alias_id.alias_defaults),
             {'company_id': self.env.company.id}
         )
         self.assertEqual(record_wo_alias.alias_name, 'trying-a-name')
         self.assertEqual(
-            literal_eval(record_wo_alias.alias_defaults),
+            _literal_eval_defaults(record_wo_alias.alias_defaults),
             {'company_id': self.env.company.id}
         )
 

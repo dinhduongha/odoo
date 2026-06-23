@@ -821,7 +821,7 @@ class TestActivityViewHelpers(TestActivityCommon):
                     'template_ids': [],
                 })
 
-            grouped = activity_data['grouped_activities'][test_record.id][self.type_upload.id]
+            grouped = activity_data['grouped_activities'][str(test_record.id)][str(self.type_upload.id)]
             grouped['ids'] = set(grouped['ids'])  # ids order doesn't matter
             self.assertDictEqual(grouped, {
                 'state': 'overdue',
@@ -832,7 +832,7 @@ class TestActivityViewHelpers(TestActivityCommon):
                 'summaries': [act.summary for act in record_activities],
             })
 
-            grouped = activity_data['grouped_activities'][test_record_2.id][self.type_upload.id]
+            grouped = activity_data['grouped_activities'][str(test_record_2.id)][str(self.type_upload.id)]
             grouped['ids'] = set(grouped['ids'])
             self.assertDictEqual(grouped, {
                 'state': 'planned',
@@ -849,7 +849,7 @@ class TestActivityViewHelpers(TestActivityCommon):
             record_activities.action_feedback(feedback='Done', attachment_ids=self.attachment_1.ids)
             self.assertEqual(record_activities[2].date_done, date.today())  # Thanks to freeze_time
             activity_data = get_activity_data('mail.test.activity', None, fetch_done=True)
-            grouped = activity_data['grouped_activities'][test_record.id][self.type_upload.id]
+            grouped = activity_data['grouped_activities'][str(test_record.id)][str(self.type_upload.id)]
             grouped['ids'] = set(grouped['ids'])
             self.assertDictEqual(grouped, {
                 'state': 'done',
@@ -886,7 +886,7 @@ class TestActivityViewHelpers(TestActivityCommon):
             self.assertFalse(any(act.date_done for act in record_activities))
             self.assertTrue(all(act.date_deadline for act in record_activities))
             activity_data = get_activity_data('mail.test.activity', None, fetch_done=True)
-            grouped = activity_data['grouped_activities'][test_record.id][self.type_upload.id]
+            grouped = activity_data['grouped_activities'][str(test_record.id)][str(self.type_upload.id)]
             self.assertEqual(grouped['state'], 'overdue')
             self.assertEqual(grouped['count_by_state'], {'overdue': 1, 'planned': 1, 'today': 1})
             self.assertEqual(grouped['reporting_date'], record_activities[0].date_deadline)
