@@ -21,7 +21,7 @@ from random import randint
 from unittest.mock import patch
 from urllib.parse import urlparse, urlencode, parse_qsl
 
-from odoo import tools, fields
+from odoo import tools, fields, models
 from odoo.addons.base.models.ir_mail_server import IrMail_Server
 from odoo.addons.base.tests.common import MockSmtplibCase
 from odoo.addons.bus.models.bus import BusBus, json_dump
@@ -1253,6 +1253,10 @@ class MailCase(common.TransactionCase, MockEmail, BusCase):
         # attachment visibility depends on what they are attached to
         attach_values = attach_values or {}
         prefix = prefix or ''
+        # uuid PKs: res_id is an id-like scalar; a recordset no longer coerces to
+        # an int id, so resolve a (singleton) recordset to its .id explicitly
+        if isinstance(res_id, models.BaseModel):
+            res_id = res_id.id
         return [{
             'datas': base64.b64encode(b'AttContent_%02d' % x),
             'name': f'{prefix}AttFileName_{x:02d}.txt',

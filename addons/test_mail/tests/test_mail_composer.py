@@ -1468,7 +1468,8 @@ class TestComposerInternals(TestMailComposer):
                 notification_parameters = json.loads(scheduled_message.notification_parameters)
                 self.assertEqual(notification_parameters['email_from'], self.test_record.user_id.email_formatted)
                 self.assertEqual(notification_parameters['force_email_lang'], self.test_record.customer_id.lang)
-                self.assertEqual(notification_parameters['mail_server_id'], self.mail_server_domain.id)
+                # uuid PKs: JSON round-trips the id to a str
+                self.assertEqual(to_uuid(notification_parameters['mail_server_id']), self.mail_server_domain.id)
                 self.assertEqual(notification_parameters['mail_auto_delete'], True)
                 self.assertEqual(notification_parameters['message_type'], 'comment')
                 for key, val in exp_notif_params.items():

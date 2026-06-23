@@ -898,7 +898,9 @@ class TestTrackingInternals(MailCommon):
                 }),
                 (0, 0, {
                     'field_id': False,
-                    'new_value_integer': self.env.uid,
+                    # uuid PKs: env.uid is a UUID and overflows the integer column;
+                    # this value is never asserted (formats as 'Unknown'), use a plain int
+                    'new_value_integer': 42,
                     'old_value_integer': False,
                 }),
                 (0, 0, {

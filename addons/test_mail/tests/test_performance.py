@@ -1503,9 +1503,11 @@ class TestMessageToStorePerformance(BaseMailPerformance):
                     (0, 0, {
                         'field_id': customer_id_field.id,
                         'new_value_char': 'new 1',
-                        'new_value_integer': cls.partners[(record_idx * 5)].id,
+                        # uuid PKs: m2o ids overflow the integer column; tracked m2o
+                        # values are stored in the uuid columns (see _create_tracking_values)
+                        'new_value_uuid': cls.partners[(record_idx * 5)].id,
                         'old_value_char': 'old 1',
-                        'old_value_integer': cls.partners[(record_idx * 5) + 1].id,
+                        'old_value_uuid': cls.partners[(record_idx * 5) + 1].id,
                     }),
                 ]
             }

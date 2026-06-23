@@ -10,6 +10,7 @@ from werkzeug.urls import url_encode
 
 from odoo import _, http
 from odoo.exceptions import AccessError
+from odoo.tools.uuid_utils import to_uuid
 from odoo.http import STATIC_CACHE, Response, request
 from odoo.tools import consteq
 from odoo.tools.misc import file_open
@@ -235,7 +236,8 @@ class MailController(http.Controller):
         if not comparison or not record:
             raise AccessError(_('Non existing record or wrong token.'))
 
-        pid = int(pid)
+        # uuid PKs: partner id comes as a uuid string in the query, not an int
+        pid = to_uuid(pid)
         record_sudo = record.sudo()
         record_sudo.message_unsubscribe([pid])
 

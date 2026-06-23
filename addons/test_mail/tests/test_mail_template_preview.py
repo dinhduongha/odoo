@@ -3,6 +3,7 @@
 
 from odoo.addons.test_mail.tests.test_mail_template import TestMailTemplateCommon
 from odoo.tests import Form, tagged, users
+from odoo.tools.uuid_utils import to_uuid
 
 
 @tagged('mail_template', 'multi_lang')
@@ -103,7 +104,7 @@ class TestMailTemplateTools(TestMailTemplateCommon):
         self.assertEqual(form.email_to, self.test_template.email_to)
         self.assertEqual(form.email_cc, self.test_template.email_cc)
         self.assertEqual(set(record.id for record in form.partner_ids),
-                         {int(pid) for pid in self.test_template.partner_to.split(',') if pid})
+                         {to_uuid(pid) for pid in self.test_template.partner_to.split(',') if pid})
 
     @users('employee')
     def test_mail_template_preview_recipients_use_default_to(self):
