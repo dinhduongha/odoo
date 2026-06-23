@@ -59,7 +59,7 @@ class TestHrAttendanceKiosk(HttpCase):
                     'offset': 0,
                     'domain': domain,
                 }
-            }),
+            }, default=str),
             headers={'Content-Type': 'application/json'},
         )
         result = json.loads(response.content).get('result')

@@ -75,7 +75,7 @@ export class NewEmployeeDialog extends Component {
             });
             return;
         }
-        const employeeId = parseInt(this.state.value.id);
+        const employeeId = this.state.value.id;
         const data = await rpc('/hr_attendance/set_badge', {
             employee_id: employeeId,
             badge: badge,
