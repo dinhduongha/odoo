@@ -2,6 +2,7 @@
 from odoo import http, fields
 from odoo.http import request
 from odoo.tools import float_is_zero
+from odoo.tools.uuid_utils import to_uuid
 from odoo.addons.pos_self_order.controllers.orders import PosSelfOrderController
 from werkzeug.exceptions import Unauthorized
 
@@ -10,6 +11,7 @@ class PosSelfOrderControllerStripe(PosSelfOrderController):
     def get_stripe_creditentials(self, access_token, payment_method_id):
         # stripe_connection_token
         pos_config, _ = self._verify_authorization(access_token, "", {})
+        payment_method_id = to_uuid(payment_method_id)
         payment_method = pos_config.payment_method_ids.filtered(lambda p: p.id == payment_method_id)
         return payment_method.stripe_connection_token()
 
@@ -22,6 +24,7 @@ class PosSelfOrderControllerStripe(PosSelfOrderController):
         if not order:
             raise Unauthorized()
 
+        payment_method_id = to_uuid(payment_method_id)
         payment_method = pos_config.payment_method_ids.filtered(lambda p: p.id == payment_method_id)
         stripe_order_amount = payment_method._stripe_calculate_amount(order.amount_total)
 

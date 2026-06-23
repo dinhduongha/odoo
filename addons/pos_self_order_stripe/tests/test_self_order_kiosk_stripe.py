@@ -61,7 +61,7 @@ class TestSelfOrderKioskStripe(SelfOrderCommonTest):
         with patch(
             stripe_connection_token, return_value=connection_token
         ):
-                payload = self._build_payload({'access_token': 'access_token', 'payment_method_id': self.stripe.id})
+                payload = self._build_payload({'access_token': 'access_token', 'payment_method_id': str(self.stripe.id)})
                 response = self.url_open('/pos-self-order/stripe-connection-token', data=json.dumps(payload), headers=self.headers, timeout=60000)
                 json_response = json.loads(response.text)
                 self.assertTrue(json_response.get('result').get('object'), 'terminal.connection_token')
@@ -93,7 +93,7 @@ class TestSelfOrderKioskStripe(SelfOrderCommonTest):
         with patch(
                 stripe_capture_payment, return_value={'id': '1', 'status': 'succeeded', 'amount': 1000}
             ):
-                payload = self._build_payload({'access_token': 'access_token', 'order_access_token': 'order_access', 'payment_intent_id': '1', 'payment_method_id': self.stripe.id})
+                payload = self._build_payload({'access_token': 'access_token', 'order_access_token': 'order_access', 'payment_intent_id': '1', 'payment_method_id': str(self.stripe.id)})
                 self.url_open('/pos-self-order/stripe-capture-payment', data=json.dumps(payload), headers=self.headers, timeout=60000)
                 self.assertTrue(order.state == 'paid', 'The order should be paid')
 
