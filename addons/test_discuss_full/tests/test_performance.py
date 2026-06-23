@@ -4,11 +4,33 @@ from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 from unittest.mock import patch, PropertyMock
 
+import uuid
+
 from odoo import Command, fields
 from odoo.fields import Domain
 from odoo.addons.mail.tests.common import MailCommon
 from odoo.addons.mail.tools.discuss import Store
 from odoo.tests.common import users, tagged, HttpCase, warmup
+
+
+def _jsonify_uuids(value):
+    """Recursively convert uuid.UUID values to str.
+
+    The expected result dicts are built from raw record ids, which are
+    ``uuid.UUID`` objects under uuid primary keys. Responses obtained through
+    a JSON-RPC request are JSON round-tripped, so those ids come back as plain
+    strings. This helper normalizes the expected data to that JSON form so the
+    comparison keeps its original intent.
+    """
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, dict):
+        return {_jsonify_uuids(k): _jsonify_uuids(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_jsonify_uuids(v) for v in value]
+    if isinstance(value, tuple):
+        return [_jsonify_uuids(v) for v in value]
+    return value
 
 
 @tagged('post_install', '-at_install', 'is_query_count')
@@ -369,7 +391,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 {"fetch_params": [["discuss.channel", [self.channel_chat_1.id]], "init_messaging"]},
             ),
             count=self._query_count_init_messaging,
-            results=self._get_init_messaging_result(),
+            results=_jsonify_uuids(self._get_init_messaging_result()),
         )
 
     @freeze_time("2025-04-22 21:18:33")
@@ -382,7 +404,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "/mail/data", {"fetch_params": ["channels_as_member"]}
             ),
             count=self._query_count_discuss_channels,
-            results=self._get_discuss_channels_result(),
+            results=_jsonify_uuids(self._get_discuss_channels_result()),
         )
 
     def _get_init_store_data_result(self):
@@ -959,7 +981,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -978,7 +1000,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": last_message.id + 1,
+                "new_message_separator": last_message.id,
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": last_message.id,
@@ -997,7 +1019,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": last_message.id + 1,
+                "new_message_separator": last_message.id,
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": last_message.id,
@@ -1016,7 +1038,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": last_message_of_partner_0.id + 1,
+                "new_message_separator": last_message_of_partner_0.id,
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": member_0.rtc_inviting_session_id.id,
                 "seen_message_id": last_message_of_partner_0.id,
@@ -1041,7 +1063,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": last_message.id + 1,
+                "new_message_separator": last_message.id,
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": last_message.id,
@@ -1060,7 +1082,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1089,7 +1111,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1118,7 +1140,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1147,7 +1169,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1176,7 +1198,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1206,7 +1228,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1237,7 +1259,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                 "message_unread_counter_bus_id": bus_last_id,
                 "mute_until_dt": False,
                 "last_seen_dt": member_0_last_seen_dt,
-                "new_message_separator": 0,
+                "new_message_separator": "00000000-0000-0000-0000-000000000000",
                 "partner_id": self.users[0].partner_id.id,
                 "rtc_inviting_session_id": False,
                 "seen_message_id": False,
@@ -1299,7 +1321,7 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
                     {"content": "😊", "message": last_message.id},
                 ],
                 "record_name": "general",
-                "res_id": 1,
+                "res_id": channel.id,
                 "scheduledDatetime": False,
                 "starred": False,
                 "subject": False,
