@@ -55,7 +55,7 @@ class TestVivaComHttpCommon(TestPointOfSaleHttpCommon):
 
         with patch.object(PosPaymentMethod, '_call_viva_com', mocked_call_viva_com_check_post_data):
             self.main_pos_config.open_ui()
-            self.start_tour("/pos/ui/%d" % self.main_pos_config.id, 'VivaComTour', login="accountman")
+            self.start_tour("/pos/ui/%s" % self.main_pos_config.id, 'VivaComTour', login="accountman")
 
     def test_viva_com_kiosk_request_data(self):
         """Kiosk: ``cashRegisterId`` must fall back to ``pos.config.name``."""
@@ -74,7 +74,7 @@ class TestVivaComHttpCommon(TestPointOfSaleHttpCommon):
         with patch.object(PosPaymentMethod, '_call_viva_com', mocked_call_viva_com_kiosk):
             self.main_pos_config.open_ui()
             self.start_tour(
-                "/pos/ui?config_id=%d" % self.main_pos_config.id,
+                "/pos/ui?config_id=%s" % self.main_pos_config.id,
                 'VivaComKioskTour',
                 login="accountman",
             )

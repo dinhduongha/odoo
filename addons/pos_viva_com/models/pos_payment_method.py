@@ -126,7 +126,7 @@ class PosPaymentMethod(models.Model):
 
     def _send_notification(self, data):
         # Send a notification to the point of sale channel to indicate that the transaction are finish
-        pos_session_sudo = self.env["pos.session"].browse(int(data.get('pos_session_id', False)))
+        pos_session_sudo = self.env["pos.session"].browse(data.get('pos_session_id') or [])
         if pos_session_sudo:
             pos_session_sudo.config_id._notify('VIVA_COM_LATEST_RESPONSE', {
                 'config_id': pos_session_sudo.config_id.id,
