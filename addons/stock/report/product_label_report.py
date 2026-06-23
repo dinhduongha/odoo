@@ -23,7 +23,7 @@ class ReportStockLabel_Product_Product_View(models.AbstractModel):
 
         quantity_by_product = defaultdict(list)
         for p, q in data.get('quantity_by_product').items():
-            product = Product.browse(int(p))
+            product = Product.browse(p)
             default_code_markup = markupsafe.Markup(product.default_code) if product.default_code else ''
             product_info = {
                 'barcode': markupsafe.Markup(product.barcode) if product.barcode else '',
@@ -35,7 +35,7 @@ class ReportStockLabel_Product_Product_View(models.AbstractModel):
         if data.get('custom_barcodes'):
             # we expect custom barcodes to be: {product: [(barcode, qty_of_barcode)]}
             for product, barcodes_qtys in data.get('custom_barcodes').items():
-                product = Product.browse(int(product))
+                product = Product.browse(product)
                 default_code_markup = markupsafe.Markup(product.default_code) if product.default_code else ''
                 for barcode_qty in barcodes_qtys:
                     quantity_by_product[product].append({

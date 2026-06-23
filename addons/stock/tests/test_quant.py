@@ -1418,7 +1418,7 @@ class TestStockQuant(TestStockCommon):
         loss_location_id = self.env['ir.default']._get_model_defaults('product.template').get('property_stock_inventory')
 
         self.assertEqual(
-            move_line.location_dest_id.id, loss_location_id,
+            move_line.location_dest_id, self.env['stock.location'].browse(loss_location_id),
             "The destination location should be the default loss location"
         )
         self.assertEqual(quant.inventory_quantity, 0)

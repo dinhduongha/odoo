@@ -14,7 +14,7 @@ export class StockRescheculingPopoverComponent extends PopoverComponent {
     openElement(ev){
         this.action.doAction({
             res_model: ev.currentTarget.getAttribute('element-model'),
-            res_id: parseInt(ev.currentTarget.getAttribute('element-id')),
+            res_id: ev.currentTarget.getAttribute('element-id'),
             views: [[false, "form"]],
             type: "ir.actions.act_window",
             view_mode: "form",

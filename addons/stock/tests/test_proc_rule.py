@@ -584,7 +584,7 @@ class TestProcRule(TransactionCase):
         orderpoint.unlink()
 
     def test_replenishment_order_to_max(self):
-        warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.user.id)], limit=1)
+        warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
         self.product.is_storable = True
         self.env['stock.quant']._update_available_quantity(self.product, warehouse.lot_stock_id, 10)
         orderpoint = self.env['stock.warehouse.orderpoint'].create({

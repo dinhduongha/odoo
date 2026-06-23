@@ -20,7 +20,7 @@ export class ForecastedWarehouseFilter extends Component {
     }
 
     _onSelected(id){
-        this.props.setWarehouseInContext(Number(id));
+        this.props.setWarehouseInContext(id);
     }
 
     get activeWarehouse(){

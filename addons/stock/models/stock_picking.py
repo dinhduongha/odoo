@@ -524,7 +524,7 @@ class StockPickingType(models.Model):
                     for k, v in data_category_mapping.items()
                 ],
             }]
-            picking_type.kanban_dashboard_graph = json.dumps(graph_data)
+            picking_type.kanban_dashboard_graph = json.dumps(graph_data, default=str)
 
     def _get_code_report_name(self):
         self.ensure_one()
@@ -811,7 +811,7 @@ class StockPicking(models.Model):
                     'model': late_move._name,
                 } for late_move in picking.move_ids.filtered(lambda m: m.delay_alert_date).move_orig_ids._delay_alert_get_documents()
                 ]
-            })
+            }, default=str)
 
     @api.depends('move_type', 'move_ids.state', 'move_ids.picking_id')
     def _compute_state(self):

@@ -233,7 +233,7 @@ class StockTraceabilityReport(models.TransientModel):
 
         context = dict(self.env.context)
         if context.get('active_id') and context.get('active_model'):
-            rcontext['reference'] = self.env[context.get('active_model')].browse(int(context.get('active_id'))).display_name
+            rcontext['reference'] = self.env[context.get('active_model')].browse(context.get('active_id')).display_name
 
         body = self.env['ir.ui.view'].with_context(context)._render_template(
             "stock.report_stock_inventory_print",

@@ -41,11 +41,14 @@ class StockQuantRelocate(models.TransientModel):
     @api.depends('dest_location_id', 'quant_ids')
     def _compute_dest_package_id_domain(self):
         for wizard in self:
-            domain = ['|', ('company_id', '=', wizard.company_id.id), ('company_id', '=', False)]
+            # Stringify UUID ids so the domain stored in the Char field remains
+            # literal_eval-able (repr(UUID) is a Call node that literal_eval rejects).
+            company_id = wizard.company_id.id
+            domain = ['|', ('company_id', '=', str(company_id) if company_id else company_id), ('company_id', '=', False)]
             if wizard.dest_location_id:
-                domain += ['|', ('location_id', '=', False), ('location_id', '=', wizard.dest_location_id.id)]
+                domain += ['|', ('location_id', '=', False), ('location_id', '=', str(wizard.dest_location_id.id))]
             elif len(wizard.quant_ids.location_id) == 1:
-                domain += ['|', ('location_id', '=', False), ('location_id', '=', wizard.quant_ids.location_id.id)]
+                domain += ['|', ('location_id', '=', False), ('location_id', '=', str(wizard.quant_ids.location_id.id))]
             wizard.dest_package_id_domain = domain
 
     @api.depends('dest_package_id_domain')

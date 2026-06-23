@@ -180,5 +180,5 @@ class TestStockCommon(ProductVariantsCommon):
         # Extract model and record ID
         action_match = re.findall(r'action-([^/]+)', url)
         model_name = self.env.ref(action_match[0]).res_model
-        rec_id = re.findall(r'/(\d+)$', url)[0]
+        rec_id = re.findall(r'/([^/]+)$', url)[0]
         return rec_id, model_name
