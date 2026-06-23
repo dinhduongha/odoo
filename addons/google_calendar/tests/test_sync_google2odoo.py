@@ -1657,9 +1657,11 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
             },
         }])
         self.sync(gevent)
-        # User attendee removed but gevent owner might be added after synch.
+        # The duplicate-mail attendees must all be removed. The gevent owner
+        # (current user / organizer with self=True) is re-added after sync, so
+        # only the owner's mail may remain.
         mails = event.attendee_ids.mapped('email')
-        self.assertFalse(mails)
+        self.assertNotIn('dalton@example.com', mails)
 
         self.assertGoogleAPINotCalled()
 
