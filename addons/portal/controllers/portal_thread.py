@@ -6,6 +6,7 @@ from odoo.http import request
 from odoo.addons.mail.controllers.thread import ThreadController
 from odoo.addons.mail.tools.discuss import Store
 from odoo.addons.portal.utils import get_portal_partner
+from odoo.tools.uuid_utils import to_uuid
 
 
 class PortalChatter(ThreadController):
@@ -17,7 +18,7 @@ class PortalChatter(ThreadController):
             message_su = request.env["mail.message"].browse(res_id).exists().sudo()
             thread = self._get_thread_with_access(
                 message_su.model, message_su.res_id,
-                token=access_token, hash=_hash, pid=pid and int(pid)
+                token=access_token, hash=_hash, pid=pid and to_uuid(pid)
             )
             message_su = message_su if thread else request.env["mail.message"]
         else:

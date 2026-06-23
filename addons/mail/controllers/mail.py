@@ -10,11 +10,10 @@ from werkzeug.urls import url_encode
 
 from odoo import _, http
 from odoo.exceptions import AccessError
-from odoo.tools.uuid_utils import to_uuid
 from odoo.http import STATIC_CACHE, Response, request
 from odoo.tools import consteq
 from odoo.tools.misc import file_open
-from odoo.tools.uuid_utils import to_uuid
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 from odoo.addons.mail.tools.discuss import add_guest_to_context
 
@@ -223,10 +222,7 @@ class MailController(http.Controller):
         # ==============================================================================================
 
         if res_id and isinstance(res_id, str):
-            try:
-                res_id = res_id
-            except ValueError:
-                res_id = False
+            res_id = to_uuid(res_id) if is_uuid(res_id) else False
         return self._redirect_to_record(model, res_id, access_token, **kwargs)
 
     # csrf is disabled here because it will be called by the MUA with unpredictable session at that time
