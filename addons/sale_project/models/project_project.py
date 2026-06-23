@@ -797,7 +797,7 @@ class ProjectProject(models.Model):
                 'action': 'action_view_sos',
                 'additional_context': json.dumps({
                     'create_for_project_id': self.id,
-                }),
+                }, default=str),
                 'show': self.display_sales_stat_buttons and self.sale_order_count > 0,
                 'sequence': 27,
             })
