@@ -149,19 +149,19 @@ class TestEventFullCommon(EventCrmCase, TestSalesCommon, MockVisitor):
             'event_type_mail_ids': [
                 (0, 0, {'interval_unit': 'now',  # right at subscription
                         'interval_type': 'after_sub',
-                        'template_ref': 'mail.template,%i' % subscription_template.id,
+                        'template_ref': 'mail.template,%s' % subscription_template.id,
                        }
                 ),
                 (0, 0, {'interval_nbr': 1,  # 1 days before event
                         'interval_unit': 'days',
                         'interval_type': 'before_event',
-                        'template_ref': 'mail.template,%i' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_reminder'),
+                        'template_ref': 'mail.template,%s' % cls.env['ir.model.data']._xmlid_to_res_id('event.event_reminder'),
                        }
                 ),
                 (0, 0, {'interval_nbr': 1,  # 1 days after event
                         'interval_unit': 'days',
                         'interval_type': 'after_event',
-                        'template_ref': 'sms.template,%i' % cls.env['ir.model.data']._xmlid_to_res_id('event_sms.sms_template_data_event_reminder'),
+                        'template_ref': 'sms.template,%s' % cls.env['ir.model.data']._xmlid_to_res_id('event_sms.sms_template_data_event_reminder'),
                        }
                 ),
             ],

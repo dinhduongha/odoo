@@ -21,12 +21,12 @@ class TestEventMailInternals(TestEventMailCommon):
                 (0, 0, {
                     'interval_unit': 'now',
                     'interval_type': 'after_sub',
-                    'template_ref': 'mail.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
+                    'template_ref': 'mail.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event.event_subscription')}),
                 (0, 0, {
                     'interval_unit': 'now',
                     'interval_type': 'after_sub',
                     'notification_type': 'sms',
-                    'template_ref': 'sms.template,%i' % self.env['ir.model.data']._xmlid_to_res_id('event_sms.sms_template_data_event_registration')}),
+                    'template_ref': 'sms.template,%s' % self.env['ir.model.data']._xmlid_to_res_id('event_sms.sms_template_data_event_registration')}),
             ],
         })
 
