@@ -51,13 +51,13 @@ class TestQweb(TransactionCaseWithUserDemo):
         rendered = self.env['ir.qweb']._render(template.id)
         self.assertEqual(rendered.strip(), result.strip(), 'First rendering (without website_id)')
 
-        rendered = self.env['ir.qweb'].with_context(website_id=1)._render(template.id)
+        rendered = self.env['ir.qweb'].with_context(website_id=self.env.ref('website.default_website').id)._render(template.id)
         self.assertEqual(rendered.strip(), result.strip(), 'Second rendering (with website_id=1)')
 
         rendered = self.env['ir.qweb'].with_context(website_id=None)._render(template.id)
         self.assertEqual(rendered.strip(), result.strip(), 'Third rendering (with website_id=None)')
 
-        rendered = self.env['ir.qweb'].with_context(website_id=1)._render(template.id)
+        rendered = self.env['ir.qweb'].with_context(website_id=self.env.ref('website.default_website').id)._render(template.id)
         self.assertEqual(rendered.strip(), result.strip(), 'Fourth rendering (with website_id=1)')
 
     def test_render_query_count(self):
@@ -80,7 +80,7 @@ class TestQweb(TransactionCaseWithUserDemo):
         IrUiView.create([{  # website_id=1
             'name': 'test',
             'type': 'qweb',
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'key': 'base.testing_header_1',
             'arch_db': '''<span>WITH WEBSITE</span>''',
         }, {  # same key but website_id=False
@@ -120,7 +120,7 @@ class TestQweb(TransactionCaseWithUserDemo):
         }, {  # website_id=1
             'name': 'test',
             'type': 'qweb',
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'key': 'base.testing_footer',
             'arch_db': '''<t t-name="base.testing_footer">
                 <t t-call="base.testing_footer_0"/>
@@ -145,7 +145,7 @@ class TestQweb(TransactionCaseWithUserDemo):
             'key': 'base.testing_content',
             'arch_db': '''<t t-call="base.testing_layout"><div><t t-call="base.testing_header_0"/><t t-out="doc"/></div></t>''',
         })
-        website = self.env['website'].browse(1)
+        website = self.env.ref('website.default_website')
         other_website = self.env['website'].create({'name': 'testing'})
 
         expected = """
@@ -518,7 +518,7 @@ class TestQwebDataSnippet(TransactionCase):
     def test_call_query_count_snippets_template(self):
         actual_queries = []
         with contextmanager(lambda: self._patchExecute(actual_queries))():
-            with MockRequest(self.env, website=self.env['website'].browse(1)):
+            with MockRequest(self.env, website=self.env.ref('website.default_website')):
                 render = self.env['ir.ui.view'].render_public_asset('website.snippets')
                 self.assertTrue('name="Blockquote"' in render)
 

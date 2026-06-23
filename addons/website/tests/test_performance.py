@@ -123,21 +123,22 @@ class TestStandardPerformance(UtilPerf):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.env['res.users'].browse(2).image_1920 = b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC'
+        cls.demo_user = cls.env.ref('base.user_demo')
+        cls.demo_user.image_1920 = b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC'
 
     @mute_logger('odoo.http')
     def test_10_perf_sql_img_controller(self):
         self.authenticate('demo', 'demo')
         # not published user, get the not found image placeholder
-        self.assertEqual(self.env['res.users'].sudo().browse(2).website_published, False)
-        url = '/web/image/res.users/2/image_256'
+        self.assertEqual(self.demo_user.sudo().website_published, False)
+        url = '/web/image/res.users/%s/image_256' % self.demo_user.id
         self.assertEqual(self._get_url_hot_query(url), 7)
 
     @mute_logger('odoo.http')
     def test_11_perf_sql_img_controller(self):
         self.authenticate('demo', 'demo')
-        self.env['res.users'].sudo().browse(2).website_published = True
-        url = '/web/image/res.users/2/image_256'
+        self.demo_user.sudo().website_published = True
+        url = '/web/image/res.users/%s/image_256' % self.demo_user.id
         select_tables_perf = {
             'orm_signaling_registry': 1,
             'res_users': 2,
@@ -148,7 +149,7 @@ class TestStandardPerformance(UtilPerf):
 
     @mute_logger('odoo.http')
     def test_20_perf_sql_img_controller_bis(self):
-        url = '/web/image/website/1/favicon'
+        url = '/web/image/website/%s/favicon' % self.env.ref('website.default_website').id
         select_tables_perf = {
             'orm_signaling_registry': 1,
             'website': 2,
@@ -174,7 +175,7 @@ class TestWebsitePerformanceCommon(UtilPerf):
 
     def _create_page_with_menu(self, url):
         name = url[1:]
-        website = self.env['website'].browse(1)
+        website = self.env.ref('website.default_website')
         page = self.env['website.page'].create({
             'url': url,
             'name': name,

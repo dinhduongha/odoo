@@ -27,6 +27,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 from odoo.http import request, SessionExpiredException
 from odoo.tools import OrderedSet, escape_psql, html_escape as escape, py_to_js_locale
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.translate import LazyTranslate
 from odoo.addons.base.models.ir_http import EXTENSION_TO_WEB_MIMETYPES
 from odoo.addons.portal.controllers.portal import pager as portal_pager
@@ -872,7 +873,7 @@ class Website(Home):
                         "decorative": False,
                         "updated": False,
                         "res_model": model['model'],
-                        "res_id": model['id'],
+                        "res_id": str(model['id']),
                         "id": f"{model['model']}-{model['id']}-{index}",
                         "field": model.get('field'),
                     })
@@ -1418,7 +1419,7 @@ class WebsiteBinary(Binary):
             kw['height'] = max_height
         if id:
             identifier, _, unique = id.partition('_')
-            kw['id'] = int(identifier)
+            kw['id'] = to_uuid(identifier)
             if unique:
                 kw['unique'] = unique
         return self.content_image(**kw)

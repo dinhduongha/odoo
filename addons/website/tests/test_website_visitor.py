@@ -9,6 +9,7 @@ from unittest.mock import patch
 from odoo.addons.base.tests.common import HttpCaseWithUserDemo
 from odoo.addons.website.models.website_visitor import WebsiteVisitor
 from odoo.tests import common, tagged, HttpCase
+from odoo.tools.uuid_utils import to_uuid
 
 
 class MockVisitor(common.BaseCase):
@@ -162,7 +163,7 @@ class WebsiteVisitorTestsCommon(MockVisitor, HttpCaseWithUserDemo):
         return {
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'access_token': self.partner_admin.id,
             'website_track_ids': [(0, 0, {
                 'page_id': self.tracked_page.id,
@@ -174,7 +175,7 @@ class WebsiteVisitorTestsCommon(MockVisitor, HttpCaseWithUserDemo):
         return {
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'access_token': '%032x' % random.randrange(16**32),
             'website_track_ids': [(0, 0, {
                 'page_id': self.tracked_page_2.id,
@@ -351,13 +352,13 @@ class WebsiteVisitorTests(WebsiteVisitorTestsCommon):
         inactive_visitors = self.env['website.visitor'].create([{
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'last_connection_datetime': datetime.now() - timedelta(days=8),
             'access_token': 'f9d2b14b21be669518b14a9590cb62ed',
         }, {
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'last_connection_datetime': datetime.now() - timedelta(days=15),
             'access_token': 'f9d2d261a725da7f596574ca84e52f47',
         }])
@@ -365,13 +366,13 @@ class WebsiteVisitorTests(WebsiteVisitorTestsCommon):
         active_visitors = self.env['website.visitor'].create([{
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'last_connection_datetime': datetime.now() - timedelta(days=1),
             'access_token': 'f9d2526d9c15658bdc91d2119e54b554',
         }, {
             'lang_id': self.env.ref('base.lang_en').id,
             'country_id': self.env.ref('base.be').id,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             'partner_id': self.partner_demo.id,
             'last_connection_datetime': datetime.now() - timedelta(days=15),
             'access_token': self.partner_demo.id,
@@ -419,9 +420,9 @@ class WebsiteVisitorTests(WebsiteVisitorTestsCommon):
         # |  2 |     admin_id           |   admin_id            |
         # |    |      5013266           |    5013266            |
         self.assertTrue(visitor_admin_duplicate.partner_id.id ==
-                        int(visitor_admin_duplicate.access_token) ==
+                        to_uuid(visitor_admin_duplicate.access_token) ==
                         self.partner_admin_duplicate.id)
-        self.assertTrue(visitor_admin.partner_id.id == int(visitor_admin.access_token) == self.partner_admin.id)
+        self.assertTrue(visitor_admin.partner_id.id == to_uuid(visitor_admin.access_token) == self.partner_admin.id)
 
         self.env['website.track'].create([{
             'visitor_id': visitor_admin_duplicate.id,
@@ -488,7 +489,7 @@ class WebsiteVisitorTests(WebsiteVisitorTestsCommon):
         # |  1 |     admin_duplicate_id |   admin_duplicate_id  |
         # |    |      1062141           |    1062141            |
         self.assertTrue(visitor_admin_duplicate.partner_id.id ==
-                        int(visitor_admin_duplicate.access_token) ==
+                        to_uuid(visitor_admin_duplicate.access_token) ==
                         self.partner_admin_duplicate.id)
 
         # Merge admin_duplicate partner (no user associated) in admin partner
@@ -507,7 +508,7 @@ class WebsiteVisitorTests(WebsiteVisitorTestsCommon):
         # |  1 |     admin_id |   admin_id | <-- No mismatch, became admin_id
         # |    |      5013266 |    5013266 |
         self.assertTrue(visitor_admin_duplicate.partner_id.id ==
-                        int(visitor_admin_duplicate.access_token) ==
+                        to_uuid(visitor_admin_duplicate.access_token) ==
                         self.partner_admin.id,
                         "The admin_duplicate visitor should now be linked to the admin partner.")
         self.assertFalse(Visitor.search_count([('partner_id', '=', self.partner_admin_duplicate.id)]),

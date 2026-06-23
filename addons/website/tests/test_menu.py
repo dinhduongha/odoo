@@ -127,7 +127,7 @@ class TestMenu(common.TransactionCase):
 
     def test_06_menu_active(self):
         Menu = self.env['website.menu']
-        website_1 = self.env['website'].browse(1)
+        website_1 = self.env.ref('website.default_website')
         menu = Menu.create({
             'name': 'Page Specific menu',
             'url': '/contactus',
@@ -317,7 +317,7 @@ class TestMenuHttp(common.HttpCase):
         self.page_url = '/page_specific'
         self.page = self.env['website.page'].create({
             'url': self.page_url,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
             # ir.ui.view properties
             'name': 'Base',
             'type': 'qweb',
@@ -328,7 +328,7 @@ class TestMenuHttp(common.HttpCase):
             'name': 'Page Specific menu',
             'page_id': self.page.id,
             'url': self.page_url,
-            'website_id': 1,
+            'website_id': self.env.ref('website.default_website').id,
         })
         self.headers = {"Content-Type": "application/json"}
 
@@ -406,7 +406,7 @@ class TestMenuHttp(common.HttpCase):
         self.authenticate('admin', 'admin')
         fr = self.env['res.lang']._activate_lang('fr_FR')
         Menu = self.env['website.menu']
-        website = self.env['website'].browse(1)
+        website = self.env.ref('website.default_website')
         website.language_ids += fr
         menu = Menu.create({
             'name': 'Test Mega Menu Content Translation Edit Mode',

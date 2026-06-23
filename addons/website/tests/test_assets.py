@@ -21,10 +21,10 @@ class TestWebsiteAssets(odoo.tests.HttpCase):
         # the test useless
         domain_1 = f"http://127.0.0.1:{self.http_port()}"
         domain_2 = f"http://localhost:{self.http_port()}"
-        Website.browse(1).domain = domain_1
+        self.env.ref('website.default_website').domain = domain_1
 
         self.authenticate('admin', 'admin')
-        self.env['website.assets'].with_context(website_id=1).make_scss_customization(
+        self.env['website.assets'].with_context(website_id=self.env.ref('website.default_website').id).make_scss_customization(
             '/website/static/src/scss/options/colors/user_color_palette.scss',
             {"o-cc1-bg": "'400'"},
         )
