@@ -262,10 +262,11 @@ class IrQwebFieldMany2one(models.AbstractModel):
     @api.model
     def from_html(self, model, field, element):
         Model = self.env[element.get('data-oe-model')]
-        id = int(element.get('data-oe-id'))
+        id = to_uuid(element.get('data-oe-id'))
         M2O = self.env[field.comodel_name]
         field_name = element.get('data-oe-field')
-        many2one_id = int(element.get('data-oe-many2one-id'))
+        many2one_id = element.get('data-oe-many2one-id')
+        many2one_id = to_uuid(many2one_id) if many2one_id else many2one_id
 
         allow_reset = element.get('data-oe-many2one-allowreset')
         if allow_reset and not many2one_id:
