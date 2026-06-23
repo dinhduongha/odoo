@@ -9,7 +9,7 @@ class TestAutofill(TestPointOfSaleHttpCommon):
         self.main_pos_config.with_user(self.pos_user).open_ui()
         self.main_pos_config.module_pos_sms = True
         self.start_tour(
-            "/pos/ui?config_id=%d" % self.main_pos_config.id,
+            "/pos/ui?config_id=%s" % self.main_pos_config.id,
             'AutofillTour',
             login="pos_user",
         )
