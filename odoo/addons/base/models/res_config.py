@@ -271,11 +271,16 @@ class ResConfigSettings(models.TransientModel):
                     try:
                         # Special case when value is the id of a deleted record, we do not want to
                         # block the settings screen
-                        try:
-                            res_id = int(value)
-                        except (ValueError, TypeError):
-                            # uuid primary keys are stored as their string representation
-                            res_id = to_uuid(value)
+                        if isinstance(value, models.BaseModel):
+                            # A field default may return a recordset directly (e.g. when the
+                            # ir.config_parameter is not set yet).
+                            res_id = value.id
+                        else:
+                            try:
+                                res_id = int(value)
+                            except (ValueError, TypeError):
+                                # uuid primary keys are stored as their string representation
+                                res_id = to_uuid(value)
                         value = self.env[field.comodel_name].browse(res_id).exists().id
                     except (ValueError, TypeError):
                         _logger.warning(WARNING_MESSAGE, value, field, icp)

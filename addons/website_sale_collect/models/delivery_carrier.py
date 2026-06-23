@@ -4,6 +4,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Command
 from odoo.http import request
+from odoo.tools.uuid_utils import to_uuid
 
 from odoo.addons.website_sale_collect import utils
 
@@ -87,7 +88,7 @@ class DeliveryCarrier(models.Model):
         :rtype: list[dict]
         """
         try:
-            product_id = product_id and int(product_id)
+            product_id = product_id and to_uuid(product_id)
         except ValueError:
             product = self.env['product.product']
         else:

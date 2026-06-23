@@ -26,13 +26,13 @@ class TestSaleOrder(ClickAndCollectCommon):
 
     def test_setting_pickup_location_assigns_warehouse(self):
         so = self._create_in_store_delivery_order()
-        so._set_pickup_location('{"id":' + str(self.warehouse.id) + '}')
+        so._set_pickup_location(json.dumps({'id': self.warehouse.id}, default=str))
         self.assertEqual(so.warehouse_id, self.warehouse)
 
     def test_warehouse_is_not_reset_on_public_user_checkout(self):
         warehouse_2 = self._create_warehouse()
-        so = self._create_in_store_delivery_order(partner_id=self.public_user.id)
-        so._set_pickup_location('{"id":' + str(warehouse_2.id) + '}')
+        so = self._create_in_store_delivery_order(partner_id=self.public_partner.id)
+        so._set_pickup_location(json.dumps({'id': warehouse_2.id}, default=str))
         # change the partner_id as would happen in a checkout
         so.partner_id = self.partner.id
         self.assertEqual(so.warehouse_id, warehouse_2)
@@ -66,7 +66,7 @@ class TestSaleOrder(ClickAndCollectCommon):
         self.default_partner.country_id = self.country_be
         warehouse = self._create_warehouse()
         warehouse.partner_id = self.default_partner
-        so._set_pickup_location('{"id":' + str(warehouse.id) + '}')
+        so._set_pickup_location(json.dumps({'id': warehouse.id}, default=str))
         self.assertEqual(so.fiscal_position_id, fp_be)
 
     def test_selecting_not_in_store_dm_resets_fiscal_position(self):
@@ -272,7 +272,7 @@ class TestSaleOrder(ClickAndCollectCommon):
             'city': "New test city",
             'state': wh_partner.state_id.code,
             'country_code': wh_partner.country_code,
-        }))
+        }, default=str))
         new_so.action_confirm()
         new_so.picking_ids.button_validate()
         self.assertTrue(
