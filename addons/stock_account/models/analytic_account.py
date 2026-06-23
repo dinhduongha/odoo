@@ -55,7 +55,7 @@ class AccountAnalyticAccount(models.Model):
 
         # Does this: {'15': 40, '14,16': 60} -> { account(15): 40, account(14,16): 60 }
         distribution = {
-            self.env['account.analytic.account'].browse(map(int, ids.split(','))).exists(): percentage
+            self.env['account.analytic.account'].browse(ids.split(',')).exists(): percentage
             for ids, percentage in distribution.items()
         }
 

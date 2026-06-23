@@ -16,7 +16,7 @@ class MrpWorkcenter(models.Model):
     def _compute_costs_hour_account_ids(self):
         for record in self:
             record.costs_hour_account_ids = bool(record.analytic_distribution) and self.env['account.analytic.account'].browse(
-                list({int(account_id) for ids in record.analytic_distribution for account_id in ids.split(",")})
+                list({account_id for ids in record.analytic_distribution for account_id in ids.split(",")})
             ).exists()
 
 
