@@ -733,8 +733,9 @@ class CSVFileReader:
 
             # determine <module>.<imd_name> from res_id
             if entry["res_id"] and entry["res_id"].isnumeric():
-                # res_id is an id or line number
-                entry["res_id"] = uuid.UUID(entry["res_id"])
+                # a numeric res_id is a line number (code translations); record
+                # ids are exported as external ids (<module>.<name>) handled below
+                entry["res_id"] = int(entry["res_id"])
             elif not entry.get("imd_name"):
                 # res_id is an external id and must follow <module>.<name>
                 entry["module"], entry["imd_name"] = entry["res_id"].split(".")
