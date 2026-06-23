@@ -175,6 +175,11 @@ class PaymentPortal(payment_portal.PaymentPortal):
         """
         pos_order_sudo = self._check_order_access(pos_order_id, access_token)
         self._ensure_session_open(pos_order_sudo)
+        # The record ids provided by the customer are received as strings (json) and must be cast as
+        # uuids to be compared with the in-database ids (e.g. provider_sudo.ids).
+        for id_key in ('provider_id', 'payment_method_id', 'token_id', 'partner_id'):
+            if kwargs.get(id_key) is not None:
+                kwargs[id_key] = self._cast_as_uuid(kwargs[id_key])
         exit_route = request.httprequest.args.get('exit_route')
         user_sudo = request.env.user
         if not pos_order_sudo.partner_id:

@@ -273,8 +273,8 @@ class TestUi(TestPointOfSaleHttpCommon, OnlinePaymentCommon):
             self.assertRaises(AssertionError, self._fake_open_pos_order_pay_page, order.id, order.access_token[:-1])
             self.assertRaises(AssertionError, self._fake_open_pos_order_pay_page, order.id, '')
 
-            self.assertRaises(AssertionError, self._fake_open_pos_order_pay_confirmation_page, order.id, order.access_token[:-1], 1)
-            self.assertRaises(AssertionError, self._fake_open_pos_order_pay_confirmation_page, order.id, '', 1)
+            self.assertRaises(AssertionError, self._fake_open_pos_order_pay_confirmation_page, order.id, order.access_token[:-1], uuid7())
+            self.assertRaises(AssertionError, self._fake_open_pos_order_pay_confirmation_page, order.id, '', uuid7())
 
         self.assertEqual(order.state, 'draft')
 
