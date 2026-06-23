@@ -35,7 +35,7 @@ class L10n_Eg_EdiThumbDrive(models.Model):
         for invoice_id in invoice_ids:
             eta_invoice = json.loads(base64.b64decode(invoice_id.l10n_eg_eta_json_doc_file))['request']
             signed_attrs = self._generate_signed_attrs__(eta_invoice, invoice_id.l10n_eg_signing_time)
-            to_sign_dict[invoice_id.id] = base64.b64encode(signed_attrs.dump()).decode()
+            to_sign_dict[str(invoice_id.id)] = base64.b64encode(signed_attrs.dump()).decode()
 
         return {
             'type': 'ir.actions.client',
@@ -74,7 +74,7 @@ class L10n_Eg_EdiThumbDrive(models.Model):
         """ This is called from the browser with the signed data from the local server """
         invoices = json.loads(invoices)
         for key, value in invoices.items():
-            invoice_id = self.env['account.move'].browse(int(key))
+            invoice_id = self.env['account.move'].browse(key)
             eta_invoice_json = json.loads(base64.b64decode(invoice_id.l10n_eg_eta_json_doc_file))
 
             signature = self._generate_cades_bes_signature(eta_invoice_json['request'], invoice_id.l10n_eg_signing_time,
