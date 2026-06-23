@@ -187,12 +187,12 @@ class TestController(HttpCase):
         self.assertEqual(200, response_wrong_action.status_code)
         self.assertTrue('error_msg' in response_wrong_action.text)
 
-        # retrieve metadata of a url with wrong record id
+        # retrieve metadata of a url with wrong record id (nonexistent UUID)
         response_wrong_record = self.url_open(
             '/html_editor/link_preview_internal',
             data=json_safe.dumps({
                 "params": {
-                    "preview_url": _get_full_url("/odoo/users/9999"),
+                    "preview_url": _get_full_url("/odoo/users/00000000-0000-7000-8000-000000000000"),
                 }
             }),
             headers=self.headers

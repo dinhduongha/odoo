@@ -3,6 +3,7 @@
 import re
 from odoo import models
 from odoo.exceptions import AccessDenied, AccessError
+from odoo.tools.uuid_utils import to_uuid
 
 
 class IrWebsocket(models.AbstractModel):
@@ -14,11 +15,13 @@ class IrWebsocket(models.AbstractModel):
             channels = list(channels)
             for channel in channels:
                 if isinstance(channel, str):
-                    match = re.match(r'editor_collaboration:(\w+(?:\.\w+)*):(\w+):(\d+)', channel)
+                    match = re.match(r'editor_collaboration:(\w+(?:\.\w+)*):(\w+):([\w-]+)', channel)
                     if match:
                         model_name = match[1]
                         field_name = match[2]
-                        res_id = int(match[3])
+                        raw_res_id = match[3]
+                        # res_id may be an int (legacy int PK models) or a UUID.
+                        res_id = int(raw_res_id) if raw_res_id.isdigit() else to_uuid(raw_res_id)
 
                         # Verify access to the edition channel.
                         if self.env.user._is_public():
