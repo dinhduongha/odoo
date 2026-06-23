@@ -20,7 +20,9 @@ class AccountMove(models.Model):
         :return: the formatted structured reference string (SI01...)
         """
         self.ensure_one()
-        p3 = str(self.partner_id.id)
+        # Partner ids are UUIDs; keep only their digits so the segment stays
+        # purely numeric as required by the SI01 structured reference format.
+        p3 = re.sub(r'\D', '', str(self.partner_id.id)) or '0'
         return self._build_invoice_reference(p3)
 
     def _get_invoice_reference_si_invoice(self):
@@ -42,7 +44,9 @@ class AccountMove(models.Model):
 
     def _build_invoice_reference(self, p3):
         """Builds the reference using a shared structure for both methods."""
-        p1 = str(self.journal_id.id)
+        # Journal ids are UUIDs; keep only their digits so the segment stays
+        # purely numeric as required by the SI01 structured reference format.
+        p1 = re.sub(r'\D', '', str(self.journal_id.id)) or '0'
         p2 = str(self.invoice_date.year)[-2:]
         reference_base = f"{p1}-{p2}-{p3}"
 
