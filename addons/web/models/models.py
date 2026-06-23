@@ -1902,7 +1902,7 @@ class Base(models.AbstractModel):
                     if group_by and group_domain:
                         local_extra_domain = AND([
                             local_extra_domain,
-                            group_domain.get(json.dumps(group_id), []),
+                            group_domain.get(json.dumps(group_id, default=str), []),
                         ])
                     search_count_domain = AND([
                         search_domain,

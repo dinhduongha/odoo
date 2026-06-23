@@ -370,9 +370,9 @@ class TestSelectRangeMulti(odoo.tests.TransactionCase):
             expand=True,
             group_by='folder_id',
             group_domain={
-                json.dumps(f1_id): [('tag_ids', 'in', [t1_id]), ],
-                json.dumps(f2_id): [('tag_ids', 'in', [t2_id]), ],
-                json.dumps(False): [('tag_ids', 'in', [t1_id]), ('tag_ids', 'in', [t2_id]), ],
+                json.dumps(f1_id, default=str): [('tag_ids', 'in', [t1_id]), ],
+                json.dumps(f2_id, default=str): [('tag_ids', 'in', [t2_id]), ],
+                json.dumps(False, default=str): [('tag_ids', 'in', [t1_id]), ('tag_ids', 'in', [t2_id]), ],
             }
         )
         self.assertEqual(
