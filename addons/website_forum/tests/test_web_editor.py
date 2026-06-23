@@ -21,7 +21,7 @@ class TestAttachmentController(HttpCase):
             "forum_id": self.env.ref("website_forum.forum_help").id,
         })
         self.authenticate(self.portal_user.login, self.portal_user.login)
-        payload = self.build_rpc_payload({'name': 'pixel', 'data': self.pixel, 'is_image': True, 'res_model': 'forum.post', 'res_id': post.id})
+        payload = self.build_rpc_payload({'name': 'pixel', 'data': self.pixel, 'is_image': True, 'res_model': 'forum.post', 'res_id': str(post.id)})
         self.portal_user.karma = 30
         response = self.url_open('/web_editor/attachment/add_data', data=json.dumps(payload), headers=self.headers, timeout=60000)
         self.assertEqual(200, response.status_code)
