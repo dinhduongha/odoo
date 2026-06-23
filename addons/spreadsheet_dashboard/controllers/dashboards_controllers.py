@@ -1,7 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import re
+
 from odoo import http
 from odoo.http import request
+from odoo.tools.uuid_utils import to_uuid
+
+# Canonical uuid pattern, used to robustly parse the '-'-joined 'cids' cookie
+# (the separator also appears inside uuids).
+_UUID_RE = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
 
 
 class DashboardDataRoute(http.Controller):
@@ -16,7 +23,7 @@ class DashboardDataRoute(http.Controller):
         if not dashboard:
             raise request.not_found()
         cids_str = request.cookies.get('cids', str(request.env.user.company_id.id))
-        cids = [int(cid) for cid in cids_str.split('-')]
+        cids = [to_uuid(cid) for cid in _UUID_RE.findall(cids_str)] or [request.env.user.company_id.id]
         dashboard = dashboard.with_context(allowed_company_ids=cids)
         if dashboard.sample_dashboard_file_path and dashboard._dashboard_is_empty():
             sample_data = dashboard._get_sample_dashboard()
