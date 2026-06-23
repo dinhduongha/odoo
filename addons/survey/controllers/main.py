@@ -13,6 +13,7 @@ from odoo.exceptions import UserError
 from odoo.fields import Domain
 from odoo.http import request, content_disposition
 from odoo.tools import format_datetime, format_date, is_html_empty
+from odoo.tools.uuid_utils import to_uuid
 from odoo.addons.base.models.ir_qweb import keep_query
 
 _logger = logging.getLogger(__name__)
@@ -876,13 +877,21 @@ class Survey(http.Controller):
             if not data:
                 break
             model_short_key, row_id, answer_id = data.split(',')
-            row_id, answer_id = row_id, answer_id
+            # uuidv7: row_id is '0' (sentinel from JS `rowId || 0`) when the
+            # filter is not a matrix row. With int PKs this was falsy after
+            # int('0'); with uuid PKs the raw '0' string is truthy, so test it
+            # explicitly to avoid pushing '0' into a uuid IN(...) clause.
+            has_row = bool(row_id) and row_id != '0'
+            # Coerce valid uuid strings to UUID so dict keys match record ids
+            # (record.id is a UUID); non-uuid strings are left untouched.
+            answer_id = to_uuid(answer_id)
+            row_id = to_uuid(row_id)
             if model_short_key == 'A':
-                if row_id:
+                if has_row:
                     answer_by_column[answer_id].append(row_id)
                 else:
                     answer_by_column[answer_id] = []
-            elif model_short_key == 'L' and not row_id:
+            elif model_short_key == 'L' and not has_row:
                 user_input_lines_ids.append(answer_id)
 
         return answer_by_column, user_input_lines_ids

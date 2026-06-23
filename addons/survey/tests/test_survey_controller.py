@@ -61,18 +61,20 @@ class TestSurveyController(common.TestSurveyCommon, HttpCase):
             {'is_page': True, 'question_type': False, 'sequence': 4, 'title': 'Page 1', 'survey_id': survey.id},
         ]
 
-        q1_correct_answer = {str(q1.id): [a_q1_correct.id]}
+        # uuidv7: the submit route returns correct answers as JSON, so both the
+        # question-id keys and suggested-answer-id values come back as strings.
+        q1_correct_answer = {str(q1.id): [str(a_q1_correct.id)]}
         cases = [
             ('page_per_question', [], q1_correct_answer),
             ('page_per_question', a_q1_correct, q1_correct_answer),
             ('page_per_question', a_q1_incorrect, q1_correct_answer),
             ('one_page', [], q1_correct_answer), # skipping gives answers for active questions (q2 and q3 conditional questions are inactive)
-            ('one_page', a_q1_correct, {**q1_correct_answer, str(q3.id): [a_q3_correct.id]}),
-            ('one_page', a_q1_partial, {**q1_correct_answer, str(q2.id): [a_q2_correct.id]}),
+            ('one_page', a_q1_correct, {**q1_correct_answer, str(q3.id): [str(a_q3_correct.id)]}),
+            ('one_page', a_q1_partial, {**q1_correct_answer, str(q2.id): [str(a_q2_correct.id)]}),
             # page0 contains q1 and q2, page1 contains q3
             ('page_per_section', [], q1_correct_answer),
             ('page_per_section', a_q1_correct, q1_correct_answer), # no correct answers for q3 because q3 is not on the same page as q1
-            ('page_per_section', a_q1_partial, {**q1_correct_answer, str(q2.id): [a_q2_correct.id]}),
+            ('page_per_section', a_q1_partial, {**q1_correct_answer, str(q2.id): [str(a_q2_correct.id)]}),
         ]
 
         for case_index, (layout, answer_q1, expected_correct_answers) in enumerate(cases):
@@ -101,11 +103,14 @@ class TestSurveyController(common.TestSurveyCommon, HttpCase):
                 self.assertResponse(r, 200)
 
                 post_data = {'csrf_token': csrf_token, 'token': answer_token}
-                post_data[q1.id] = answer_q1.id if answer_q1 else answer_q1
+                # uuidv7: keys/values posted as JSON must be str (UUID is not
+                # JSON serializable and dict keys must be str). The controller
+                # reads answers via post.get(str(question.id)).
+                post_data[str(q1.id)] = str(answer_q1.id) if answer_q1 else answer_q1
                 if layout == 'page_per_question':
-                    post_data['question_id'] = q1.id
+                    post_data['question_id'] = str(q1.id)
                 elif layout == 'page_per_section':
-                    post_data['page_id'] = page0.id
+                    post_data['page_id'] = str(page0.id)
 
                 # Submit answers and check the submit route is returning the accurate correct answers
                 response = self._access_submit(survey, answer_token, post_data)

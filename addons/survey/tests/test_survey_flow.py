@@ -10,7 +10,8 @@ from odoo.tests.common import HttpCase
 class TestSurveyFlow(common.TestSurveyCommon, HttpCase):
     def _format_submission_data(self, page, answer_data, additional_post_data):
         post_data = {}
-        post_data['page_id'] = page.id
+        # uuidv7: page.id is a UUID; posted over JSON it must be a str
+        post_data['page_id'] = str(page.id)
         for question_id, answer_vals in answer_data.items():
             question = page.question_ids.filtered(lambda q: q.id == question_id)
             post_data.update(self._prepare_post_data(question, answer_vals['value'], post_data))

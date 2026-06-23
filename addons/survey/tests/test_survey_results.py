@@ -23,31 +23,33 @@ class TestSurveyResults(common.TestSurveyResultsCommon):
     def test_get_filters_from_post(self):
         """ Check that the filters are correctly retrieved from the post. """
         # Matrix filter | simple_choice or multiple_choice filter | char_box, text_box, numerical_box, date or datetime filter
+        # uuidv7: ids are no longer cast to int by the controller, so the
+        # parsed row/answer ids stay as the raw strings from the filter string.
         post = {'filters': 'A,14,101|A,0,58|L,0,2'}
         with MockRequest(self.env):
             answer_by_column, user_input_lines_ids = self.SurveyController._get_filters_from_post(post)
-        self.assertEqual(answer_by_column, {101: [14], 58: []})
-        self.assertEqual(user_input_lines_ids, [2])
+        self.assertEqual(answer_by_column, {'101': ['14'], '58': []})
+        self.assertEqual(user_input_lines_ids, ['2'])
 
         # Multiple matrix filters
         post = {'filters': 'A,14,101|A,20,205'}
         with MockRequest(self.env):
             answer_by_column, user_input_lines_ids = self.SurveyController._get_filters_from_post(post)
-        self.assertEqual(answer_by_column, {101: [14], 205: [20]})
+        self.assertEqual(answer_by_column, {'101': ['14'], '205': ['20']})
         self.assertFalse(user_input_lines_ids)
 
         # Multiple filters on the same matrix column
         post = {'filters': 'A,14,101|A,20,101'}
         with MockRequest(self.env):
             answer_by_column, user_input_lines_ids = self.SurveyController._get_filters_from_post(post)
-        self.assertEqual(answer_by_column, {101: [14, 20]})
+        self.assertEqual(answer_by_column, {'101': ['14', '20']})
         self.assertFalse(user_input_lines_ids)
 
         # No model associated with the J letter, the second filter should be ignored
         post = {'filters': 'A,0,9|J,40,3'}
         with MockRequest(self.env):
             answer_by_column, user_input_lines_ids = self.SurveyController._get_filters_from_post(post)
-        self.assertEqual(answer_by_column, {9: []})
+        self.assertEqual(answer_by_column, {'9': []})
         self.assertFalse(user_input_lines_ids)
 
     def test_results_page_filters_survey_matrix(self):
