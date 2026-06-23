@@ -47,5 +47,5 @@ class TestMailPluginProjectController(TestMailPluginControllerCommon):
 
             result = result.json().get("result")
             self.assertEqual(len(result), 1)
-            self.assertEqual(result[0]["project_id"], project.id)
+            self.assertEqual(result[0]["project_id"], str(project.id))
             self.assertEqual(result[0]["name"], expected)
