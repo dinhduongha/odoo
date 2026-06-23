@@ -1014,7 +1014,7 @@ class TestCowViewSaving(TestViewSavingCommon, HttpCase):
         specific_view = Website.with_context(load_all_views=True, website_id=self.env.ref('website.default_website').id).viewref('_website_sale.product')
         self.assertEqual(self.base_view.key, specific_view.key, "Ensure it is equal as it should be for the rest of the test so we test the expected behaviors")
         specific_view_arch = specific_view.get_combined_arch()
-        self.assertEqual(specific_view.website_id.id, 1, "Ensure we got specific view to perform the checks against")
+        self.assertEqual(specific_view.website_id.id, self.env.ref('website.default_website').id, "Ensure we got specific view to perform the checks against")
         self.assertEqual(specific_view_arch, '<p>COMPARE</p>', "When a module creates an inherited view (on a generic tree), it should also create that view in the specific COW'd tree.")
 
         # Simulate website_sale_comparison update
@@ -1033,7 +1033,7 @@ class TestCowViewSaving(TestViewSavingCommon, HttpCase):
 
         w1_specific_child_view = Website.with_context(load_all_views=True, website_id=self.env.ref('website.default_website').id).viewref('_website_sale_comparison.product_add_to_compare')
         generic_child_view = Website.with_context(load_all_views=True).viewref('_website_sale_comparison.product_add_to_compare')
-        self.assertEqual(w1_specific_child_view.website_id.id, 1, "website_id is a prohibited field when COWing views during _load_records")
+        self.assertEqual(w1_specific_child_view.website_id.id, self.env.ref('website.default_website').id, "website_id is a prohibited field when COWing views during _load_records")
         self.assertEqual(generic_child_view.inherit_id, random_views[0], "prohibited fields only concerned write on COW'd view. Generic should still considere these fields")
         self.assertEqual(w1_specific_child_view.inherit_id, random_views[0], "inherit_id update should be repliacated on cow views during _load_records")
 
@@ -1321,7 +1321,7 @@ class TestCowViewSaving(TestViewSavingCommon, HttpCase):
         # Get created views by searching to consider potential unwanted COW
         created_views = View.search([('key', '=', 'website.no_website_id')])
         self.assertEqual(len(created_views), 1, "Should only have created one view")
-        self.assertEqual(created_views.website_id.id, 1, "The created view should be specific to website 1")
+        self.assertEqual(created_views.website_id.id, self.env.ref('website.default_website').id, "The created view should be specific to website 1")
 
         with self.assertRaises(ValueError, msg="Should not allow to create generic view explicitely from website 1 specific context"):
             View.with_context(website_id=self.env.ref('website.default_website').id).create({

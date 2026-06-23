@@ -501,9 +501,11 @@ class TestUi(HttpCaseWithWebsiteUser):
         Menu.create({
             'name': 'Test Child',
             'parent_id': menu_root.id,
-            'action': 'ir.actions.act_window,%d' % (self.env.ref('base.open_module_tree').id,),
+            'action': 'ir.actions.act_window,%s' % (self.env.ref('base.open_module_tree').id,),
         })
-        self.env.ref('base.user_admin').action_id = self.env.ref('base.menu_administration').id
+        # Set the admin home action to the Settings action so the tour can check
+        # that clicking the backend menu lands on Apps and NOT on the home action.
+        self.env.ref('base.user_admin').action_id = self.env.ref('base_setup.action_general_configuration').id
         self.assertFalse(menu_root.action, 'The top menu should not have an action (or the test/tour will not test anything).')
         self.start_tour('/', 'website_backend_menus_redirect', login='admin')
 

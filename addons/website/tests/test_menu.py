@@ -364,7 +364,7 @@ class TestMenuHttp(common.HttpCase):
 
         # 3. Edit the menu URL back to the page URL
         data['url'] = self.page_url
-        self.env['website.menu'].save(1, {'data': [data], 'to_delete': []})
+        self.env['website.menu'].save(self.env.ref('website.default_website').id, {'data': [data], 'to_delete': []})
         self.assertEqual(self.menu.page_id, self.page,
                          "M2o should have been set back, as there was a page found with the new URL set on the menu.")
         self.assertTrue(self.page.url == self.menu.url == self.page_url)
@@ -430,7 +430,7 @@ class TestMenuHttp(common.HttpCase):
             'field_name': 'mega_menu_content',
             'translations': {fr.code: {sha: 'french_mega_menu_content'}},
         })
-        self.url_open('/website/field/translation/update', data=json.dumps(payload), headers=self.headers)
+        self.url_open('/website/field/translation/update', data=json.dumps(payload, default=str), headers=self.headers)
         self.assertIn("french_mega_menu_content",
                       menu.with_context(lang=fr.code, website_id=website.id).mega_menu_content)
 
