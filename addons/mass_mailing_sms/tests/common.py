@@ -168,7 +168,7 @@ class MassSMSCase(SMSCase, MockLinkTracker):
                 sms_sms = self._find_sms_sms(partner, number, state_mapping[status])
                 for (url, is_shortened, add_link_params) in link_info:
                     if url == 'unsubscribe':
-                        url = '%s/sms/%d/%s' % (mailing.get_base_url(), mailing.id, trace.sms_code)
+                        url = '%s/sms/%s/%s' % (mailing.get_base_url(), mailing.id, trace.sms_code)
                     link_params = {'utm_medium': 'SMS', 'utm_source': mailing.name}
                     if add_link_params:
                         link_params.update(**add_link_params)

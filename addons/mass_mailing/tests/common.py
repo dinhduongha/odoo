@@ -9,6 +9,7 @@ import werkzeug
 from unittest.mock import patch
 
 from odoo.tools import email_normalize, mail
+from odoo.tools.uuid_utils import to_uuid
 from odoo.addons.link_tracker.tests.common import MockLinkTracker
 from odoo.addons.mail.tests.common import MailCase, MailCommon, mail_new_test_user
 from odoo.sql_db import Cursor
@@ -284,7 +285,7 @@ class MassMailCase(MailCase, MockLinkTracker):
             if label == click_label and '/r/' in link_url:  # shortened link, like 'http://localhost:8069/r/LBG/m/53'
                 parsed_url = werkzeug.urls.url_parse(link_url)
                 path_items = parsed_url.path.split('/')
-                code, trace_id = path_items[2], int(path_items[4])
+                code, trace_id = path_items[2], to_uuid(path_items[4])
                 self.assertEqual(trace.id, trace_id)
 
                 self.env['link.tracker.click'].sudo().add_click(
