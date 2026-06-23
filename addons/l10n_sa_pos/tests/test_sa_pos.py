@@ -64,7 +64,7 @@ class TestUi(TestPointOfSaleHttpCommon):
         if self.env['ir.module.module']._get('l10n_sa_edi').state == 'installed':
             self.skipTest("The needed configuration for e-invoices is not available")
         self.main_pos_config.with_user(self.pos_admin).open_ui()
-        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'test_sa_qr_is_shown', login="pos_admin")
+        self.start_tour("/pos/ui?config_id=%s" % self.main_pos_config.id, 'test_sa_qr_is_shown', login="pos_admin")
 
 
 @tagged('post_install_l10n', 'post_install', '-at_install')
