@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import base64
+import uuid
 
 from datetime import datetime, timedelta
 from freezegun import freeze_time
@@ -2081,7 +2082,8 @@ class TestMessagePostGlobal(TestMessagePostCommon):
             'message_post',
             [test_record.id],
             {'body': 'test'})
-        self.assertTrue(tools.misc.has_list_types(result, (int,)))
+        # uuid PKs: message id is now a UUID, not an int
+        self.assertTrue(tools.misc.has_list_types(result, (uuid.UUID,)))
 
 
 @tagged('mail_post', 'multi_lang')

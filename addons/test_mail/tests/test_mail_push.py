@@ -134,7 +134,8 @@ class TestWebPushNotification(SMSCommon):
                     )
                     self.assertEqual(payload_value['options']['icon'], icon)
                     self.assertEqual(payload_value['options']['body'], 'Test Push')
-                    self.assertEqual(payload_value['options']['data']['res_id'], channel.id)
+                    # uuid PKs: payload res_id is JSON-serialised as a str
+                    self.assertEqual(payload_value['options']['data']['res_id'], str(channel.id))
                     self.assertEqual(payload_value['options']['data']['model'], channel._name)
                     self.assertEqual(push_to_end_point.call_args.kwargs['device']['endpoint'], 'https://test.odoo.com/webpush/user2')
                 push_to_end_point.reset_mock()
@@ -336,7 +337,7 @@ class TestWebPushNotification(SMSCommon):
                         title=f'{self.user_admin.name}: {self.record_simple.display_name}',
                         body_content='Test Push Body',
                         options={
-                            'data': {'model': self.record_simple._name, 'res_id': self.record_simple.id,},
+                            'data': {'model': self.record_simple._name, 'res_id': str(self.record_simple.id),},
                         },
                     )
                 else:
@@ -375,7 +376,8 @@ class TestWebPushNotification(SMSCommon):
         ])
         data = options['data']
         self.assertEqual(data['type'], "CALL")
-        self.assertEqual(data['res_id'], channel.id)
+        # uuid PKs: payload res_id is JSON-serialised as a str
+        self.assertEqual(data['res_id'], str(channel.id))
         self.assertEqual(data['model'], "discuss.channel")
         push_to_end_point.reset_mock()
 

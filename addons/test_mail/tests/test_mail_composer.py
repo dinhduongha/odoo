@@ -30,9 +30,10 @@ _UUID_REPR_RE = re.compile(r"UUID\((('[0-9a-fA-F-]+')|(\"[0-9a-fA-F-]+\"))\)")
 
 
 def _literal_eval_ids(res_ids_str):
-    """ literal_eval a res_ids string (stored as quoted uuid strings, e.g.
-    "['019ee...']") and coerce values back to UUID for comparison with .ids. """
-    return [to_uuid(v) for v in literal_eval(res_ids_str)]
+    """ literal_eval a res_ids string and coerce values back to UUID for
+    comparison with .ids. The string may be stored either as quoted uuid strings
+    (e.g. "['019ee...']") or as UUID reprs (e.g. "[UUID('019ee...')]"). """
+    return [to_uuid(v) for v in literal_eval(_UUID_REPR_RE.sub(r"\1", res_ids_str))]
 
 
 def _literal_eval_domain(domain_str):

@@ -400,7 +400,7 @@ class TestMessageValues(MailCommon):
             'model': 'mail.test.container',
             'res_id': self.alias_record.id
         })
-        self.assertIn('-openerp-%d-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
+        self.assertIn('-openerp-%s-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
         reply_to_name = self.user_employee.name
         reply_to_email = '%s@%s' % (self.alias_record.alias_name, self.alias_domain)
         self.assertEqual(msg.reply_to, formataddr((reply_to_name, reply_to_email)))
@@ -415,7 +415,7 @@ class TestMessageValues(MailCommon):
             'model': 'mail.test.container',
             'res_id': self.alias_record.id
         })
-        self.assertIn('-openerp-%d-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
+        self.assertIn('-openerp-%s-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
         self.assertEqual(msg.reply_to, formataddr((self.user_employee.name, self.user_employee.email)))
         self.assertEqual(msg.email_from, formataddr((self.user_employee.name, self.user_employee.email)))
 
@@ -426,7 +426,7 @@ class TestMessageValues(MailCommon):
             'model': 'mail.test.container',
             'res_id': self.alias_record.id
         })
-        self.assertIn('-openerp-%d-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
+        self.assertIn('-openerp-%s-mail.test' % self.alias_record.id, msg.message_id.split('@')[0])
         self.assertEqual(msg.reply_to, formataddr((reply_to_name, reply_to_email)))
         self.assertEqual(msg.email_from, formataddr((self.user_employee.name, self.user_employee.email)))
 
@@ -439,7 +439,7 @@ class TestMessageValues(MailCommon):
             'model': 'mail.test.simple',
             'res_id': test_record.id
         })
-        self.assertIn('-openerp-%d-mail.test.simple' % test_record.id, msg.message_id.split('@')[0])
+        self.assertIn('-openerp-%s-mail.test.simple' % test_record.id, msg.message_id.split('@')[0])
         reply_to_name = self.user_employee.name
         reply_to_email = '%s@%s' % (self.alias_catchall, self.alias_domain)
         self.assertEqual(msg.reply_to, formataddr((reply_to_name, reply_to_email)))
@@ -461,7 +461,7 @@ class TestMessageValues(MailCommon):
             'res_id': test_record.id
         })
 
-        self.assertIn('-openerp-%d-mail.test.simple' % test_record.id, msg.message_id.split('@')[0])
+        self.assertIn('-openerp-%s-mail.test.simple' % test_record.id, msg.message_id.split('@')[0])
         reply_to_name = self.user_employee.name
         reply_to_email = '%s@%s' % (alias.alias_name, self.alias_domain)
         self.assertEqual(msg.reply_to, formataddr((reply_to_name, reply_to_email)))

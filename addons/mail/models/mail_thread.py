@@ -432,7 +432,8 @@ class MailThread(models.AbstractModel):
             if ('alias_id' in record and record.alias_id and
                 record.alias_id.alias_name and record.alias_id.alias_domain and
                 record.alias_id.alias_model_id.model == self._name and
-                record.alias_id.alias_force_thread_id == 0):
+                # uuid PKs: empty force-thread m2o is None, not 0
+                not record.alias_id.alias_force_thread_id):
                 alias = record.alias_id
         # no res_id or res_id not linked to an alias -> generic help message, take a generic alias of the model
         if not alias and model and self.env.company.alias_domain_id:
@@ -1038,7 +1039,9 @@ class MailThread(models.AbstractModel):
                 continue
 
             loop_new, loop_update = False, False
-            search_new = 0 in thread_ids  # route creating new records = thread_id = 0
+            # route creating new records = falsy thread_id (uuid PKs: empty m2o is
+            # None, not 0/False as it was with integer ids)
+            search_new = any(not thread_id for thread_id in thread_ids)
             doc_ids = list(filter(None, thread_ids))  # route updating records = thread_id set
 
             # search records created by email -> alias creating new records
@@ -3973,7 +3976,7 @@ class MailThread(models.AbstractModel):
         if author_id:
             author_name = self.env['res.partner'].browse(author_id).name
             title = "%s: %s" % (author_name, title)
-            icon = "/web/image/res.partner/%d/avatar_128" % author_id
+            icon = "/web/image/res.partner/%s/avatar_128" % author_id
         else:
             icon = '/web/static/img/odoo-icon-192x192.png'
 
@@ -4007,7 +4010,8 @@ class MailThread(models.AbstractModel):
                 'icon': icon,
                 'data': {
                     'model': model if model else '',
-                    'res_id': res_id if res_id else '',
+                    # uuid PKs: res_id is a UUID, not JSON-serializable -> stringify
+                    'res_id': str(res_id) if res_id else '',
                 }
             }
         }
@@ -4486,7 +4490,9 @@ class MailThread(models.AbstractModel):
         """ Parameters management for '_notify_get_action_link' """
         params = {
             'model': kwargs.get('model', self._name),
-            'res_id': kwargs.get('res_id', self.ids[0] if self else False),
+            # uuid PKs: browse(0) is a truthy recordset whose .ids is empty (0 is
+            # not a valid id), so guard on self.ids rather than the recordset bool
+            'res_id': kwargs.get('res_id', self.ids[0] if self.ids else False),
         }
         # keep only accepted parameters:
         # - action (deprecated), token (assign), access_token (view)

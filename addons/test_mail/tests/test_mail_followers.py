@@ -989,14 +989,15 @@ class UnfollowLinkTest(MailCommon, HttpCase):
             lambda follower: follower.partner_id == self.env.user.partner_id
         )
         message_data = self.make_jsonrpc_request("/mail/inbox/messages")["data"]
+        # uuid PKs: JSON-RPC round-trips ids to strings
         self.assertEqual(message_data["mail.followers"], [
             {
-                "id": follower.id,
+                "id": str(follower.id),
                 "is_active": True,
-                "partner_id": self.env.user.partner_id.id,
+                "partner_id": str(self.env.user.partner_id.id),
             },
         ])
-        self.assertEqual(message_data["mail.thread"][0]["selfFollower"], follower.id, "Should have follower ID")
+        self.assertEqual(message_data["mail.thread"][0]["selfFollower"], str(follower.id), "Should have follower ID")
 
     @mute_logger('odoo.addons.base.models', 'odoo.addons.mail.controllers.mail', 'odoo.http', 'odoo.models')
     def test_notification_email_unfollow_link(self):
