@@ -137,7 +137,10 @@ class IrQwebField(models.AbstractModel):
             return data
 
         data['data-oe-model'] = record._name
-        data['data-oe-id'] = record.id
+        # uuidv7 PKs: record.id is a UUID object; the branding attribute must be
+        # a string, otherwise setting it on the DOM node fails and branding is
+        # silently dropped.
+        data['data-oe-id'] = str(record.id)
         data['data-oe-field'] = field.name
         data['data-oe-type'] = options.get('type')
         data['data-oe-expression'] = options.get('expression')

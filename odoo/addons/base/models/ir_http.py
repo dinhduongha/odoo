@@ -9,6 +9,7 @@ import os
 import re
 import threading
 import unicodedata
+import uuid
 
 import werkzeug
 import werkzeug.exceptions
@@ -76,7 +77,17 @@ class ModelConverter(werkzeug.routing.BaseConverter):
     def to_python(self, value: str) -> models.BaseModel:
         _uid = RequestUID(value=value, converter=self)
         env = api.Environment(request.env.cr, _uid, request.env.context)
-        return env[self.model].browse(self.unslug(value)[1])
+        identifier = self.unslug(value)[1]
+        if isinstance(identifier, int):
+            # uuidv7 PKs: a legacy integer identifier (still accepted by the
+            # route regex for backward compatibility) can never match a uuid
+            # primary key. Map it to a non-existent uuid sentinel so that the
+            # record resolves to a (missing) record: URL rewrites/redirects that
+            # match the route still fire, and accessing the record later raises
+            # MissingError -> 404, instead of crashing the SQL query with
+            # "operator does not exist: uuid = integer".
+            identifier = uuid.UUID(int=0)
+        return env[self.model].browse(identifier)
 
     def to_url(self, value: models.BaseModel) -> str:
         return self.slug(value)

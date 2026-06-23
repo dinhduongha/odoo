@@ -620,8 +620,10 @@ actual arch.
                         # do the job properly.
                         pass
             if not values.get('key') and values.get('type') == 'qweb':
-                # UUIDv7 Patched
-                values['key'] = "gen_key.%s" % str(uuid7())[:6]
+                # uuidv7 PKs: do NOT truncate the uuid -- uuid7 values created
+                # close in time share their leading hex (timestamp) digits, so a
+                # short prefix collides and two views would get the same key.
+                values['key'] = "gen_key.%s" % uuid7()
             if not values.get('name'):
                 values['name'] = "%s %s" % (values.get('model'), values['type'])
             # Create might be called with either `arch` (xml files), `arch_base` (form view) or `arch_db`.
@@ -683,8 +685,9 @@ actual arch.
         vals_list = super().copy_data(default=default)
         for view, vals in zip(self, vals_list):
             if view.key and has_default_without_key:
-                # UUIDv7 Patched
-                vals['key'] = default.get('key', view.key + '_%s' % str(uuid7())[:6])
+                # uuidv7 PKs: full uuid, not a 6-char prefix (would collide for
+                # views copied within the same millisecond).
+                vals['key'] = default.get('key', view.key + '_%s' % uuid7())
         return vals_list
 
     # default view selection

@@ -110,7 +110,7 @@ class IrUiView(models.Model):
             # Make sure views which are written in a website context receive
             # a value for their 'key' field
             if not view.key and not vals.get('key'):
-                view.with_context(no_cow=True).key = 'website.key_%s' % str(uuid7())[:6]
+                view.with_context(no_cow=True).key = 'website.key_%s' % uuid7()
 
             pages = view.page_ids
 
