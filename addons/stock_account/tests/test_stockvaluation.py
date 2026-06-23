@@ -3599,7 +3599,7 @@ class TestStockValuation(TestStockValuationCommon):
         self.env['ir.rule'].create({
             'name': 'Forbid Quant Access of Location B for Inventory Users',
             'model_id': self.env['ir.model']._get_id('stock.quant'),
-            'domain_force': f"[('location_id', '!=', {location_b.id})]",
+            'domain_force': f"[('location_id', '!=', '{location_b.id}')]",
             'groups': [Command.set(self.env.ref('stock.group_stock_user').ids)],
         })
 
