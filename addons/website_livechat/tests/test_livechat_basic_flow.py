@@ -123,7 +123,7 @@ class TestLivechatBasicFlowHttpCase(HttpCaseWithUserDemo, TestLivechatCommon):
         init_messaging = self.make_jsonrpc_request(
             f"{self.livechat_base_url}/mail/data", {"fetch_params": ["channels_as_member"]}
         )
-        livechat_info = next(c for c in init_messaging["discuss.channel"] if c["id"] == channel.id)
+        livechat_info = next(c for c in init_messaging["discuss.channel"] if c["id"] == str(channel.id))
         self.assertIn("livechat_visitor_id", livechat_info)
 
         # Remove access to visitors and try again, visitors info shouldn't be included
@@ -131,7 +131,7 @@ class TestLivechatBasicFlowHttpCase(HttpCaseWithUserDemo, TestLivechatCommon):
         init_messaging = self.make_jsonrpc_request(
             f"{self.livechat_base_url}/mail/data", {"fetch_params": ["channels_as_member"]}
         )
-        livechat_info = next(c for c in init_messaging["discuss.channel"] if c["id"] == channel.id)
+        livechat_info = next(c for c in init_messaging["discuss.channel"] if c["id"] == str(channel.id))
         self.assertNotIn("livechat_visitor_id", livechat_info)
 
     def _common_basic_flow(self):
@@ -370,7 +370,7 @@ class TestLivechatBasicFlowHttpCase(HttpCaseWithUserDemo, TestLivechatCommon):
                     "message_unread_counter": 2,
                     "message_unread_counter_bus_id": self.env["bus.bus"].sudo()._bus_last_id(),
                     "mute_until_dt": False,
-                    "new_message_separator": 0,
+                    "new_message_separator": guest_member.new_message_separator,
                     "rtc_inviting_session_id": False,
                     "seen_message_id": False,
                     "unpin_dt": False,
