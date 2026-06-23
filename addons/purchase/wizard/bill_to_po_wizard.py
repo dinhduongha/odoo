@@ -11,8 +11,8 @@ class BillToPoWizard(models.TransientModel):
     partner_id = fields.Many2one(comodel_name='res.partner')
 
     def action_add_to_po(self):
-        aml_ids = [abs(record_id) for record_id in self.env.context.get('active_ids') if record_id < 0]
-        lines_to_add = self.env['account.move.line'].browse(aml_ids).filtered(lambda l: l.product_id)
+        match_lines = self.env['purchase.bill.line.match'].browse(self.env.context.get('active_ids'))
+        lines_to_add = match_lines.aml_id.filtered(lambda l: l.product_id)
         if not lines_to_add:
             raise UserError(_("There are no products to add to the Purchase Order. Are these Down Payments?"))
         line_vals = lines_to_add._prepare_line_values_for_purchase()
@@ -41,8 +41,8 @@ class BillToPoWizard(models.TransientModel):
         }
 
     def action_add_downpayment(self):
-        aml_ids = [abs(record_id) for record_id in self.env.context.get('active_ids') if record_id < 0]
-        lines_to_convert = self.env['account.move.line'].browse(aml_ids)
+        match_lines = self.env['purchase.bill.line.match'].browse(self.env.context.get('active_ids'))
+        lines_to_convert = match_lines.aml_id
         context = {'lang': lines_to_convert.partner_id.lang}
         if not self.purchase_order_id:
             self.purchase_order_id = self.env['purchase.order'].create({

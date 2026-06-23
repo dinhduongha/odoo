@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, models
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class PurchaseOrderLine(models.Model):
@@ -16,7 +17,7 @@ class PurchaseOrderLine(models.Model):
             project = ctx_project or line.order_id.project_id
             if line.analytic_distribution:
                 applied_root_plans = self.env['account.analytic.account'].browse(
-                    list({int(account_id) for ids in line.analytic_distribution for account_id in ids.split(",")})
+                    list({to_uuid(account_id) for ids in line.analytic_distribution for account_id in ids.split(",") if is_uuid(account_id)})
                 ).root_plan_id
                 if accounts_to_add := project._get_analytic_accounts().filtered(
                         lambda account: account.root_plan_id not in applied_root_plans
