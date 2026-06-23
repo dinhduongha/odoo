@@ -107,7 +107,7 @@ class TestSelfOrderMobile(SelfOrderCommonTest, OnlinePaymentCommon):
         self.assertEqual(len(order.lines), 2)
 
         # Check self-order in pos-terminal order button remains enabled
-        self.start_tour('/pos/ui?config_id=%d' % self.pos_config.id, 'test_online_payment_pos_self_order_preparation_changes', login='pos_user')
+        self.start_tour('/pos/ui?config_id=%s' % self.pos_config.id, 'test_online_payment_pos_self_order_preparation_changes', login='pos_user')
 
     def test_kiosk_cart_restore_and_cancel(self):
         """
