@@ -88,7 +88,7 @@ class TestSaleProjectStockProfitability(TestProjectProfitabilityCommon, Valuatio
             {
                 'data': [{
                     'action': {
-                        'args': f'["cost_of_goods_sold", [["id", "in", [{invoice.id}]]], {invoice.id}]',
+                        'args': f'["cost_of_goods_sold", [["id", "in", ["{invoice.id}"]]], "{invoice.id}"]',
                         'name': 'action_profitability_items',
                         'type': 'object',
                     },

@@ -599,7 +599,7 @@ class ProjectProject(models.Model):
                     downpayments_data['action'] = {
                         'name': 'action_profitability_items',
                         'type': 'object',
-                        'args': json.dumps(args),
+                        'args': json.dumps(args, default=str),
                     }
                 data += [downpayments_data]
                 total_invoiced += downpayment_amount_invoiced
@@ -641,7 +641,7 @@ class ProjectProject(models.Model):
                     action_params = {
                         'name': 'action_profitability_items',
                         'type': 'object',
-                        'args': json.dumps(args),
+                        'args': json.dumps(args, default=str),
                     }
                     if len(sale_order_items) == 1:
                         action_params['res_id'] = sale_order_items.id

@@ -72,7 +72,7 @@ class ProjectProject(models.Model):
         args = [name, [('id', 'in', record_ids)]]
         if len(record_ids) == 1:
             args.append(record_ids[0])
-        return {'name': 'action_profitability_items', 'type': 'object', 'args': json.dumps(args)}
+        return {'name': 'action_profitability_items', 'type': 'object', 'args': json.dumps(args, default=str)}
 
     def _get_profitability_labels(self):
         return {
