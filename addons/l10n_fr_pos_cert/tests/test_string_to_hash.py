@@ -37,7 +37,7 @@ class TestStringToHash(TestPoSCommon):
 
             for line in order.lines:
                 for field in LINE_FIELDS:
-                    k = 'line_%d_%s' % (line.id, field)
+                    k = 'line_%s_%s' % (line.id, field)
                     values[k] = _getattrstring(line, field)
             # make the json serialization canonical
             #  (https://tools.ietf.org/html/draft-staykov-hu-json-canonical-form-00)

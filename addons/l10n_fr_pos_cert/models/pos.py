@@ -172,7 +172,7 @@ class PosOrder(models.Model):
 
             for line in lines_by_order[order.id]:
                 for field in LINE_FIELDS:
-                    k = 'line_%d_%s' % (line['id'], field)
+                    k = 'line_%s_%s' % (line['id'], field)
                     field_def = line_field_defs[field]
                     values[k] = _getattrstring(line.get(field), field_def['type'], field_def['comodel'])
 
