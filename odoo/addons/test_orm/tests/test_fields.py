@@ -2499,7 +2499,7 @@ class TestFields(TransactionCaseWithUserDemo, TransactionExpressionCase):
             WHERE "test_orm_model_active_field"."id" NOT IN %s
             ORDER BY "test_orm_model_active_field"."id"
         """]):
-            Model.search([('id', '!=', 1)])
+            Model.search([('id', '!=', 'ffffffff-ffff-ffff-ffff-ffffffffffff')])
             Model.search([('id', '=', False)])  # No query
 
     def test_60_one2many_domain(self):

@@ -248,7 +248,7 @@ class Environment(Mapping[str, "BaseModel"]):
             the targeted company.
         """
         # allowed_company_ids may arrive from the web client as uuid strings
-        company_ids = [to_uuid(c) for c in self.context.get('allowed_company_ids', [])]
+        company_ids = [to_uuid(c) for c in (self.context.get('allowed_company_ids') or [])]
         if company_ids:
             if not self.su:
                 user_company_ids = self.user._get_company_ids()
@@ -279,7 +279,7 @@ class Environment(Mapping[str, "BaseModel"]):
             the targeted company.
         """
         # allowed_company_ids may arrive from the web client as uuid strings
-        company_ids = [to_uuid(c) for c in self.context.get('allowed_company_ids', [])]
+        company_ids = [to_uuid(c) for c in (self.context.get('allowed_company_ids') or [])]
         user_company_ids = self.user._get_company_ids()
         if company_ids:
             if not self.su:

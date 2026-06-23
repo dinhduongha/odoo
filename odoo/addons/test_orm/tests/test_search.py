@@ -424,15 +424,15 @@ class TestSearchRelated(TransactionCase):
         cls.env['ir.rule'].create([{
             'name': 'related',
             'model_id': cls.env['ir.model']._get('test_orm.related').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }, {
             'name': 'related_foo',
             'model_id': cls.env['ir.model']._get('test_orm.related_foo').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }, {
             'name': 'related_bar',
             'model_id': cls.env['ir.model']._get('test_orm.related_bar').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }])
 
     def test_related_simple(self):
@@ -440,7 +440,7 @@ class TestSearchRelated(TransactionCase):
         self.env['ir.rule'].create({
             'name': 'related_foo',
             'model_id': self.env['ir.model']._get('test_orm.related_foo').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         })
 
         # warmup
@@ -1365,15 +1365,15 @@ class TestSearchAny(TransactionCase):
         cls.env['ir.rule'].create([{
             'name': 'related',
             'model_id': cls.env['ir.model']._get('test_orm.related').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }, {
             'name': 'related_foo',
             'model_id': cls.env['ir.model']._get('test_orm.related_foo').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }, {
             'name': 'related_bar',
             'model_id': cls.env['ir.model']._get('test_orm.related_bar').id,
-            'domain_force': "[('id', '<', 1000)]",
+            'domain_force': "[('id', '<', 'ffffffff-ffff-ffff-ffff-ffffffffffff')]",
         }])
 
     def test_many2one_any(self):
