@@ -2,6 +2,7 @@
 
 from odoo import models
 from odoo.fields import Domain
+from odoo.tools.uuid_utils import to_uuid
 
 
 class AccountMoveLine(models.Model):
@@ -21,7 +22,7 @@ class AccountMoveLine(models.Model):
     def _get_so_mapping_domain(self):
         return Domain.OR(
             Domain.AND(
-                Domain(self.env['account.analytic.account'].browse(int(account_id)).root_plan_id._column_name(), "=", int(account_id))
+                Domain(self.env['account.analytic.account'].browse(to_uuid(account_id)).root_plan_id._column_name(), "=", to_uuid(account_id))
                 for account_id in key.split(",")
             )
             for line in self

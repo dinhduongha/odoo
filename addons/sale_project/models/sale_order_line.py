@@ -2,6 +2,7 @@
 
 from odoo import api, Command, fields, models, _
 from odoo.exceptions import AccessError, UserError
+from odoo.tools.uuid_utils import to_uuid
 
 
 class SaleOrderLine(models.Model):
@@ -111,7 +112,7 @@ class SaleOrderLine(models.Model):
             project = ctx_project or line.product_id.with_company(line.company_id).project_id or line.order_id.project_id
             if line.analytic_distribution:
                 applied_root_plans = self.env['account.analytic.account'].browse(
-                    list({int(account_id) for ids in line.analytic_distribution for account_id in ids.split(",")})
+                    list({to_uuid(account_id) for ids in line.analytic_distribution for account_id in ids.split(",")})
                 ).exists().root_plan_id
                 if accounts_to_add := project._get_analytic_accounts().filtered(
                     lambda account: account.root_plan_id not in applied_root_plans
