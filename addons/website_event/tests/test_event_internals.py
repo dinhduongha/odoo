@@ -107,9 +107,9 @@ class TestEventData(EventCase, MockVisitor):
             '2-phone-%s' % phone_question.id: '+32777777777',
             '2-company_name-%s' % company_name_question.id: 'My Company',
             '2-event_ticket_id': ticket_id_2.id,
-            '1-simple_choice-%s' % self.event_question_1.id: '5',
-            '2-simple_choice-%s' % self.event_question_1.id: '9',
-            '0-simple_choice-%s' % self.event_question_2.id: '7',
+            '1-simple_choice-%s' % self.event_question_1.id: str(self.event_question_1.answer_ids[0].id),
+            '2-simple_choice-%s' % self.event_question_1.id: str(self.event_question_1.answer_ids[1].id),
+            '0-simple_choice-%s' % self.event_question_2.id: str(self.event_question_2.answer_ids[0].id),
             '0-text_box-%s' % self.event_question_3.id: 'Free Text',
             'custom-field': 'custom-value',
             'recaptcha_token_response': 'opaquetokenvalue',
@@ -121,23 +121,23 @@ class TestEventData(EventCase, MockVisitor):
         self.assertEqual(registrations, [
             {'name': 'Pixis', 'email': 'pixis@gmail.com', 'phone': '+32444444444', 'event_ticket_id': ticket_id_1.id,
             'registration_answer_ids': [
-                (0, 0, {'question_id': name_question.id, 'value_text_box': 'Pixis'}),
-                (0, 0, {'question_id': email_question.id, 'value_text_box': 'pixis@gmail.com'}),
-                (0, 0, {'question_id': phone_question.id, 'value_text_box': '+32444444444'}),
-                (0, 0, {'question_id': second_phone_question.id, 'value_text_box': '+32555555555'}),
-                (0, 0, {'question_id': self.event_question_1.id, 'value_answer_id': 5}),
-                (0, 0, {'question_id': self.event_question_2.id, 'value_answer_id': 7}),
-                (0, 0, {'question_id': self.event_question_3.id, 'value_text_box': 'Free Text'})]},
+                (0, 0, {'question_id': str(name_question.id), 'value_text_box': 'Pixis'}),
+                (0, 0, {'question_id': str(email_question.id), 'value_text_box': 'pixis@gmail.com'}),
+                (0, 0, {'question_id': str(phone_question.id), 'value_text_box': '+32444444444'}),
+                (0, 0, {'question_id': str(second_phone_question.id), 'value_text_box': '+32555555555'}),
+                (0, 0, {'question_id': str(self.event_question_1.id), 'value_answer_id': str(self.event_question_1.answer_ids[0].id)}),
+                (0, 0, {'question_id': str(self.event_question_2.id), 'value_answer_id': str(self.event_question_2.answer_ids[0].id)}),
+                (0, 0, {'question_id': str(self.event_question_3.id), 'value_text_box': 'Free Text'})]},
             {'name': 'Geluchat', 'email': 'geluchat@gmail.com', 'phone': '+32777777777', 'company_name': 'My Company',
             'event_ticket_id': ticket_id_2.id,
             'registration_answer_ids': [
-                (0, 0, {'question_id': name_question.id, 'value_text_box': 'Geluchat'}),
-                (0, 0, {'question_id': email_question.id, 'value_text_box': 'geluchat@gmail.com'}),
-                (0, 0, {'question_id': phone_question.id, 'value_text_box': '+32777777777'}),
-                (0, 0, {'question_id': company_name_question.id, 'value_text_box': 'My Company'}),
-                (0, 0, {'question_id': self.event_question_1.id, 'value_answer_id': 9}),
-                (0, 0, {'question_id': self.event_question_2.id, 'value_answer_id': 7}),
-                (0, 0, {'question_id': self.event_question_3.id, 'value_text_box': 'Free Text'})]}
+                (0, 0, {'question_id': str(name_question.id), 'value_text_box': 'Geluchat'}),
+                (0, 0, {'question_id': str(email_question.id), 'value_text_box': 'geluchat@gmail.com'}),
+                (0, 0, {'question_id': str(phone_question.id), 'value_text_box': '+32777777777'}),
+                (0, 0, {'question_id': str(company_name_question.id), 'value_text_box': 'My Company'}),
+                (0, 0, {'question_id': str(self.event_question_1.id), 'value_answer_id': str(self.event_question_1.answer_ids[1].id)}),
+                (0, 0, {'question_id': str(self.event_question_2.id), 'value_answer_id': str(self.event_question_2.answer_ids[0].id)}),
+                (0, 0, {'question_id': str(self.event_question_3.id), 'value_text_box': 'Free Text'})]}
         ])
 
     def test_process_attendees_form_no_tickets(self):
@@ -167,8 +167,8 @@ class TestEventData(EventCase, MockVisitor):
             'email': 'attendee@example.com',
             'event_ticket_id': False,
             'registration_answer_ids': [
-                (0, 0, {'question_id': name_question.id, 'value_text_box': 'Attendee Name'}),
-                (0, 0, {'question_id': email_question.id, 'value_text_box': 'attendee@example.com'})
+                (0, 0, {'question_id': str(name_question.id), 'value_text_box': 'Attendee Name'}),
+                (0, 0, {'question_id': str(email_question.id), 'value_text_box': 'attendee@example.com'})
             ]
         })
         self.assertTrue(registrations[0]['event_ticket_id'] is False,

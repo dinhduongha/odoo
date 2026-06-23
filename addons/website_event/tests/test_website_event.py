@@ -262,11 +262,11 @@ class TestWebsiteAccess(HttpCaseWithUserDemo, OnlineEventCase):
         """ Event managers are allowed to access both published and unpublished events """
         self.authenticate('user_eventmanager', 'user_eventmanager')
         published_events = self.events.filtered(lambda event: event.website_published)
-        resp = self.url_open('/event/%i' % published_events[0].id)
+        resp = self.url_open('/event/%s' % published_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Managers must have access to published event.')
 
         unpublished_events = self.events.filtered(lambda event: not event.website_published)
-        resp = self.url_open('/event/%i' % unpublished_events[0].id)
+        resp = self.url_open('/event/%s' % unpublished_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Managers must have access to unpublished event.')
 
         resp = self.url_open('/event')
@@ -277,11 +277,11 @@ class TestWebsiteAccess(HttpCaseWithUserDemo, OnlineEventCase):
         """ Event users are allowed to access both published and unpublished events """
         self.authenticate('user_eventuser', 'user_eventuser')
         published_events = self.events.filtered(lambda event: event.website_published)
-        resp = self.url_open('/event/%i' % published_events[0].id)
+        resp = self.url_open('/event/%s' % published_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Event user must have access to published event.')
 
         unpublished_events = self.events.filtered(lambda event: not event.website_published)
-        resp = self.url_open('/event/%i' % unpublished_events[0].id)
+        resp = self.url_open('/event/%s' % unpublished_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Event user must have access to unpublished event.')
 
         resp = self.url_open('/event')
@@ -293,11 +293,11 @@ class TestWebsiteAccess(HttpCaseWithUserDemo, OnlineEventCase):
         """ Portal users access only published events """
         self.authenticate('user_portal', 'user_portal')
         published_events = self.events.filtered(lambda event: event.website_published)
-        resp = self.url_open('/event/%i' % published_events[0].id)
+        resp = self.url_open('/event/%s' % published_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Portal user must have access to published event.')
 
         unpublished_events = self.events.filtered(lambda event: not event.website_published)
-        resp = self.url_open('/event/%i' % unpublished_events[0].id)
+        resp = self.url_open('/event/%s' % unpublished_events[0].id)
         self.assertEqual(resp.status_code, 403, 'Portal user must not have access to unpublished event.')
 
         resp = self.url_open('/event')
@@ -308,11 +308,11 @@ class TestWebsiteAccess(HttpCaseWithUserDemo, OnlineEventCase):
     def test_website_access_public(self):
         """ Public users access only published events """
         published_events = self.events.filtered(lambda event: event.website_published)
-        resp = self.url_open('/event/%i' % published_events[0].id)
+        resp = self.url_open('/event/%s' % published_events[0].id)
         self.assertEqual(resp.status_code, 200, 'Public must have access to published event')
 
         unpublished_events = self.events.filtered(lambda event: not event.website_published)
-        resp = self.url_open('/event/%i' % unpublished_events[0].id)
+        resp = self.url_open('/event/%s' % unpublished_events[0].id)
         self.assertEqual(resp.status_code, 404, 'Public must not have access to unpublished event')
 
         resp = self.url_open('/event')

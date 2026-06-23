@@ -494,7 +494,7 @@ class EventEvent(models.Model):
             params.update(location=self.address_inline)
         encoded_params = werkzeug.urls.url_encode(params)
         google_url = GOOGLE_CALENDAR_URL + encoded_params
-        iCal_url = f'/event/{self.id:d}/ics'
+        iCal_url = f'/event/{self.id}/ics'
         if slot:
             iCal_url += '?' + werkzeug.urls.url_encode({'slot_id': slot.id})
         return {'google_url': google_url, 'iCal_url': iCal_url}

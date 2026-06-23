@@ -1,4 +1,5 @@
 import babel.dates
+import uuid
 import werkzeug
 
 from ast import literal_eval
@@ -11,6 +12,7 @@ from odoo.fields import Domain
 from odoo.http import request
 from odoo.tools.misc import get_lang
 from odoo.tools import lazy
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.translate import LazyTranslate
 from odoo.exceptions import UserError, ValidationError
 
@@ -245,7 +247,7 @@ class WebsiteEventController(http.Controller):
             registration_items = key.split('nb_register-')
             if len(registration_items) != 2:
                 continue
-            ticket_order[int(registration_items[1])] = int(value)
+            ticket_order[registration_items[1]] = int(value)
 
         ticket_dict = dict((ticket.id, ticket) for ticket in request.env['event.event.ticket'].sudo().search([
             ('id', 'in', [tid for tid in ticket_order.keys() if tid]),
@@ -349,6 +351,10 @@ class WebsiteEventController(http.Controller):
         allowed_fields = request.env['event.registration']._get_website_registration_allowed_fields()
         registration_fields = {key: v for key, v in request.env['event.registration']._fields.items() if key in allowed_fields}
         for ticket_id in list(filter(lambda x: x is not None, [form_details[field] if 'event_ticket_id' in field else None for field in form_details.keys()])):
+            ticket_id = to_uuid(ticket_id)
+            if not isinstance(ticket_id, uuid.UUID):
+                # Falsy/empty selection (e.g. '0') means "no ticket".
+                continue
             if ticket_id not in event.event_ticket_ids.ids and len(event.event_ticket_ids.ids) > 0:
                 raise UserError(_("This ticket is not available for sale for this event"))
         registrations = {}
@@ -362,14 +368,20 @@ class WebsiteEventController(http.Controller):
             if not value or '-' not in key:
                 continue
 
-            key_values = key.split('-')
+            # Limit the split to 2 hyphens: the question id is a UUID that itself
+            # contains hyphens, so it must be kept intact as the last element.
+            key_values = key.split('-', 2)
             # Special case for handling event_ticket_id data that holds only 2 values
             if len(key_values) == 2:
                 registration_index, field_name = key_values
                 if field_name not in registration_fields:
                     continue
                 # Only cast when needed, as it might crash here for custom inputs in overrides
-                if isinstance(registration_fields[field_name], (fields.Many2one, fields.Integer)):
+                if isinstance(registration_fields[field_name], fields.Many2one):
+                    value = to_uuid(value)
+                    if not isinstance(value, uuid.UUID):
+                        value = False
+                elif isinstance(registration_fields[field_name], fields.Integer):
                     value = int(value) or False
                 registrations.setdefault(registration_index, dict())[field_name] = value
                 continue
@@ -382,7 +394,7 @@ class WebsiteEventController(http.Controller):
             if question_type == 'simple_choice':
                 answer_values = {
                     'question_id': question_id,
-                    'value_answer_id': int(value)
+                    'value_answer_id': value
                 }
             else:
                 answer_values = {
