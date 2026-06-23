@@ -2,6 +2,7 @@
 import collections
 import datetime
 import time
+import uuid
 
 import odoo
 import odoo.tools
@@ -31,7 +32,10 @@ class TestXMLRPC(common.HttpCase):
 
     def setUp(self):
         super(TestXMLRPC, self).setUp()
-        self.admin_uid = self.env.ref('base.user_admin').id
+        # uids travel over the wire as strings: the server marshals UUID primary
+        # keys to their string form (OdooMarshaller.dump_uuid) and stock
+        # xmlrpc.client cannot serialize a uuid.UUID object on the request side.
+        self.admin_uid = str(self.env.ref('base.user_admin').id)
 
         ml_xml = mute_logger('odoo.addons.rpc.controllers.xmlrpc')
         ml_xml.__enter__()  # noqa: PLC2801
@@ -104,7 +108,9 @@ class TestXMLRPC(common.HttpCase):
             'signature': sig
         })
         self.assertEqual(str(r.signature), sig)
-        [x] = self.xmlrpc('res.users', 'read', r.id, ['signature'])
+        # ids travel over the wire as strings (UUID primary keys are not
+        # serializable by stock xmlrpc.client)
+        [x] = self.xmlrpc('res.users', 'read', str(r.id), ['signature'])
         self.assertEqual(x['signature'], sig)
 
     def test_xmlrpc_frozendict_marshalling(self):
@@ -132,7 +138,7 @@ class TestXMLRPC(common.HttpCase):
             'login': 'bob',
         })
         self.assertEqual(record.name, 'bob with a control character: \x03')
-        [record_data] = self.xmlrpc('res.users', 'read', record.id, ['name'])
+        [record_data] = self.xmlrpc('res.users', 'read', str(record.id), ['name'])
         self.assertEqual(record_data['name'], 'bob with a control character: ')
 
     def test_jsonrpc_read_group(self):
@@ -162,7 +168,9 @@ class TestXMLRPC(common.HttpCase):
         })
 
     def test_xmlrpc_attachment_raw(self):
-        ids = self.env['ir.attachment'].create({'name': 'n', 'raw': b'\x01\x09'}).ids
+        # ids travel over the wire as strings (UUID primary keys are not
+        # serializable by stock xmlrpc.client)
+        ids = [str(i) for i in self.env['ir.attachment'].create({'name': 'n', 'raw': b'\x01\x09'}).ids]
         [att] = self.xmlrpc_object.execute(
             common.get_db_name(), self.admin_uid, 'admin',
             'ir.attachment', 'read', ids, ['raw'])
@@ -250,7 +258,9 @@ class TestAPIKeys(common.HttpCase):
             args=[{'name': 'Name of the key'}],
             kwargs={}
         )
-        self.assertTrue(isinstance(api_key, int))
+        # call_kw with a single dict returns a scalar id; with UUID primary keys
+        # that is a uuid.UUID (was int)
+        self.assertTrue(isinstance(api_key, uuid.UUID))
 
     def test_delete(self):
         env = self.env(user=self._user)

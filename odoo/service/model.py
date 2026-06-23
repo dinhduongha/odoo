@@ -20,6 +20,7 @@ from odoo.exceptions import (
 from odoo.models import BaseModel
 from odoo.modules.registry import Registry
 from odoo.tools import lazy
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.safe_eval import _UNSAFE_ATTRIBUTES
 
 from .server import thread_local
@@ -109,8 +110,9 @@ def call_kw(model: BaseModel, name: str, args: list, kwargs: Mapping):
 
 def dispatch(method, params):
     db, uid, passwd, model, method_, *args = params
-    #uid = int(uid)
-    uid = uuid.UUID(uid)
+    # uid may arrive as a uuid string (over the wire) or as a real UUID object
+    # (when dispatch is called in-process, e.g. by tests). to_uuid handles both.
+    uid = to_uuid(uid)
 
     if not passwd:
         raise AccessDenied
