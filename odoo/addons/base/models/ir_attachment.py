@@ -659,6 +659,11 @@ class IrAttachment(models.Model):
                 comodel_res_ids = condition_values(self, 'res_id', domain.map_conditions(
                     lambda cond: codomain & cond if cond.field_expr == 'res_model' else cond
                 ))
+                # res_id == 0/False is a sentinel for attachments not linked to a
+                # specific record; it must not be matched against comodel ids
+                # (which may be UUIDs, making `id IN (0)` an invalid comparison).
+                if comodel_res_ids:
+                    comodel_res_ids = [rid for rid in comodel_res_ids if rid]
                 query = comodel._search(Domain('id', 'in', comodel_res_ids) if comodel_res_ids else Domain.TRUE)
                 if query.is_empty():
                     continue
