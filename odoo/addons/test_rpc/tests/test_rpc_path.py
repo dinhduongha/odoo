@@ -70,10 +70,13 @@ class TestRpcPath(HttpCaseWithUserDemo):
 
     @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_rpc_path_xmlrpc(self):
+        # uuid: XML-RPC cannot marshal uuid.UUID objects, pass ids as strings
+        # (the server resolves them back to UUIDs).
+        demo_id = str(self.user_demo.id)
         with self.assertLogs('werkzeug', logging.INFO) as capture:
             self.xmlrpc_object.execute_kw(
-                get_db_name(), self.user_demo.id, 'demo',
-               'res.users', 'read', [self.user_demo.id, ['login']]
+                get_db_name(), demo_id, 'demo',
+               'res.users', 'read', [demo_id, ['login']]
             )
         self.assertEqual(capture.output, [
             Like('...POST /xmlrpc/2/object#res.users.read HTTP/...'),

@@ -15,7 +15,10 @@ class TestError(common.HttpCase):
         ml.__enter__()  # noqa: PLC2801
         self.addCleanup(ml.__exit__)
 
-        uid = self.ref("base.user_admin")
+        # uuid: ids are passed over XML-RPC, which cannot marshal uuid.UUID
+        # objects; pass the id as its string representation (the server
+        # resolves it back to a UUID).
+        uid = str(self.ref("base.user_admin"))
         self.rpc = partial(self.xmlrpc_object.execute, common.get_db_name(), uid, "admin")
 
         # Reset the admin's lang to avoid breaking tests due to admin not in English

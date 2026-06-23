@@ -3443,7 +3443,11 @@ class BaseModel(metaclass=MetaModel):
                 **info,
             )
 
-        if isinstance(exc, psycopg2.errors.ForeignKeyViolation):
+        # RestrictViolation (SQLSTATE 23001, raised by an ``ON DELETE RESTRICT``
+        # foreign key) is not a subclass of ForeignKeyViolation (23503, raised by
+        # the default ``NO ACTION``), but both mean another record references the
+        # one being deleted: handle them the same way.
+        if isinstance(exc, (psycopg2.errors.ForeignKeyViolation, psycopg2.errors.RestrictViolation)):
             if len(columns) != 1:
                 info['field_display'] = info['constraint_name']
             return self.env._(
