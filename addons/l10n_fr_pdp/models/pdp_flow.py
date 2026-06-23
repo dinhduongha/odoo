@@ -250,7 +250,7 @@ class PdpFlow(models.Model):
     def _get_tracking_id(self):
         self.ensure_one()
         return ''.join([
-            f'{self.id:x}',
+            f'{self.id.int:x}',
             self.operation_type[0],
             self.report_type[0],
             "R" if self.initial_flow_id else "I",
