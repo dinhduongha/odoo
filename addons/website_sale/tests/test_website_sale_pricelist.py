@@ -447,7 +447,9 @@ class TestWebsitePriceList(WebsiteSaleCommon):
             order_sudo._update_address({'partner_id': partner.id})
         self.assertEqual(order_sudo.pricelist_id, list_benelux_2)
 
-def simulate_frontend_context(self, website_id=1):
+def simulate_frontend_context(self, website_id=None):
+    if website_id is None:
+        website_id = self.website.id
     # Mock this method will be enough to simulate frontend context in most methods
     def get_request_website():
         return self.env['website'].browse(website_id)

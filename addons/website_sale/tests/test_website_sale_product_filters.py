@@ -103,7 +103,7 @@ class TestWebsiteSaleProductFilters(WebsiteSaleCommon, TestProductAttributeValue
         """Assert the access as a public user to the data returned by the route /website/snippet/filters"""
 
         result = self.url_open("/website/snippet/filters", json={"params": {
-            "filter_id": filter.id,
+            "filter_id": str(filter.id),
             "template_key": "website_sale.dynamic_filter_template_product_product_products_item",
             "limit": 16,
             "search_domain": [],
@@ -121,7 +121,7 @@ class TestWebsiteSaleProductFilters(WebsiteSaleCommon, TestProductAttributeValue
         # A visitor / public user must not be able to guess the cost price of sold products through the search domain
         with self.assertLogs("odoo.http", "WARNING") as logs:
             result = self.url_open("/website/snippet/filters", json={"params": {
-                "filter_id": filter.id,
+                "filter_id": str(filter.id),
                 "template_key": "website_sale.dynamic_filter_template_product_product_products_item",
                 "limit": 16,
                 "search_domain": [("standard_price", "=", 42)],
@@ -232,7 +232,7 @@ class TestWebsiteSaleProductFilters(WebsiteSaleCommon, TestProductAttributeValue
         now = datetime.now()
         for i, product in enumerate(viewed_products):
             with freeze_time(now - timedelta(seconds=i)):
-                self.url_open("/shop/products/recently_viewed_update", json={"params": {"product_id": product.id}})
+                self.url_open("/shop/products/recently_viewed_update", json={"params": {"product_id": str(product.id)}})
 
         self.assert_snippet_filters_route_public_access(dyn_filter, viewed_products)
 
@@ -411,10 +411,10 @@ class TestWebsiteSaleProductFilters(WebsiteSaleCommon, TestProductAttributeValue
         product_public_category_filter = self.env.ref('website_sale.dynamic_filter_category_list')
         result = self.url_open("/website/snippet/filters", json={"params": {
             "template_key": "website_sale.dynamic_filter_template_product_public_category_default",
-            "filter_id": product_public_category_filter.id,
+            "filter_id": str(product_public_category_filter.id),
             "res_model": "product.template",
             "search_domain": [],
-            "res_id": self.computer.id,
+            "res_id": str(self.computer.id),
             "limit": 1,
         }}).json().get('result', [])
         self.assertEqual(len(result), 0)
@@ -428,10 +428,10 @@ class TestWebsiteSaleProductFilters(WebsiteSaleCommon, TestProductAttributeValue
         products.write({'website_published': False})
         result = self.url_open("/website/snippet/filters", json={"params": {
             "template_key": "website_sale.dynamic_filter_template_product_product_products_item",
-            "filter_id": product_filter.id,
+            "filter_id": str(product_filter.id),
             "res_model": "product.product",
             "search_domain": [],
-            "res_id": self.computer.product_variant_id.id,
+            "res_id": str(self.computer.product_variant_id.id),
             "limit": 1,
         }}).json().get('result', [])
         self.assertEqual(len(result), 0)
