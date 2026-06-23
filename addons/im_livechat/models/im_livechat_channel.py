@@ -491,7 +491,10 @@ class Im_LivechatChannel(models.Model):
             (tuple(users.partner_id.ids),),
         )
         operator_statuses = self.env.cr.dictfetchall()
-        # Try to match the previous operator
+        # Try to match the previous operator. previous_operator_id may arrive as
+        # a str (JSON round-trip); cast to UUID so the membership check against
+        # record ids succeeds.
+        previous_operator_id = to_uuid(previous_operator_id)
         if previous_operator_id in users.partner_id.ids:
             previous_operator_status = next(
                 (

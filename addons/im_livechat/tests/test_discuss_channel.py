@@ -218,7 +218,7 @@ class TestDiscussChannel(TestImLivechatCommon, TestGetOperatorCommon, MailCase):
             }
             return Markup(
                 "<div data-embedded='file' data-oe-protected='true' contenteditable='false' data-embedded-props='%s'/>",
-            ) % json.dumps({"fileData": attachment_data})
+            ) % json.dumps({"fileData": attachment_data}, default=str)
 
         channel = self.env["discuss.channel"].create(
             {

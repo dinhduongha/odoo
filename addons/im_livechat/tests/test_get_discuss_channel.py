@@ -1,5 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import uuid
 from datetime import timedelta
 from freezegun import freeze_time
 from unittest.mock import patch, PropertyMock
@@ -10,8 +11,33 @@ from odoo.addons.mail.tests.common import MailCommon
 from odoo.tests import new_test_user, tagged
 
 
+def _uuid_to_str(value):
+    """Recursively convert UUID values to str so expected structures match the
+    JSON-RPC responses, where record ids round-trip to strings."""
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _uuid_to_str(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_uuid_to_str(v) for v in value]
+    return value
+
+
 @tagged("post_install", "-at_install")
 class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
+    def _bus_id_before_last(self, n):
+        """Return the bus.bus id ``n`` notifications before the latest one. With
+        sequential int ids this was ``_bus_last_id() - n``; with UUID ids we
+        resolve it positionally instead."""
+        bus = self.env["bus.bus"].sudo().search([], order="id desc", limit=1, offset=n)
+        return bus.id if bus else 0
+
+    def _filter_partners_fields(self, /, *partners_data):
+        return _uuid_to_str(super()._filter_partners_fields(*partners_data))
+
+    def _filter_users_fields(self, /, *users_data):
+        return _uuid_to_str(super()._filter_users_fields(*users_data))
+
     def test_get_discuss_channel(self):
         """For a livechat with 5 available operators, we open 5 channels 5 times (25 channels total).
         For every 5 channels opening, we check that all operators were assigned.
@@ -22,7 +48,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
             channel_operator_ids = [
                 channel_info["livechat_operator_id"] for channel_info in discuss_channels
             ]
-            self.assertTrue(all(partner_id in channel_operator_ids for partner_id in self.operators.mapped('partner_id').ids))
+            self.assertTrue(all(str(partner_id) in channel_operator_ids for partner_id in self.operators.mapped('partner_id').ids))
 
     def test_channel_get_livechat_visitor_info(self):
         self.maxDiff = None
@@ -41,15 +67,15 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
             )["store_data"]
         channel_info = data["discuss.channel"][0]
         self.assertEqual(channel_info["name"], "Visitor Michel Operator")
-        self.assertEqual(channel_info["country_id"], belgium.id)
-        self.assertEqual(data["res.country"], [{"code": "BE", "id": belgium.id, "name": "Belgium"}])
+        self.assertEqual(channel_info["country_id"], str(belgium.id))
+        self.assertEqual(data["res.country"], [{"code": "BE", "id": str(belgium.id), "name": "Belgium"}])
 
         # ensure persona info are hidden (in particular email and real name when livechat username is present)
         channel = self.env["discuss.channel"].browse(channel_info["id"])
         guest = channel.channel_member_ids.guest_id[0]
         self.assertEqual(
             data["mail.guest"],
-            [
+            _uuid_to_str([
                 {
                     "avatar_128_access_token": guest._get_avatar_128_access_token(),
                     "country_id": belgium.id,
@@ -60,7 +86,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
                     "offline_since": False,
                     "write_date": fields.Datetime.to_string(guest.write_date),
                 },
-            ],
+            ]),
         )
         self.assertEqual(
             data["res.partner"],
@@ -108,8 +134,8 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
         })["store_data"]
         channel_info = data["discuss.channel"][0]
         self.assertEqual(channel_info["name"], "Roger Michel Operator")
-        self.assertEqual(channel_info["country_id"], belgium.id)
-        self.assertEqual(data["res.country"], [{"code": "BE", "id": belgium.id, "name": "Belgium"}])
+        self.assertEqual(channel_info["country_id"], str(belgium.id))
+        self.assertEqual(data["res.country"], [{"code": "BE", "id": str(belgium.id), "name": "Belgium"}])
         operator_member_domain = [
             ('channel_id', '=', channel_info['id']),
             ('partner_id', '=', operator.partner_id.id),
@@ -187,7 +213,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
         )
         self.assertEqual(
             data["discuss.channel.member"],
-            [
+            _uuid_to_str([
                 {
                     "create_date": fields.Datetime.to_string(operator_member.create_date),
                     "fetched_message_id": False,
@@ -208,18 +234,18 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
                     "last_interest_dt": fields.Datetime.to_string(visitor_member.last_interest_dt),
                     "last_seen_dt": False,
                     "message_unread_counter": 0,
-                    "message_unread_counter_bus_id": self.env["bus.bus"]._bus_last_id() - 2,
+                    "message_unread_counter_bus_id": self._bus_id_before_last(2),
                     "mute_until_dt": False,
-                    "new_message_separator": 0,
+                    "new_message_separator": "00000000-0000-0000-0000-000000000000",
                     "partner_id": test_user.partner_id.id,
                     "rtc_inviting_session_id": False,
                     "seen_message_id": False,
                     "unpin_dt": False,
                     "channel_id": {"id": channel_info["id"], "model": "discuss.channel"},
                 },
-            ],
+            ]),
         )
-        self.assertEqual(data["res.country"], [{"code": "BE", "id": belgium.id, "name": "Belgium"}])
+        self.assertEqual(data["res.country"], [{"code": "BE", "id": str(belgium.id), "name": "Belgium"}])
         # ensure visitor info are correct when operator is testing themselves
         operator = self.operators[0]
         self.authenticate(operator.login, self.password)
@@ -233,7 +259,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
             ('partner_id', '=', operator.partner_id.id),
         ]
         operator_member = self.env['discuss.channel.member'].search(operator_member_domain)
-        self.assertEqual(channel_info['livechat_operator_id'], operator.partner_id.id)
+        self.assertEqual(channel_info['livechat_operator_id'], str(operator.partner_id.id))
         self.assertEqual(channel_info["name"], "Michel Operator")
         self.assertEqual(channel_info['country_id'], False)
         self.assertEqual(
@@ -270,7 +296,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
         )
         self.assertEqual(
             data["discuss.channel.member"],
-            [
+            _uuid_to_str([
                 {
                     "create_date": fields.Datetime.to_string(operator_member.create_date),
                     "custom_channel_name": False,
@@ -281,16 +307,16 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
                     "last_interest_dt": fields.Datetime.to_string(operator_member.last_interest_dt),
                     "last_seen_dt": False,
                     "message_unread_counter": 0,
-                    "message_unread_counter_bus_id": self.env["bus.bus"]._bus_last_id() - 2,
+                    "message_unread_counter_bus_id": self._bus_id_before_last(2),
                     "mute_until_dt": False,
-                    "new_message_separator": 0,
+                    "new_message_separator": "00000000-0000-0000-0000-000000000000",
                     "partner_id": operator.partner_id.id,
                     "rtc_inviting_session_id": False,
                     "seen_message_id": False,
                     "unpin_dt": fields.Datetime.to_string(operator_member.unpin_dt),
                     "channel_id": {"id": channel_info["id"], "model": "discuss.channel"},
                 },
-            ],
+            ]),
         )
         self.assertEqual(
             data["res.users"],
@@ -349,7 +375,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
         self.authenticate(operator.login, self.password)
         data = self.make_jsonrpc_request("/mail/data", {"fetch_params": ["channels_as_member"]})
         channel_ids = [channel["id"] for channel in data["discuss.channel"]]
-        self.assertIn(channel.id, channel_ids, "channel should be fetched by operator on new page")
+        self.assertIn(str(channel.id), channel_ids, "channel should be fetched by operator on new page")
 
     def test_read_channel_unpined_for_operator_after_one_day(self):
         data = self.make_jsonrpc_request(

@@ -46,7 +46,7 @@ class TestUserLivechatUsername(TestGetOperatorCommon):
             data["res.partner"][0],
             {
                 "avatar_128_access_token": john.partner_id._get_avatar_128_access_token(),
-                "id": john.partner_id.id,
+                "id": str(john.partner_id.id),
                 "user_livechat_username": "ELOPERADOR",
                 "write_date": fields.Datetime.to_string(john.partner_id.write_date),
             },
