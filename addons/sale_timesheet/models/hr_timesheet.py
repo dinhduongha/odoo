@@ -226,7 +226,7 @@ class AccountAnalyticLine(models.Model):
 
         company = self.env['res.company'].browse(vals.get('company_id'))
         accounts = self.env['account.analytic.account'].browse(
-            next(iter(distribution)).split(',')
+            account_id.strip() for account_id in next(iter(distribution)).split(',')
         ).exists()
 
         if not accounts:
