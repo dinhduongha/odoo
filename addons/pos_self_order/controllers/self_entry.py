@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import uuid
+
 import werkzeug
 
 from odoo import http
@@ -44,7 +46,11 @@ class PosSelfKiosk(http.Controller):
     def _verify_entry_access(self, config_id=None, access_token=None, table_identifier=None):
         table_sudo = False
 
-        if not config_id or not config_id.isnumeric():
+        if not config_id:
+            raise werkzeug.exceptions.NotFound()
+        try:
+            uuid.UUID(str(config_id))
+        except ValueError:
             raise werkzeug.exceptions.NotFound()
 
         if access_token:

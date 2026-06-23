@@ -38,8 +38,8 @@ export class PresetInfoPopup extends Component {
 
     async setInformations() {
         if (this.preset.needsPartner || this.state.phone) {
-            const countryId = parseInt(this.state.countryId, 10) || null;
-            const stateId = parseInt(this.state.stateId, 10) || null;
+            const countryId = this.state.countryId || null;
+            const stateId = this.state.stateId || null;
             const partnerData = {
                 name: this.state.name,
                 email: this.state.email,
@@ -119,7 +119,7 @@ export class PresetInfoPopup extends Component {
 
     get validSelection() {
         return this.selfOrder.isValidSelection(this.state.selectedSlot, {
-            id: parseInt(this.state.selectedPartnerId),
+            id: this.state.selectedPartnerId,
             name: this.state.name,
             email: this.state.email,
             phone: this.state.phone,

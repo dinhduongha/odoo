@@ -60,7 +60,7 @@ class TestFrontendMobile(SelfOrderCommonTest):
                     },
                     "table_identifier": None,
                 }
-            }),
+            }, default=str),
             headers={"Content-Type": "application/json"},
         )
 

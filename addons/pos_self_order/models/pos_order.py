@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import logging
+import uuid
 
 from odoo import Command, models, fields, api, _
 from odoo.exceptions import UserError
@@ -145,7 +146,7 @@ class PosOrder(models.Model):
                 'combo_id': line_data.get('combo_id'),
                 'product_id': line_data.get('product_id'),
                 'tax_ids': tax_ids.ids,
-                'attribute_value_ids': [id for id in line_data.get('attribute_value_ids', []) if isinstance(id, int)],
+                'attribute_value_ids': [id for id in line_data.get('attribute_value_ids', []) if isinstance(id, (int, str, uuid.UUID)) and not isinstance(id, bool)],
                 'price_unit': line_data.get('price_unit'),
                 'qty': line_data.get('qty'),
                 'price_subtotal': line_data.get('price_subtotal'),
@@ -159,7 +160,7 @@ class PosOrder(models.Model):
                 'order_id': existing_order.id if existing_order.exists() else None,
                 'combo_parent_id': line_data.get('combo_parent_id'),
                 'combo_item_id': line_data.get('combo_item_id'),
-                'combo_line_ids': [id for id in line_data.get('combo_line_ids', []) if isinstance(id, int)],
+                'combo_line_ids': existing_lines.browse([id for id in line_data.get('combo_line_ids', []) if isinstance(id, (int, str, uuid.UUID)) and not isinstance(id, bool)]).exists().ids,
             }]
         return []
 

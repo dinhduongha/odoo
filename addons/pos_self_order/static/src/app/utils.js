@@ -9,8 +9,7 @@ export const attributeFlatter = (attribute) =>
                 return v;
             }
         })
-        .flat()
-        .map((v) => parseInt(v));
+        .flat();
 
 export const formatProductName = (product) => {
     const attributes = product.product_template_attribute_value_ids?.map((v) => v.name).join(",");

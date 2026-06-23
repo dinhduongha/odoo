@@ -12,7 +12,7 @@ from odoo.addons.web.controllers import webmanifest
 class WebManifest(webmanifest.WebManifest):
     def _get_scoped_app_name(self, app_id):
         if app_id == "pos_self_order":
-            if match := re.findall(r'pos-self/(\d+)', unquote(request.params['path'])):
+            if match := re.findall(r'pos-self/([^/?#]+)', unquote(request.params['path'])):
                 if record := request.env['pos.config'].search([('id', '=', match[0])]):
                     return record.name
         return super()._get_scoped_app_name(app_id)

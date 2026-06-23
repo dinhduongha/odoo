@@ -20,7 +20,7 @@ function parseParams(matches, paramSpecs) {
 }
 
 export class Router extends Component {
-    static props = { slots: Object, pos_config_id: Number };
+    static props = { slots: Object, pos_config_id: [Number, String] };
     static template = xml`<t t-slot="{{activeSlot}}" t-props="slotProps"/>`;
 
     setup() {

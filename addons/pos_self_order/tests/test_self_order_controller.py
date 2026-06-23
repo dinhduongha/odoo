@@ -9,7 +9,7 @@ from odoo.addons.pos_self_order.tests.self_order_common_test import SelfOrderCom
 @odoo.tests.tagged('post_install', '-at_install')
 class TestSelfOrderController(SelfOrderCommonTest):
     def make_request_to_controller(self, url, params):
-        response = self.url_open(url, json.dumps({'jsonrpc': '2.0', 'params': params}),
+        response = self.url_open(url, json.dumps({'jsonrpc': '2.0', 'params': params}, default=str),
             method='POST',
             headers={
                 'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
         }]
         data = self.make_request_to_controller('/pos-self-order/get-user-data', params)
         self.assertEqual(len(data['pos.order']), 1)
-        self.assertEqual(data['pos.order'][0]['id'], order1.id)
+        self.assertEqual(data['pos.order'][0]['id'], str(order1.id))
 
         # A cancelled order should be returned
         order2.action_pos_order_cancel()
@@ -98,7 +98,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
         }]
         data = self.make_request_to_controller('/pos-self-order/get-user-data', params)
         self.assertEqual(len(data['pos.order']), 1)
-        self.assertEqual(data['pos.order'][0]['id'], order2.id)
+        self.assertEqual(data['pos.order'][0]['id'], str(order2.id))
         self.assertEqual(data['pos.order'][0]['state'], 'cancel')
 
         # Up to date data should return no order
@@ -122,7 +122,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
 
         data = self.make_request_to_controller('/pos-self-order/get-user-data', params)
         self.assertEqual(len(data['pos.order']), 1)
-        self.assertEqual(data['pos.order'][0]['id'], order2.id)
+        self.assertEqual(data['pos.order'][0]['id'], str(order2.id))
 
         # Only state is provided
         params['order_access_tokens'] = [{
@@ -132,7 +132,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
 
         data = self.make_request_to_controller('/pos-self-order/get-user-data', params)
         self.assertEqual(len(data['pos.order']), 1)
-        self.assertEqual(data['pos.order'][0]['id'], order2.id)
+        self.assertEqual(data['pos.order'][0]['id'], str(order2.id))
 
     def test_access_right_with_message_follower(self):
         """ Test to ensure that user data is still displayed when a message follower is set on the order """
@@ -175,7 +175,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
 
         data = self.make_request_to_controller('/pos-self-order/get-user-data', params)
         self.assertEqual(len(data['pos.order']), 1)
-        self.assertEqual(data['pos.order'][0]['id'], pos_order.id)
+        self.assertEqual(data['pos.order'][0]['id'], str(pos_order.id))
 
     def test_preparation_categories_are_loaded(self):
         """
@@ -222,14 +222,14 @@ class TestSelfOrderController(SelfOrderCommonTest):
         data = self.make_request_to_controller('/pos-self/data/' + str(self.pos_config.id), {
             'access_token': self.pos_config.access_token,
         })
-        loaded_category_ids = [category['id'] for category in data['pos.category']]
-        self.assertIn(mool_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertIn(adgu_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertIn(manv_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertIn(ltra_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertIn(moda_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertIn(stva_categ.id, loaded_category_ids, "The category linked to the printer should be loaded")
-        self.assertNotIn(lowe_categ.id, loaded_category_ids, "The category not linked to any printer should not be loaded")
+        loaded_category_ids = [str(category['id']) for category in data['pos.category']]
+        self.assertIn(str(mool_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertIn(str(adgu_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertIn(str(manv_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertIn(str(ltra_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertIn(str(moda_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertIn(str(stva_categ.id), loaded_category_ids, "The category linked to the printer should be loaded")
+        self.assertNotIn(str(lowe_categ.id), loaded_category_ids, "The category not linked to any printer should not be loaded")
         self.start_tour(self_route, "test_preparation_categories_are_loaded")
 
     def test_config_session_loaded_fields(self):
@@ -245,7 +245,7 @@ class TestSelfOrderController(SelfOrderCommonTest):
 
         self.assertEqual(len(data['pos.config']), 1)
         config_data = data['pos.config'][0]
-        self.assertEqual(config_data['id'], self.pos_config.id)
+        self.assertEqual(config_data['id'], str(self.pos_config.id))
         self.assertEqual(config_data['self_ordering_mode'], 'mobile')
         self.assertTrue(len(config_data['_self_ordering_image_home_ids']) > 1)
         self.assertFalse(config_data.get('access_token'))
@@ -253,6 +253,6 @@ class TestSelfOrderController(SelfOrderCommonTest):
 
         self.assertEqual(len(data['pos.session']), 1)
         session_data = data['pos.session'][0]
-        self.assertEqual(session_data['id'], self.pos_config.current_session_id.id)
+        self.assertEqual(session_data['id'], str(self.pos_config.current_session_id.id))
         self.assertEqual(session_data['state'], 'opened')
         self.assertFalse(config_data.get('access_token'))

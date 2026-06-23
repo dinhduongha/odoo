@@ -644,7 +644,7 @@ export class SelfOrder extends Reactive {
         const hasStates = country?.state_ids?.length || 0;
         const validState = !hasStates || state_id;
         const partnerInfo = name && phone && street && city && country_id && validState && zip;
-        const selectedPartner = typeof id === "number" && !isNaN(id);
+        const selectedPartner = Boolean(id) && (typeof id !== "number" || !isNaN(id));
         const validPartnerInfos = partnerInfo || selectedPartner;
 
         return (

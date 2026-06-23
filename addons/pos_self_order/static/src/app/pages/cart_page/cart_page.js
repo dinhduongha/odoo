@@ -104,7 +104,7 @@ export class CartPage extends Component {
         const partner = order.partner_id || {};
         const time = order.preset_time ? order.preset_time.toSQL() : null;
         const isValidRequiredInfo = this.selfOrder.isValidSelection(time, {
-            id: parseInt(partner.id),
+            id: partner.id,
             name: partner.name || order.floating_order_name,
             email: partner.email || order.email,
             phone: partner.phone || order.mobile,

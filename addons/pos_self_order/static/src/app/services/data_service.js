@@ -8,7 +8,7 @@ export const unpatchSelf = patch(PosData.prototype, {
         const configId = session.data.config_id;
         const localData = await this.getCachedServerDataFromIndexedDB();
         const partners = localData?.["res.partner"] || [];
-        const data = await rpc(`/pos-self/data/${parseInt(configId)}`, {
+        const data = await rpc(`/pos-self/data/${configId}`, {
             access_token: odoo.access_token,
         });
         data["res.partner"] = partners;
@@ -16,7 +16,7 @@ export const unpatchSelf = patch(PosData.prototype, {
     },
     async loadFieldsAndRelations() {
         const configId = session.data.config_id;
-        return await rpc(`/pos-self/relations/${parseInt(configId)}`);
+        return await rpc(`/pos-self/relations/${configId}`);
     },
     get databaseName() {
         return `pos-self-order-${odoo.access_token}`;
