@@ -39,7 +39,7 @@ class L10n_IdQrisTransaction(models.Model):
         self.ensure_one()
         if self.model != 'account.move':
             return
-        return self.env['account.move'].browse(int(self.model_id)).exists()
+        return self.env['account.move'].browse(self.model_id).exists()
 
     @api.model
     def _get_latest_transaction(self, model, model_id):
