@@ -183,19 +183,22 @@ class SurveyCase(common.TransactionCase):
 
     def _prepare_post_data(self, question, answers, post_data):
         values = answers if isinstance(answers, list) else [answers]
+        # over HTTP, post keys and values are always strings; question.id is a
+        # uuid which is not JSON serializable, so stringify the key explicitly
+        question_key = str(question.id)
         if question.question_type == 'multiple_choice':
             for value in values:
                 value = str(value)
-                if question.id in post_data:
-                    if isinstance(post_data[question.id], list):
-                        post_data[question.id].append(value)
+                if question_key in post_data:
+                    if isinstance(post_data[question_key], list):
+                        post_data[question_key].append(value)
                     else:
-                        post_data[question.id] = [post_data[question.id], value]
+                        post_data[question_key] = [post_data[question_key], value]
                 else:
-                    post_data[question.id] = value
+                    post_data[question_key] = value
         else:
             [values] = values
-            post_data[question.id] = str(values)
+            post_data[question_key] = str(values)
         return post_data
 
     def _answer_question(self, question, answer, answer_token, csrf_token, button_submit='next',
@@ -212,8 +215,8 @@ class SurveyCase(common.TransactionCase):
     def _answer_page(self, page, answers, answer_token, csrf_token):
         post_data = {}
         for question, answer in answers.items():
-            post_data[question.id] = answer.id
-        post_data['page_id'] = page.id
+            post_data[str(question.id)] = str(answer.id)
+        post_data['page_id'] = str(page.id)
         post_data['csrf_token'] = csrf_token
         post_data['token'] = answer_token
         response = self._access_submit(page.survey_id, answer_token, post_data)
@@ -223,10 +226,10 @@ class SurveyCase(common.TransactionCase):
 
     def _format_submission_data(self, question, answer, additional_post_data):
         post_data = {}
-        post_data['question_id'] = question.id
+        post_data['question_id'] = str(question.id)
         post_data.update(self._prepare_post_data(question, answer, post_data))
         if question.page_id:
-            post_data['page_id'] = question.page_id.id
+            post_data['page_id'] = str(question.page_id.id)
         post_data.update(**additional_post_data)
         return post_data
 

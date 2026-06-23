@@ -11,7 +11,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import is_html_empty
 from odoo.tools.urls import urljoin as url_join
-from odoo.tools.uuid_utils import uuid7, is_uuid
+from odoo.tools.uuid_utils import uuid7, is_uuid, to_uuid
 
 class SurveySurvey(models.Model):
     """ Settings for a multi-page/multi-question survey. Each survey can have one or more attached pages
@@ -866,13 +866,13 @@ class SurveySurvey(models.Model):
         if self.questions_layout == 'page_per_section':
             if not page_id:
                 raise ValueError("Page id is needed for question layout 'page_per_section'")
-            page_or_question_id = int(page_id)
+            page_or_question_id = to_uuid(page_id)
             questions = self.env['survey.question'].sudo().search(
                 Domain('survey_id', '=', self.id) & Domain('page_id', '=', page_or_question_id))
         elif self.questions_layout == 'page_per_question':
             if not question_id:
                 raise ValueError("Question id is needed for question layout 'page_per_question'")
-            page_or_question_id = int(question_id)
+            page_or_question_id = to_uuid(question_id)
             questions = self.env['survey.question'].sudo().browse(page_or_question_id)
         else:
             page_or_question_id = None

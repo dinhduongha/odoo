@@ -10,7 +10,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools import float_is_zero
-from odoo.tools.uuid_utils import uuid7, is_uuid
+from odoo.tools.uuid_utils import uuid7, is_uuid, to_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -343,7 +343,7 @@ class SurveyUser_Input(models.Model):
             for row_key, row_answer in answers.items():
                 for answer in row_answer:
                     vals = self._get_line_answer_values(question, answer, 'suggestion')
-                    vals['matrix_row_id'] = int(row_key)
+                    vals['matrix_row_id'] = to_uuid(row_key)
                     vals_list.append(vals.copy())
 
         if comment:
@@ -364,7 +364,7 @@ class SurveyUser_Input(models.Model):
             return vals
 
         if answer_type == 'suggestion':
-            vals['suggested_answer_id'] = int(answer)
+            vals['suggested_answer_id'] = to_uuid(answer)
         elif answer_type == 'numerical_box':
             vals['value_numerical_box'] = float(answer)
         elif answer_type == 'scale':
