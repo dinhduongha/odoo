@@ -89,7 +89,7 @@ class BaseAutomationTestUi(HttpCase):
             "trigger": "on_stage_set",
             "model_id": project_model.id,
             "trigger_field_ids": [stage_field.id],
-            "trg_field_ref": test_stage,
+            "trg_field_ref": test_stage.id,
         })
 
         action = {

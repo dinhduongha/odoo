@@ -115,7 +115,7 @@ class BaseAutomationTest(TransactionCaseWithUserDemo):
             self,
             model_id=self.lead_model.id,
             trigger='on_create_or_write',
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         # Write a lead should trigger the automation
@@ -139,7 +139,7 @@ class BaseAutomationTest(TransactionCaseWithUserDemo):
             model_id=self.lead_model.id,
             trigger='on_create_or_write',
             filter_domain="[('state', '=', 'draft')]",
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         # Create a lead with state=open should not trigger the automation
@@ -170,7 +170,7 @@ class BaseAutomationTest(TransactionCaseWithUserDemo):
             trigger='on_create_or_write',
             filter_pre_domain="[('state', '=', 'open')]",
             filter_domain="[('state', '=', 'done')]",
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         # Create a lead with state=open should not trigger the automation
@@ -272,7 +272,7 @@ if env.context.get('old_values', None): # on write only
             model_id=self.lead_model.id,
             trigger='on_create_or_write',
             filter_domain="[('employee', '=', True)]",
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         lead = self.create_lead(partner_id=partner.id)
@@ -302,7 +302,7 @@ if env.context.get('old_values', None): # on write only
                 'code': """
 if env.context.get('old_values', None):  # on write
     if 'user_id' in env.context['old_values'][record.id]:
-        record.write({'is_assigned_to_admin': (record.user_id.id == 1)})""",
+        record.write({'is_assigned_to_admin': (record.user_id.id == env.ref('base.user_root').id)})""",
                 },
             )
 
@@ -423,7 +423,7 @@ if env.context.get('old_values', None):  # on write
             model_id=self.lead_model.id,
             trigger='on_create_or_write',
             filter_domain="[('state', '=', 'draft')]",
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         lead = self.create_lead(state='open')
@@ -496,13 +496,13 @@ if env.context.get('old_values', None):  # on write
             self,
             model_id=self.lead_model.id,
             trigger='on_create_or_write',
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
         create_automation(
             self,
             model_id=comodel.id,
             trigger='on_create_or_write',
-            _actions={'state': 'code', 'code': "record.write({'user_id': %s})" % (self.user_demo.id)},
+            _actions={'state': 'code', 'code': "record.write({'user_id': %r})" % (str(self.user_demo.id),)},
         )
 
         line = self.create_line(user_id=self.user_root.id)
@@ -607,7 +607,7 @@ if env.context.get('old_values', None):  # on write
             model_id=self.project_model.id,
             trigger='on_stage_set',
             trigger_field_ids=[stage_field.id],
-            filter_domain="[('stage_id', '=', %s)]" % stage1.id,
+            filter_domain="[('stage_id', '=', %r)]" % str(stage1.id),
             _actions={'state': 'code', 'code': "record.write({'name': record.name + '!'})"},
         )
         project = self.create_project()
@@ -693,8 +693,8 @@ if env.context.get('old_values', None):  # on write
             model_id=self.project_model.id,
             trigger='on_tag_set',
             trigger_field_ids=[tag_field.id],
-            filter_pre_domain="[('tag_ids', 'not in', [%s])]" % tag1.id,
-            filter_domain="[('tag_ids', 'in', [%s])]" % tag1.id,
+            filter_pre_domain="[('tag_ids', 'not in', [%r])]" % str(tag1.id),
+            filter_domain="[('tag_ids', 'in', [%r])]" % str(tag1.id),
             _actions={'state': 'code', 'code': "record.write({'name': record.name + '!'})"},
         )
         project = self.create_project()
@@ -1495,7 +1495,7 @@ class TestCompute(common.TransactionCase):
         })
 
         ext_partner = self.env["res.partner"].create({"name": "ext", "email": "email@server.com"})
-        internal_partner = self.env["res.users"].browse(2).partner_id
+        internal_partner = self.env.ref("base.user_admin").partner_id
 
         obj = self.env["base.automation.lead.thread.test"].create({"name": "test"})
         obj.message_subscribe([ext_partner.id, internal_partner.id])
@@ -1558,7 +1558,7 @@ class TestCompute(common.TransactionCase):
         })
 
         ext_partner = self.env["res.partner"].create({"name": "ext", "email": "email@server.com"})
-        internal_partner = self.env["res.users"].browse(2).partner_id
+        internal_partner = self.env.ref("base.user_admin").partner_id
 
         obj = self.env["base.automation.lead.thread.test"].create({"name": "test"})
         obj.message_subscribe([ext_partner.id, internal_partner.id])
@@ -1870,7 +1870,7 @@ class TestHttp(common.HttpCase):
         self._wait_remaining_requests()  # just in case the request timeouts
         self.assertEqual(json.loads(obj.another_field), {
             '_action': f'Send Webhook Notification(#{automation_sender.action_server_ids[0].id})',
-            "_id": obj.id,
+            "_id": str(obj.id),
             "_model": obj._name,
         })
 
