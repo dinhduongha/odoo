@@ -189,7 +189,7 @@ class TestWebsiteBlogTranslationFlow(HttpCase, TestWebsiteBlogCommon):
         br_lang = self.env['res.lang']._activate_lang('pt_BR')
         en_lang = self.env['res.lang']._activate_lang('en_US')
         
-        website = self.env['website'].browse(1)
+        website = self.env.ref('website.default_website')
         website.language_ids += br_lang
         website.default_lang_id = br_lang
 
@@ -214,7 +214,7 @@ class TestWebsiteBlogTranslationFlow(HttpCase, TestWebsiteBlogCommon):
             'field_name': 'content',
             'translations': {en_lang.code: {sha: 'Updated blogs'}},
         })
-        self.url_open('/website/field/translation/update', data=json.dumps(payload), headers=self.headers)
+        self.url_open('/website/field/translation/update', data=json.dumps(payload, default=str), headers=self.headers)
         self.assertEqual('Todos os blogs', blog_post.with_context(lang=br_lang.code).content)
         self.assertEqual('Updated blogs', blog_post.with_context(lang=en_lang.code).content)
 

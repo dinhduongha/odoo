@@ -99,7 +99,7 @@ class TestWebsiteBlogUi(odoo.tests.HttpCase, TestWebsiteBlogCommon):
         # Ensure that the avatar is visible
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get('Content-Type'), 'image/svg+xml; charset=utf-8')
-        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-\d+-author_avatar\.svg')
+        self.assertRegex(response.headers.get('Content-Disposition', ''), r'mail_message-[0-9a-f-]+-author_avatar\.svg')
 
     def test_sidebar_with_date_and_tag(self):
         Blog = self.env['blog.blog']
