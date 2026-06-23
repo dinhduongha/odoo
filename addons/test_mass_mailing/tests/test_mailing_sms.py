@@ -451,7 +451,7 @@ class TestMassSMS(TestMassSMSCommon):
 
         mailing.write({
             'mailing_model_id': self.env['ir.model']._get('mail.test.sms.bl.optout'),
-            'mailing_domain': [('id', 'in', recipients.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])],
             'keep_archives': True,  # keep a note on document (mass_keep_log)
         })
 

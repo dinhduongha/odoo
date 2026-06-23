@@ -21,7 +21,7 @@ class TestAutoBlacklist(common.TestMassMailCommon):
     def setUpClass(cls):
         super(TestAutoBlacklist, cls).setUpClass()
         cls.target_rec = cls._create_mailing_test_records()[0]
-        cls.mailing_bl.write({'mailing_domain': [('id', 'in', cls.target_rec.ids)]})
+        cls.mailing_bl.write({'mailing_domain': [('id', 'in', [str(i) for i in cls.target_rec.ids])]})
 
     @users('user_marketing')
     def test_mailing_bounce_w_auto_bl(self):
@@ -87,7 +87,7 @@ class TestAutoBlacklist(common.TestMassMailCommon):
         self.assertTrue(target.is_blacklisted)
 
         # mass mail record: ko, blacklisted
-        new_mailing = mailing.copy({'mailing_domain': [('id', 'in', target.ids)]})
+        new_mailing = mailing.copy({'mailing_domain': [('id', 'in', [str(i) for i in target.ids])]})
         with self.mock_mail_gateway(mail_unlink_sent=False):
             new_mailing.action_send_mail()
         self.assertMailTraces(

@@ -43,7 +43,7 @@ class TestMassMailPerformance(TestMassMailPerformanceBase):
             'body_html': '<p>Hello <a role="button" href="https://www.example.com/foo/bar?baz=qux">quux</a><a role="button" href="/unsubscribe_from_list">Unsubscribe</a></p>',
             'reply_to_mode': 'new',
             'mailing_model_id': self.ref('test_mass_mailing.model_mailing_performance'),
-            'mailing_domain': [('id', 'in', self.mm_recs.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in self.mm_recs.ids])],
         })
 
         # runbot needs +101 compared to local
@@ -89,7 +89,7 @@ class TestMassMailBlPerformance(TestMassMailPerformanceBase):
             'body_html': '<p>Hello <a role="button" href="https://www.example.com/foo/bar?baz=qux">quux</a><a role="button" href="/unsubscribe_from_list">Unsubscribe</a></p>',
             'reply_to_mode': 'new',
             'mailing_model_id': self.ref('test_mass_mailing.model_mailing_performance_blacklist'),
-            'mailing_domain': [('id', 'in', self.mm_recs.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in self.mm_recs.ids])],
         })
 
         # runbot needs +153 compared to local

@@ -16,7 +16,7 @@ class TestMassMailing(TestMassMailCommon):
         """ Check the author of the mails sent by a mailing. """
         mailing = self.env['mailing.mailing'].with_user(self.user_marketing).create({
             'body_html': '<p>Test</p>',
-            'mailing_domain': [('id', 'in', self.user_employee.partner_id.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in self.user_employee.partner_id.ids])],
             'mailing_model_id': self.env['ir.model']._get_id('res.partner'),
             'name': 'test',
             'subject': 'Test author',
@@ -57,7 +57,7 @@ class TestMassMailing(TestMassMailCommon):
             'reply_to': '%s@%s' % (self.test_alias.alias_name, self.test_alias.alias_domain),
             'keep_archives': True,
             'mailing_model_id': self.env['ir.model']._get('res.partner').id,
-            'mailing_domain': '%s' % [('id', 'in', customers.ids)],
+            'mailing_domain': '%s' % [('id', 'in', [str(i) for i in customers.ids])],
         })
         mailing.action_put_in_queue()
         with self.mock_mail_gateway(mail_unlink_sent=False):
@@ -104,7 +104,7 @@ class TestMassMailing(TestMassMailCommon):
 
         mailing.write({
             'mailing_model_id': self.env['ir.model']._get('mailing.test.optout'),
-            'mailing_domain': [('id', 'in', recipients.ids)]
+            'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])]
         })
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()
@@ -224,7 +224,7 @@ class TestMassMailing(TestMassMailCommon):
                 )
                 mailing = self.env['mailing.mailing'].create({
                     'body_html': """<div><p>Hello ${object.name}</p>""",
-                    'mailing_domain': [('id', 'in', test_records.ids)],
+                    'mailing_domain': [('id', 'in', [str(i) for i in test_records.ids])],
                     'mailing_model_id': self.env['ir.model']._get_id(dst_model),
                     'mailing_type': 'mail',
                     'name': 'SourceName',
@@ -324,7 +324,7 @@ class TestMassMailing(TestMassMailCommon):
         self.assertEqual(len(recipients), 5)
         initial_messages = recipients.message_ids
         mailing.write({
-            'mailing_domain': [('id', 'in', recipients.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])],
             'keep_archives': False,
             'reply_to_mode': 'new',
             'reply_to': self.test_alias.display_name,
@@ -354,7 +354,7 @@ class TestMassMailing(TestMassMailCommon):
         recipients = self._create_mailing_test_records(model='mailing.test.blacklist', count=5)
         self.assertEqual(len(recipients), 5)
         mailing.write({
-            'mailing_domain': [('id', 'in', recipients.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])],
             'keep_archives': False,
             'reply_to_mode': 'update',
             'reply_to': self.test_alias.display_name,
@@ -440,7 +440,7 @@ class TestMassMailing(TestMassMailCommon):
         )
         self.env['mail.blacklist'].flush_model(['active'])
 
-        mailing.write({'mailing_domain': [('id', 'in', recipients.ids)]})
+        mailing.write({'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])]})
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()
 
@@ -486,7 +486,7 @@ class TestMassMailing(TestMassMailCommon):
         for test_record in test_records:
             test_record.email_from = email_normalize(test_record.email_from)
         self.mailing_bl.write({
-            'mailing_domain': [('id', 'in', test_records.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in test_records.ids])],
             'mailing_model_id': self.env['ir.model']._get('mailing.test.simple').id,
         })
         self.env['mail.blacklist'].create([{
@@ -531,7 +531,7 @@ class TestMassMailing(TestMassMailCommon):
 
         mailing.write({
             'mailing_model_id': self.env['ir.model']._get('mailing.test.optout'),
-            'mailing_domain': [('id', 'in', recipients.ids)]
+            'mailing_domain': [('id', 'in', [str(i) for i in recipients.ids])]
         })
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()
@@ -604,7 +604,7 @@ class TestMassMailing(TestMassMailCommon):
 
         mailing = self.env['mailing.mailing'].create({
             'body_html': '<p>Marketing stuff for ${object.name}</p>',
-            'mailing_domain': [('id', 'in', test_records.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in test_records.ids])],
             'mailing_model_id': self.env['ir.model']._get_id('mailing.test.partner.unstored'),
             'name': 'test',
             'subject': 'Blacklisted',

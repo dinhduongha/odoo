@@ -25,7 +25,7 @@ class TestMailingTest(TestMassMailCommon):
         ])
         cls.test_mailing_bl = cls.env['mailing.mailing'].create({
             'body_html': '<p>Hello <t t-out="object.name"/></p>',
-            'mailing_domain': [('id', 'in', cls.test_records.ids)],
+            'mailing_domain': [('id', 'in', [str(i) for i in cls.test_records.ids])],
             'mailing_model_id': cls.env['ir.model']._get_id('mailing.test.blacklist'),
             'mailing_type': 'mail',
             'name': 'TestButton',

@@ -33,7 +33,7 @@ class TestMailingStatistics(TestMassMailCommon):
         target_records[10]['email_from'] = False  # void email should lead to a 'cancel' trace_status
         target_records[11]['email_from'] = 'raoul@example¢¡.com'  # wrong email should lead to a 'exception' trace_status
         mailing = self.env['mailing.mailing'].browse(self.mailing_bl.ids)
-        mailing.write({'mailing_domain': [('id', 'in', target_records.ids)], 'user_id': self.user_marketing_2.id})
+        mailing.write({'mailing_domain': [('id', 'in', [str(i) for i in target_records.ids])], 'user_id': self.user_marketing_2.id})
         mailing.action_put_in_queue()
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()
@@ -92,7 +92,7 @@ class TestMailingStatistics(TestMassMailCommon):
     def test_mailing_statistics_wo_user(self):
         target_records = self._create_mailing_test_records(model='mailing.test.blacklist', count=10)
         mailing = self.env['mailing.mailing'].browse(self.mailing_bl.ids)
-        mailing.write({'mailing_domain': [('id', 'in', target_records.ids)], 'user_id': False})
+        mailing.write({'mailing_domain': [('id', 'in', [str(i) for i in target_records.ids])], 'user_id': False})
         mailing.action_put_in_queue()
         with self.mock_mail_gateway(mail_unlink_sent=False):
             mailing.action_send_mail()

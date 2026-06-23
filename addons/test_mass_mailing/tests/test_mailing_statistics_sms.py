@@ -32,7 +32,7 @@ class TestMailingStatistics(TestMassSMSCommon):
     def test_mailing_statistics_sms(self):
         mailing = self.env['mailing.mailing'].browse(self.mailing_sms.ids)
         target_records = self.env['mail.test.sms'].browse(self.records.ids)
-        mailing.write({'mailing_domain': [('id', 'in', target_records.ids)], 'user_id': self.user_marketing_2.id})
+        mailing.write({'mailing_domain': [('id', 'in', [str(i) for i in target_records.ids])], 'user_id': self.user_marketing_2.id})
         mailing.action_put_in_queue()
         with self.mockSMSGateway():
             mailing.action_send_sms()
@@ -93,7 +93,7 @@ class TestMailingStatistics(TestMassSMSCommon):
             providers for some reasons, the statistics for sent SMS will be correct. """
         mailing = self.env['mailing.mailing'].browse(self.mailing_sms.ids)
         target_records = self.env['mail.test.sms'].browse(self.records.ids)
-        mailing.write({'mailing_domain': [('id', 'in', target_records.ids)], 'user_id': self.user_marketing_2.id})
+        mailing.write({'mailing_domain': [('id', 'in', [str(i) for i in target_records.ids])], 'user_id': self.user_marketing_2.id})
         mailing.action_put_in_queue()
         with self.mockSMSGateway(force_delivered=True):
             mailing.action_send_sms()

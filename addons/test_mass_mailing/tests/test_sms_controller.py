@@ -8,7 +8,7 @@ class TestSmsController(TestMassSMSCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.recipients = cls._create_mailing_sms_test_records(model='mail.test.sms', count=5)
-        cls.mailing_sms.mailing_domain = [('id', 'in', cls.recipients.ids)]
+        cls.mailing_sms.mailing_domain = [('id', 'in', [str(i) for i in cls.recipients.ids])]
 
     def _send_sms_immediately_and_assert_traces(self, moderated=False):
         self.mailing_sms.sms_force_send = True
