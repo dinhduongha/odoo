@@ -713,7 +713,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         sale_order._create_invoices()
-        last_message_id = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)], limit=1).id or 0
+        old_message_ids = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)]).ids
         self.env['account.analytic.line'].create({
             'name': 'Test Line',
             'project_id': task.project_id.id,
@@ -724,7 +724,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
 
         self.assertEqual(sale_order.invoice_status, 'upselling', 'Sale Timesheet: "invoice on delivery" timesheets should not modify the invoice_status of the so')
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
@@ -741,7 +741,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
@@ -777,7 +777,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         sale_order._create_invoices()
-        last_message_id = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)], limit=1).id or 0
+        old_message_ids = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)]).ids
         self.env['account.analytic.line'].create({
             'name': 'Test Line',
             'project_id': task.project_id.id,
@@ -788,7 +788,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
 
         self.assertEqual(sale_order.invoice_status, 'upselling', 'Sale Timesheet: "invoice on delivery" timesheets should not modify the invoice_status of the so')
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
@@ -805,7 +805,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
@@ -826,7 +826,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         sale_order._create_invoices()
-        last_message_id = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)], limit=1).id or 0
+        old_message_ids = self.env['mail.message'].search([('model', '=', 'sale.order'), ('res_id', '=', sale_order.id)]).ids
         self.env['account.analytic.line'].create({
             'name': 'Test Line',
             'project_id': task.project_id.id,
@@ -837,7 +837,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
 
         self.assertEqual(sale_order.invoice_status, 'upselling', 'Sale Timesheet: "invoice on delivery" timesheets should not modify the invoice_status of the so')
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
@@ -854,7 +854,7 @@ class TestSaleTimesheet(TestCommonSaleTimesheet):
         })
 
         message_sent = self.env['mail.message'].search([
-            ('id', '>', last_message_id),
+            ('id', 'not in', old_message_ids),
             ('subject', 'like', 'To-Do'),
             ('model', '=', 'sale.order'),
             ('res_id', '=', sale_order.id),
