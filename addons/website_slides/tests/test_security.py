@@ -453,9 +453,9 @@ class TestRemoveMembership(common.SlidesCase):
         id_slide_partner = self.slide_partner.id
         id_channel_partner = self.channel_partner.id
         self.channel_partner.with_user(self.user_officer).unlink()
-        self.assertFalse(self.env['slide.channel.partner'].search([('id', '=', '%d' % id_channel_partner)]))
+        self.assertFalse(self.env['slide.channel.partner'].search([('id', '=', id_channel_partner)]))
         # Slide(s) related to the channel and the partner is unlink too.
-        self.assertFalse(self.env['slide.slide.partner'].search([('id', '=', '%d' % id_slide_partner)]))
+        self.assertFalse(self.env['slide.slide.partner'].search([('id', '=', id_slide_partner)]))
 
 
 @tagged('functional')
@@ -647,13 +647,13 @@ class TestReview(common.SlidesCase, HttpCase):
             json={
                 "params": {
                     "thread_model": "slide.channel",
-                    "thread_id": self.channel.id,
+                    "thread_id": str(self.channel.id),
                     "post_data": {
                         "body": "My first review :)",
                         "subtype_xmlid": "mail.mt_comment",
                         "rating_value": "2",
                     },
-                    "pid": self.env.user.partner_id.id,
+                    "pid": str(self.env.user.partner_id.id),
                 },
             },
         )
@@ -664,13 +664,13 @@ class TestReview(common.SlidesCase, HttpCase):
             json={
                 "params": {
                     "thread_model": "slide.channel",
-                    "thread_id": self.channel.id,
+                    "thread_id": str(self.channel.id),
                     "post_data": {
                         "body": "My second review :)",
                         "subtype_xmlid": "mail.mt_comment",
                         "rating_value": "2",
                     },
-                    "pid": self.env.user.partner_id.id,
+                    "pid": str(self.env.user.partner_id.id),
                 },
             },
         )

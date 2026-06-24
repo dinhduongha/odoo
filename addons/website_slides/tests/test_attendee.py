@@ -5,6 +5,7 @@ from http import HTTPStatus
 from urllib.parse import parse_qs
 
 from odoo import fields
+from odoo.tools.uuid_utils import uuid7
 from odoo.addons.mail.tests.common import mail_new_test_user
 from odoo.addons.base.tests.common import HttpCaseWithUserPortal
 from odoo.addons.website_slides.tests import common
@@ -502,15 +503,14 @@ class TestAttendeeCase(HttpCaseWithUserPortal):
         self.assertURLEqual(res.url, '/slides?invite_error=partner_fail',
             "Using an other user's invitation link should redirect to the course page")
 
-        # slugification can give: "/slides/-ID" which should work, despite resulting in a negative ID
-        invite_url = f'/slides/-{self.channel.id}'
+        # slugification with a blank seo name resolves to the bare id form, which should work
+        invite_url = f'/slides/{self.channel.id}'
         res = self.url_open(invite_url)
         self.assertEqual(res.status_code, 200)
         self.assertIn(invite_url, res.url)
 
         # No such channel
-        max_channel_id = self.env['slide.channel'].search([], order='id desc', limit=1).id
-        invite_url = f'/slides/{max_channel_id + 1}'
+        invite_url = f'/slides/{uuid7()}'
         res = self.url_open(invite_url)
         self.assertEqual(res.status_code, 200)
         self.assertIn('/slides?invite_error=no_channel', res.url,

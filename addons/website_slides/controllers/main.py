@@ -19,6 +19,7 @@ from odoo.exceptions import AccessError, ValidationError, UserError, MissingErro
 from odoo.fields import Domain
 from odoo.http import request, Response
 from odoo.tools import consteq, email_normalize_all
+from odoo.tools.uuid_utils import to_uuid
 from odoo.tools.translate import LazyTranslate
 
 _lt = LazyTranslate(__name__)
@@ -555,6 +556,13 @@ class WebsiteSlides(WebsiteProfile):
         (**) Those are used to check and give invited attendees the access to the course and
             allow them browing its list of contents.
         """
+        # channel_id / category_id come from a <string> route converter as a
+        # "slug" (e.g. "taking-care-of-trees-<uuid>"); extract the real id.
+        if channel_id:
+            channel_id = request.env['ir.http']._unslug(channel_id)[1]
+        if category_id:
+            category_id = request.env['ir.http']._unslug(category_id)[1]
+
         invite_partner_id = kw['invite_partner_id'] if kw.get('invite_partner_id') else False
         invite_hash = kw.get('invite_hash')
         valid_invite_values = {}
@@ -568,13 +576,6 @@ class WebsiteSlides(WebsiteProfile):
                     'invite_hash': invite_hash,
                     'invite_partner_id': invite_partner_id
                 }
-
-        if channel_id < 0:
-            # the string part of the channel "slugification" can be blank
-            # meaning it can be "/slides/taking-care-of-trees-2" OR just "/slides/-2" if the first part is blank
-            # as we use a IntConverter on the route definition, this will pick up a negative ID
-            # (the IntConverter is necessary as we want a custom page in case the user can't access the course)
-            channel_id = abs(channel_id)
 
         # Check access rights
         if channel_id and not channel:
@@ -719,6 +720,9 @@ class WebsiteSlides(WebsiteProfile):
         """ Check identification parameters and returns values used to give access to signed out invited members.
         The course is returned as sudo to allow them seeing a preview of the course even if visibility if not public.
         Returns dict of values or containing 'invite_error' and a value corresponding to the error. See _get_invite_error_msg."""
+        # invite_partner_id comes from the query string as a raw uuid string;
+        # coerce so it compares equal to the UUID-typed record ids below.
+        invite_partner_id = to_uuid(invite_partner_id)
         channel_sudo = request.env['slide.channel'].browse(channel_id).exists().sudo()
         partner_sudo = request.env['res.partner'].browse(invite_partner_id).exists().sudo()
         if not partner_sudo or not channel_sudo.is_published:
