@@ -1,6 +1,7 @@
 from werkzeug import urls
 
 from odoo import models, api
+from odoo.tools.uuid_utils import to_uuid
 
 
 class IrQwebFieldImage(models.AbstractModel):
@@ -16,7 +17,7 @@ class IrQwebFieldImage(models.AbstractModel):
         if url_object.path.startswith('/unsplash/'):
             res_id = element.get('data-oe-id')
             if res_id:
-                res_id = int(res_id)
+                res_id = to_uuid(res_id)
                 res_model = model._name
                 attachment = self.env['ir.attachment'].search([
                     '&', '|', '&',
