@@ -31,7 +31,7 @@ class GelatoController(Controller):
 
         if event_data['event'] == 'order_status_updated':
             # Check the signature of the webhook notification.
-            order_id = int(event_data['orderReferenceId'])
+            order_id = event_data['orderReferenceId']
             order_sudo = request.env['sale.order'].sudo().browse(order_id).exists()
             received_signature = request.httprequest.headers.get('signature', '')
             self._verify_notification_signature(received_signature, order_sudo)
