@@ -39,7 +39,7 @@ class OAuthLogin(Home):
                 client_id=provider['client_id'],
                 redirect_uri=return_url,
                 scope=provider['scope'],
-                state=json.dumps(state),
+                state=json.dumps(state, default=str),
                 # nonce=base64.urlsafe_b64encode(os.urandom(16)),
             )
             provider['auth_link'] = "%s?%s" % (provider['auth_endpoint'], werkzeug.urls.url_encode(params))
