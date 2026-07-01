@@ -7,6 +7,7 @@ from odoo import http
 from odoo.http import request
 from odoo.addons.mail.controllers.webclient import WebclientController
 from odoo.addons.mail.tools.discuss import add_guest_to_context, Store
+from odoo.tools.uuid_utils import is_uuid
 
 
 class DiscussChannelWebclientController(WebclientController):
@@ -44,7 +45,11 @@ class DiscussChannelWebclientController(WebclientController):
                 channels=request.env.context["channels"] | channels, add_channels_last_message=True
             )
         if name == "discuss.channel":
-            channels = request.env["discuss.channel"].search([("id", "in", params)])
+            # uuid PKs: params are channel ids supplied by the client; drop any
+            # non-uuid value (e.g. a stale int id from an old session) so it
+            # cannot reach SQL and raise "operator does not exist: uuid = integer".
+            ids = [cid for cid in params if is_uuid(str(cid))]
+            channels = request.env["discuss.channel"].search([("id", "in", ids)])
             request.update_context(channels=request.env.context["channels"] | channels)
         if name == "/discuss/get_or_create_chat":
             channel = request.env["discuss.channel"]._get_or_create_chat(
