@@ -1,5 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import json
 import logging
 from markupsafe import Markup
 
@@ -23,10 +24,16 @@ class MailActivitySchedule(models.TransientModel):
         context = self.env.context
         active_res_ids = parse_res_ids(context.get('active_ids'), self.env)
         if 'res_ids' in fields:
+            # uuid PKs: store as JSON so the res_ids Text field is valid for both
+            # JSON.parse (client) and ast.literal_eval (server); a Python f-string/repr
+            # would emit single quotes ("['019f…']") that JSON.parse rejects.
             if active_res_ids and len(active_res_ids) <= self._batch_size:
-                res['res_ids'] = f"{[str(i) for i in context['active_ids']]}"
+                res['res_ids'] = json.dumps([str(i) for i in context['active_ids']])
             elif not active_res_ids and context.get('active_id'):
-                res['res_ids'] = f"{[str(context['active_id'])]}"
+                res['res_ids'] = json.dumps([str(context['active_id'])])
+        # a 'default_res_ids' caller may seed res_ids as a raw list -> normalise to JSON too
+        if isinstance(res.get('res_ids'), (list, tuple)):
+            res['res_ids'] = json.dumps([str(i) for i in res['res_ids']])
         res_model = context.get('active_model') or context.get('params', {}).get('active_model', False)
         if 'res_model' in fields:
             res['res_model'] = res_model
@@ -96,9 +103,9 @@ class MailActivitySchedule(models.TransientModel):
         for scheduler in self.filtered(lambda scheduler: not scheduler.res_ids):
             active_res_ids = parse_res_ids(context.get('active_ids'), self.env)
             if active_res_ids and len(active_res_ids) <= self._batch_size:
-                scheduler.res_ids = f"{[str(i) for i in context['active_ids']]}"
+                scheduler.res_ids = json.dumps([str(i) for i in context['active_ids']])
             elif not active_res_ids and context.get('active_id'):
-                scheduler.res_ids = f"{[str(context['active_id'])]}"
+                scheduler.res_ids = json.dumps([str(context['active_id'])])
 
     @api.depends('res_model_id', 'res_ids')
     def _compute_company_id(self):
