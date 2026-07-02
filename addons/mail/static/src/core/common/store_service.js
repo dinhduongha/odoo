@@ -406,7 +406,7 @@ export class Store extends BaseStore {
             return;
         }
         const model = link.dataset.oeModel;
-        const id = Number(link.dataset.oeId);
+        const id = link.dataset.oeId; // uuid record id, keep as string
         if (link.classList.contains("o_channel_redirect") && model && id) {
             ev.preventDefault();
             this.Thread.getOrFetch({ model, id }).then((thread) => {

@@ -30,11 +30,7 @@ export class PortalComposer extends Interaction {
         if (typeof options.default_attachment_ids === "string") {
             options.default_attachment_ids = JSON.parse(options.default_attachment_ids);
         }
-        for (const name of ["res_id", "partner_id", "pid"]) {
-            if (typeof options[name] === "string") {
-                options[name] = parseInt(options[name]);
-            }
-        }
+        // uuid record ids: res_id/partner_id/pid stay as strings, no int cast
         return Object.assign(
             {
                 allow_composer: true,
@@ -78,9 +74,7 @@ export class PortalComposer extends Interaction {
     }
 
     async onAttachmentDeleteClick(ev, currentTargetEl) {
-        const attachmentId = parseInt(
-            currentTargetEl.closest(".o_portal_chatter_attachment").dataset.id
-        );
+        const attachmentId = currentTargetEl.closest(".o_portal_chatter_attachment").dataset.id; // uuid record id, keep as string
         const accessToken = this.attachments.find(
             (attachment) => attachment.id === attachmentId
         ).access_token;

@@ -48,7 +48,7 @@ export class BoothRegistration extends Interaction {
         this.selectedBoothCategory = this.el.querySelector("input[name='booth_category_id']:checked");
         if (this.selectedBoothCategory) {
             const boothEl = this.el.querySelector(".o_wbooth_booths");
-            this.selectedBoothIds = boothEl.dataset.selectedBoothIds.split(",").map(Number);
+            this.selectedBoothIds = boothEl.dataset.selectedBoothIds.split(","); // keep booth record ids as strings (uuid)
             this.activeBoothCategoryId = this.selectedBoothCategory.value;
             this.updateAvailableBoothsUI();
         }
@@ -61,7 +61,7 @@ export class BoothRegistration extends Interaction {
         if (data && data.unavailable_booths.length) {
             const boothIdEls = this.el.querySelectorAll("input[name='event_booth_ids']");
             for (const boothIdEl of boothIdEls) {
-                if (data.unavailable_booths.includes(parseInt(boothIdEl.value))) {
+                if (data.unavailable_booths.includes(boothIdEl.value)) { // booth id is a uuid string
                     boothIdEl.closest(".form-check").classList.add("text-danger");
                 }
             }
@@ -173,7 +173,7 @@ export class BoothRegistration extends Interaction {
      * @param {HTMLElement} currentTargetEl
      */
     onBoothTypeChange(ev, currentTargetEl) {
-        this.activeBoothCategoryId = parseInt(currentTargetEl.value);
+        this.activeBoothCategoryId = currentTargetEl.value; // booth category id is a uuid string
         this.updateAvailableBoothsUI();
     }
 
@@ -188,7 +188,7 @@ export class BoothRegistration extends Interaction {
 
     async onSubmitClick() {
         const selectedBoothEls = this.el.querySelectorAll("input[name=event_booth_ids]:checked");
-        const selectedBoothIds = [...selectedBoothEls].map((el) => parseInt(el.value));
+        const selectedBoothIds = [...selectedBoothEls].map((el) => el.value); // booth ids are uuid strings
         const data = await this.waitFor(this.checkBoothsAvailability(selectedBoothIds));
         if (data) {
             this.el.querySelector(".o_wbooth_registration_form").submit();

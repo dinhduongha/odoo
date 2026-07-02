@@ -68,8 +68,8 @@ export class WebClient extends Component {
     async loadRouterState() {
         // ** url-retrocompatibility **
         // the menu_id in the url is only possible if we came from an old url
-        let menuId = Number(router.current.menu_id || 0);
-        const storedMenuId = Number(browser.sessionStorage.getItem("menu_id"));
+        let menuId = router.current.menu_id || 0; // uuid menu id: keep as string
+        const storedMenuId = browser.sessionStorage.getItem("menu_id");
         const firstAction = router.current.actionStack?.[0]?.action;
         if (!menuId && firstAction) {
             // Find all menus that match this action

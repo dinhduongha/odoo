@@ -80,7 +80,7 @@ export class ProductToCartAction extends BuilderAction {
         }
         const product_variant_ids = editingElement.dataset.variants
             ?.split(",")
-            .map((el) => parseInt(el));
+            .map((el) => el); // uuid PKs: keep record id as string
         if (product_variant_ids !== undefined) {
             value.product_variant_ids = product_variant_ids;
         }
@@ -107,7 +107,7 @@ export class VariantToCartAction extends BuilderAction {
     getValue({ editingElement }) {
         const id = editingElement.dataset.productVariant;
         if (id) {
-            return JSON.stringify({ id: parseInt(id) });
+            return JSON.stringify({ id: id }); // uuid PKs: keep record id as string
         }
     }
 }

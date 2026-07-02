@@ -320,7 +320,7 @@ export class PosStore extends WithLazyGetterTrap {
     }
 
     _getConnectedCashier() {
-        const cashier_id = Number(sessionStorage.getItem(`connected_cashier_${this.config.id}`));
+        const cashier_id = sessionStorage.getItem(`connected_cashier_${this.config.id}`); // cashier (res.users) id is a uuid string
         if (cashier_id && this.models["res.users"].get(cashier_id)) {
             return this.models["res.users"].get(cashier_id);
         }
@@ -359,7 +359,7 @@ export class PosStore extends WithLazyGetterTrap {
     async closingSessionNotification(data) {
         if (
             data.device_identifier === this.device.identifier ||
-            this.session.id !== parseInt(data.session_id)
+            this.session.id !== data.session_id // pos.session id is a uuid string
         ) {
             return;
         }

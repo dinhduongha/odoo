@@ -27,7 +27,7 @@ patch(WebsiteSale.prototype, {
 
     onClickSubmitProductStockNotificationForm(ev) {
         const formEl = ev.currentTarget.closest('#stock_notification_form');
-        const productId = parseInt(formEl.querySelector('input[name="product_id"]').value);
+        const productId = formEl.querySelector('input[name="product_id"]').value; // uuid PKs: keep record id as string
         this._handleClickSubmitStockNotificationForm(ev, productId);
     },
 

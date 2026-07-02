@@ -81,7 +81,7 @@ export class SurveySessionManage extends Interaction {
         this.timerEl = this.el.querySelector(".o_survey_timer_container .o_survey_timer");
         this.textAnswersEl = this.el.querySelector(".o_survey_session_text_answers_container");
         // General survey props
-        this.surveyId = parseInt(this.el.dataset.surveyId);
+        this.surveyId = this.el.dataset.surveyId; // uuid record id, keep as string
         this.attendeesCount = this.el.dataset.attendeesCount
             ? parseInt(this.el.dataset.attendeesCount, 10)
             : 0;

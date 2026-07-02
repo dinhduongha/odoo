@@ -282,7 +282,7 @@ export class SurveyForm extends Interaction {
                 .o_survey_form_choice[data-question-type='simple_choice_radio'] input:checked,
                 .o_survey_form_choice[data-question-type='multiple_choice'] input:checked
             `)
-            ).map((input) => parseInt(input.value));
+            ).map((input) => input.value); // uuid answer id, keep as string
             const submitButton = this.el.querySelector("button[type=submit]");
             if (
                 currentSelectedAnswers.some((answerId) =>
@@ -409,7 +409,7 @@ export class SurveyForm extends Interaction {
         ev.preventDefault();
         const targetEl = ev.currentTarget;
         if (targetEl.value === "previous") {
-            this.submitForm({ previousPageId: parseInt(targetEl.dataset.previousPageId) });
+            this.submitForm({ previousPageId: targetEl.dataset.previousPageId }); // uuid page id, keep as string
         } else if (targetEl.value === "next_skipped") {
             this.submitForm({ nextSkipped: true });
         } else if (targetEl.value === "finish" && !this.options.sessionInProgress) {
@@ -429,7 +429,7 @@ export class SurveyForm extends Interaction {
     }
 
     onBreadcrumbClick(ev) {
-        const previousPageId = Number(ev.currentTarget.closest(".breadcrumb-item").dataset.pageId);
+        const previousPageId = ev.currentTarget.closest(".breadcrumb-item").dataset.pageId; // uuid page id, keep as string
         this.submitForm({ previousPageId });
     }
 
@@ -749,7 +749,7 @@ export class SurveyForm extends Interaction {
         for (const inputEl of formEl.querySelectorAll("[data-question-type]")) {
             const questionWrapperEl = inputEl.closest(".js_question-wrapper");
             const questionId = questionWrapperEl.id;
-            if (inactiveQuestionIds.includes(parseInt(questionId))) {
+            if (inactiveQuestionIds.includes(questionId)) { // uuid question id, keep as string
                 continue;
             }
             const questionRequired = questionWrapperEl.hasAttribute("data-required");
@@ -948,7 +948,7 @@ export class SurveyForm extends Interaction {
             params = this.prepareSubmitAnswerMatrix(
                 params,
                 matrixTable.dataset.name,
-                Number(el.dataset.rowId),
+                el.dataset.rowId, // uuid row (answer) id, keep as string
                 el.value
             );
         }
@@ -1078,7 +1078,7 @@ export class SurveyForm extends Interaction {
                 this.renderAt(
                     "survey.survey_breadcrumb_template",
                     {
-                        currentPageId: parseInt(pageId),
+                        currentPageId: pageId, // uuid page id, keep as string
                         ...this.breadcrumbData,
                     },
                     this.breadcrumbEl
@@ -1242,7 +1242,7 @@ export class SurveyForm extends Interaction {
                     this.options.questionsLayout !== "page_per_question"
                 ) {
                     this.selectedAnswers.splice(
-                        this.selectedAnswers.indexOf(parseInt(previouslySelectedAnswerId)),
+                        this.selectedAnswers.indexOf(previouslySelectedAnswerId), // uuid answer id, keep as string
                         1
                     );
                 }
@@ -1254,7 +1254,7 @@ export class SurveyForm extends Interaction {
                     newlySelectedAnswerEl.classList.add("o_survey_selected");
                     isQuestionComplete = this.options.questionsLayout === "page_per_question";
                     if (!isQuestionComplete) {
-                        this.selectedAnswers.push(parseInt(newlySelectedAnswerId));
+                        this.selectedAnswers.push(newlySelectedAnswerId); // uuid answer id, keep as string
                     }
                 }
 
@@ -1279,9 +1279,9 @@ export class SurveyForm extends Interaction {
 
                 if (this.options.questionsLayout !== "page_per_question") {
                     labelEl.classList.contains("o_survey_selected")
-                        ? this.selectedAnswers.push(parseInt(answerId))
+                        ? this.selectedAnswers.push(answerId) // uuid answer id, keep as string
                         : this.selectedAnswers.splice(
-                              this.selectedAnswers.indexOf(parseInt(answerId)),
+                              this.selectedAnswers.indexOf(answerId),
                               1
                           );
                     this.applyConditionalQuestionsVisibility(
@@ -1315,7 +1315,7 @@ export class SurveyForm extends Interaction {
             }
             const hasNoSelectedTriggers = !this.options.triggeringAnswersByQuestion[
                 questionId
-            ].some((answerId) => this.selectedAnswers.includes(parseInt(answerId)));
+            ].some((answerId) => this.selectedAnswers.includes(answerId)); // uuid answer id, keep as string
             dependingQuestionEl.classList.toggle("d-none", hasNoSelectedTriggers);
             if (hasNoSelectedTriggers) {
                 // Clear / Un-select all the input from the given question
@@ -1356,8 +1356,8 @@ export class SurveyForm extends Interaction {
         for (const [questionId, answerIds] of Object.entries(
             this.options.triggeringAnswersByQuestion || {}
         )) {
-            if (!answerIds.some((answerId) => this.selectedAnswers.includes(parseInt(answerId)))) {
-                inactiveQuestionIds.push(parseInt(questionId));
+            if (!answerIds.some((answerId) => this.selectedAnswers.includes(answerId))) { // uuid answer id, keep as string
+                inactiveQuestionIds.push(questionId); // uuid question id, keep as string
             }
         }
         return inactiveQuestionIds;
@@ -1422,7 +1422,7 @@ export class SurveyForm extends Interaction {
         } else if (["simple_choice_radio", "multiple_choice"].includes(questionType)) {
             for (const buttonEl of answerWrapperEl.querySelectorAll(".o_survey_choice_btn")) {
                 const answerId = buttonEl.querySelector("input").value;
-                const isCorrect = correctAnswer.includes(parseInt(answerId));
+                const isCorrect = correctAnswer.includes(answerId); // uuid answer id, keep as string
                 buttonEl.classList.add(`bg-${isCorrect ? "success" : "danger"}`, "text-white");
                 // For the user incorrect answers, replace the empty check icon by a crossed check icon
                 if (!isCorrect && buttonEl.classList.contains("o_survey_selected")) {

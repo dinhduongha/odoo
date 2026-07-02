@@ -38,7 +38,7 @@ class SetCategoryImageAction extends BuilderAction {
             noDocuments: true,
             save: async (selectedImageEl, selectedMedia) => {
                 rpc('/snippets/category/set_image', {
-                    category_id: parseInt(categoryId),
+                    category_id: categoryId, // uuid PKs: keep record id as string
                     attachment_id: selectedMedia[0]['id'],
                 });
                 if (!(selectedImageEl instanceof HTMLImageElement)) return;

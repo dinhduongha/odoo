@@ -14,7 +14,8 @@ export class TagAdd extends Interaction {
     onClick() {
         const data = this.el.dataset;
         this.services.dialog.add(CourseTagAddDialog, {
-            channelId: parseInt(data.channelId, 10),
+            // uuid record id: keep as string
+            channelId: data.channelId,
             tagIds: data.channelTagIds ? JSON.parse(data.channelTagIds) : [],
         });
     }

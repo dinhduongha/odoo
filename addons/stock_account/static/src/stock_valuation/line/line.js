@@ -25,7 +25,7 @@ export class StockValuationReportLine extends Component {
     // Getters -----------------------------------------------------------------
     get accounts() {
         if (! this.hasSublines) { return []; }
-        return this.props.sublines.map(line => parseInt(line.account_id));
+        return this.props.sublines.map(line => line.account_id); // uuid account id: keep as string
     }
 
     get credit() {

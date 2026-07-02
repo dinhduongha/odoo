@@ -560,9 +560,8 @@ export class WebsiteSale extends Interaction {
      * @param {HTMLFormElement} form - The form in which the product is.
      */
     _updateRootProduct(form) {
-        const productId = parseInt(
-            form.querySelector('input[type="hidden"][name="product_id"]')?.value
-        );
+        const productId = // uuid PKs: keep record id as string
+            form.querySelector('input[type="hidden"][name="product_id"]')?.value;
         const productEl = form.closest('.js_product') ?? form;
         const quantity = parseFloat(productEl.querySelector('input[name="add_qty"]')?.value);
         const uomId = this._getUoMId(form);
@@ -571,9 +570,10 @@ export class WebsiteSale extends Interaction {
         )?.value === 'combo';
         this.rootProduct = {
             ...(productId ? {productId: productId} : {}),
-            productTemplateId: parseInt(form.querySelector(
+            // uuid PKs: keep record id as string
+            productTemplateId: form.querySelector(
                 'input[type="hidden"][name="product_template_id"]',
-            ).value),
+            ).value,
             ...(quantity ? {quantity: quantity} : {}),
             ...(uomId ? {uomId: uomId} : {}),
             ptavs: this._getSelectedPTAV(form),
@@ -598,7 +598,7 @@ export class WebsiteSale extends Interaction {
         ].join(','));
         let selectedPTAV = [];
         for(const el of selectedPTAVElements) {
-            selectedPTAV.push(parseInt(el.value));
+            selectedPTAV.push(el.value); // uuid PKs: keep record id as string
         }
         return selectedPTAV;
     }
@@ -641,7 +641,7 @@ export class WebsiteSale extends Interaction {
         ].join(','));
         let selectedNoVariantPTAV = [];
         for(const el of selectedNoVariantPTAVElements) {
-            selectedNoVariantPTAV.push(parseInt(el.value));
+            selectedNoVariantPTAV.push(el.value); // uuid PKs: keep record id as string
         }
         return selectedNoVariantPTAV;
     }

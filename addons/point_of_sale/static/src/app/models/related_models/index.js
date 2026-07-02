@@ -103,8 +103,8 @@ export function createRelatedModels(modelDefs, modelClasses = {}, opts = {}) {
         }
 
         read(value) {
-            const id = /^\d+$/.test(value) ? parseInt(value) : value; // In case of ID came from an input
-            return this[STORE_SYMBOL].getById(this.name, id);
+            // record ids are uuid strings; look up as-is without numeric coercion
+            return this[STORE_SYMBOL].getById(this.name, value);
         }
 
         readFirst() {

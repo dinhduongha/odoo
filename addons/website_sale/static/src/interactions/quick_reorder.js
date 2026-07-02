@@ -99,8 +99,8 @@ export class QuickReorder extends Interaction {
     async reorderProduct(ev) {
         // Extract product data from the button dataset.
         const addButtonDataset = ev.currentTarget.dataset;
-        const productTemplateId = parseInt(addButtonDataset.productTemplateId, 10);
-        const productId = parseInt(addButtonDataset.productId, 10);
+        const productTemplateId = addButtonDataset.productTemplateId; // uuid PKs: keep record id as string
+        const productId = addButtonDataset.productId; // uuid PKs: keep record id as string
         let quantity = parseInt(addButtonDataset.quantity);
         const isCombo = addButtonDataset.productType === 'combo';
         const selectedComboItems = JSON.parse(addButtonDataset.selectedComboItems || '[]');

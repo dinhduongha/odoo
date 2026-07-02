@@ -71,7 +71,8 @@ export class SlideUploadCategory extends Component {
             },
         });
         this.canSubmitForm = false;
-        this.defaultCategoryId = parseInt(this.props.categoryId, 10);
+        // uuid record id: keep as string
+        this.defaultCategoryId = this.props.categoryId;
         this.file = {};
         this.isValidUrl = true;
 

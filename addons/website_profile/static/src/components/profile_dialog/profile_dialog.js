@@ -118,7 +118,8 @@ export class ProfileDialog extends Component {
         const descriptionElContent = this.websiteDescriptionEditor.getElContent();
         const data = {
             ...this.user,
-            country_id: this.user.country_id && parseInt(this.user.country_id),
+            // uuid record id: keep as string
+            country_id: this.user.country_id,
             website_description: isHtmlEmpty(descriptionElContent.innerText)
                 ? ""
                 : descriptionElContent.innerHTML,

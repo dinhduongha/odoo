@@ -25,7 +25,7 @@ export class SurveyQuickAccess extends Interaction {
         const sessionResult = await this.waitFor(this.services.orm.call(
             "survey.survey",
             "action_start_session",
-            [[parseInt(this.el.querySelector(".o_survey_launch_session").dataset.surveyId)]]
+            [[this.el.querySelector(".o_survey_launch_session").dataset.surveyId]] // uuid record id, keep as string
         ));
         window.location = sessionResult.url;
     }

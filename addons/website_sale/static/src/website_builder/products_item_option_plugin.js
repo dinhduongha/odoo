@@ -86,11 +86,10 @@ export class SetItemSizeAction extends BuilderAction {
         const y = i + 1;
 
         this.productItemPlugin.setProductTemplateID(
-            parseInt(
-                editingElement
-                    .querySelector('[data-oe-model="product.template"]')
-                    .getAttribute("data-oe-id")
-            )
+            // uuid PKs: keep record id as string
+            editingElement
+                .querySelector('[data-oe-model="product.template"]')
+                .getAttribute("data-oe-id")
         );
         return rpc("/shop/config/product", {
             product_id: this.productItemPlugin.getProductTemplateID(),
@@ -108,11 +107,10 @@ export class ChangeSequenceAction extends BuilderAction {
     }
     apply({ editingElement, value }) {
         this.productItemPlugin.setProductTemplateID(
-            parseInt(
-                editingElement
-                    .querySelector('[data-oe-model="product.template"]')
-                    .getAttribute("data-oe-id")
-            )
+            // uuid PKs: keep record id as string
+            editingElement
+                .querySelector('[data-oe-model="product.template"]')
+                .getAttribute("data-oe-id")
         );
         return rpc("/shop/config/product", {
             product_id: this.productItemPlugin.getProductTemplateID(),

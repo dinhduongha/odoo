@@ -69,7 +69,7 @@ export class CachedModelPlugin extends Plugin {
                         .filter((value) => typeof value.id === "number")
                         .map((value) => value.id)
                         .concat(createdIDs);
-                    await this.services.orm.write(model, [parseInt(recordId)], {
+                    await this.services.orm.write(model, [recordId], { // uuid record id, keep as string
                         [field]: [[6, 0, ids]],
                     });
                 }

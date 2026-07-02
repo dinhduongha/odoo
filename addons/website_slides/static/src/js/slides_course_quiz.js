@@ -356,7 +356,8 @@
          */
         _getQuizAnswers: function () {
             return this.$('input[type=radio]:checked').map(function (index, element) {
-                return parseInt($(element).val());
+                // uuid record id (answer_ids): keep as string
+                return $(element).val();
             }).get();
         },
 
@@ -555,7 +556,8 @@
          */
         _onDeleteQuestionClick: function (ev) {
             const question = ev.currentTarget.closest('.o_wslides_js_lesson_quiz_question');
-            const questionId = parseInt(question.dataset.questionId);
+            // uuid record id: keep as string
+            const questionId = question.dataset.questionId;
             this.call('dialog', 'add', ConfirmationDialog, {
                 title: _t('Delete Question'),
                 body: _t('Are you sure you want to delete this question "%(title)s"?', {

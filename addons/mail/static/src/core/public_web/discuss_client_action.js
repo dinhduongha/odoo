@@ -53,7 +53,7 @@ export class DiscussClientAction extends Component {
         if (model === "mail.box") {
             return ["mail.box", id];
         }
-        return [model, parseInt(id)];
+        return [model, id]; // uuid record id, keep as string
     }
 
     /**

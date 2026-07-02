@@ -396,7 +396,7 @@ export class CalendarController extends Component {
         const ids = [];
         for (const element of selectedCells) {
             for (const event of [...element.querySelectorAll(".fc-event")]) {
-                ids.push(parseInt(event.dataset.eventId, 10));
+                ids.push(event.dataset.eventId); // uuid record id: keep as string
             }
         }
         return ids;

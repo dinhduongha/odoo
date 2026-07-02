@@ -23,7 +23,7 @@ const VariantMixin = {
         const combination = wSaleUtils.getSelectedAttributeValues(parent);
 
         const combinationInfo = await this.waitFor(rpc('/website_sale/get_combination_info', {
-            'product_template_id': parseInt(parent.querySelector('.product_template_id')?.value),
+            'product_template_id': parent.querySelector('.product_template_id')?.value, // uuid PKs: keep record id as string
             'product_id': this._getProductId(parent),
             'combination': combination,
             'add_qty': parseInt(parent.querySelector('input[name="add_qty"]')?.value),
@@ -36,7 +36,7 @@ const VariantMixin = {
     },
 
     _getUoMId(element) {
-        return parseInt(element.querySelector('input[name="uom_id"]:checked')?.value)
+        return element.querySelector('input[name="uom_id"]:checked')?.value // uuid PKs: keep record id as string
     },
 
     /**
@@ -213,7 +213,7 @@ const VariantMixin = {
      * @param {Element} parent
      */
     _getProductId(parent) {
-        return parseInt(parent.querySelector('.product_id').value);
+        return parent.querySelector('.product_id').value; // uuid PKs: keep record id as string
     },
 
     /**

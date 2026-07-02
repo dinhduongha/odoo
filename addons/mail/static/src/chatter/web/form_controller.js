@@ -42,8 +42,8 @@ patch(FormController.prototype, {
         if (record.resModel === "mail.compose.message") {
             const doc = createDocumentFragmentFromContent(changes.body);
             const partnerElements = doc.querySelectorAll('[data-oe-model="res.partner"]');
-            const partnerIds = Array.from(partnerElements).map((element) =>
-                parseInt(element.dataset.oeId)
+            const partnerIds = Array.from(partnerElements).map(
+                (element) => element.dataset.oeId // uuid record id, keep as string
             );
             if (partnerIds.length) {
                 if (changes.partner_ids[0] && changes.partner_ids[0][0] === x2ManyCommands.SET) {

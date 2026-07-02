@@ -32,7 +32,7 @@ export class DynamicSnippetCategory extends DynamicSnippet {
             buttonText: nodeData.button,
             colSpanTwo: colSpanTwo,
             includeParent: nodeData.parentCategoryId && nodeData.showParent,
-            parentCategoryId: parseInt(nodeData.parentCategoryId),
+            parentCategoryId: nodeData.parentCategoryId, // uuid PKs: keep record id as string
         });
     }
 
@@ -48,7 +48,7 @@ export class DynamicSnippetCategory extends DynamicSnippet {
 
     getRpcParameters(){
         return Object.assign(super.getRpcParameters(), {
-            parentId: parseInt(this.el.dataset.parentCategoryId),
+            parentId: this.el.dataset.parentCategoryId, // uuid PKs: keep record id as string
         });
     }
 

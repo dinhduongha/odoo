@@ -246,7 +246,8 @@ export class WebsiteForum extends Interaction {
         if (this.warnIfPublicUser()) {
             return;
         }
-        const forumId = parseInt(this.el.ownerDocument.getElementById("wrapwrap").dataset.forum_id);
+        // uuid record id: keep as string
+        const forumId = this.el.ownerDocument.getElementById("wrapwrap").dataset.forum_id;
         let message = _t("%(score)s karma is required to perform this action.", { score: karma });
         if (forumId) {
             message = htmlJoin(
@@ -508,7 +509,8 @@ export class WebsiteForum extends Interaction {
      */
     async onFlagValidatorClick(ev, currentTargetEl) {
         await this.waitFor(this.services.orm.call("forum.post", currentTargetEl.dataset.action, [
-            parseInt(currentTargetEl.dataset.postId),
+            // uuid record id: keep as string
+            currentTargetEl.dataset.postId,
         ]));
         currentTargetEl.closest(".o_wforum_flag_alert")?.classList.toggle("d-none");
         const flaggedButton = currentTargetEl.parentElement.firstElementChild,

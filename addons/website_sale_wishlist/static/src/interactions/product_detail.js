@@ -18,7 +18,7 @@ export class ProductDetail extends Interaction {
         const productId = input.value;
         const button = input.closest('.js_product')?.querySelector('[data-action="o_wishlist"]');
         if (button) {
-            const isDisabled = wishlistUtils.getWishlistProductIds().includes(parseInt(productId));
+            const isDisabled = wishlistUtils.getWishlistProductIds().includes(productId); // uuid PKs: keep record id as string
             wishlistUtils.updateDisabled(button, isDisabled);
             button.dataset.productProductId = productId;
         }

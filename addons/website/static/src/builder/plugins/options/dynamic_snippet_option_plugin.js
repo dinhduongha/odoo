@@ -287,7 +287,8 @@ class DynamicSnippetOptionPlugin extends Plugin {
     getSnippetModelName(snippetData) {
         return (
             snippetData.snippetModel ||
-            this.fetchedDynamicFilters.find(({ id }) => id === parseInt(snippetData.filterId))
+            // uuid record id: compare as strings
+            this.fetchedDynamicFilters.find(({ id }) => id === snippetData.filterId)
                 ?.model_name
         );
     }
@@ -376,7 +377,8 @@ export class DynamicRecordAction extends BuilderAction {
     getValue({ editingElement }) {
         const id = editingElement.dataset.snippetResId;
         if (id) {
-            return JSON.stringify({ id: parseInt(id) });
+            // uuid record id: keep as string
+            return JSON.stringify({ id });
         }
     }
     apply({ editingElement, value }) {

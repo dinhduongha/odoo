@@ -13,7 +13,8 @@ export class CategoryDelete extends Interaction {
     };
 
     openDialog() {
-        const categoryId = parseInt(this.el.dataset.categoryId);
+        // uuid record id: keep as string
+        const categoryId = this.el.dataset.categoryId;
         this.services.dialog.add(ConfirmationDialog, {
             title: _t("Delete Category"),
             body: _t("Are you sure you want to delete this category?"),

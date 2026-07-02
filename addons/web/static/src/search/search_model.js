@@ -1152,7 +1152,7 @@ export class SearchModel extends EventBus {
         );
         const result = groupBy(Object.values(definitions), (definition) => definition.record_id);
         return Object.entries(result).map(([recordId, definitions]) => ({
-            definitionRecordId: parseInt(recordId),
+            definitionRecordId: recordId, // uuid record id: keep as string
             definitionRecordName: definitions[0]?.record_name,
             definitions,
         }));

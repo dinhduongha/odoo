@@ -108,13 +108,16 @@ class WebsiteLinks extends Interaction {
         const params = { label: labelEl.value || undefined };
         params.url = this.el.querySelector("input#url").value;
         if (campaignInputEl.value !== "") {
-            params.campaign_id = parseInt(campaignInputEl.value);
+            // uuid record id: keep as string
+            params.campaign_id = campaignInputEl.value;
         }
         if (mediumInputEl.value !== "") {
-            params.medium_id = parseInt(mediumInputEl.value);
+            // uuid record id: keep as string
+            params.medium_id = mediumInputEl.value;
         }
         if (sourceInputEl.value !== "") {
-            params.source_id = parseInt(sourceInputEl.value);
+            // uuid record id: keep as string
+            params.source_id = sourceInputEl.value;
         }
 
         const result = await this.waitFor(rpc("/website_links/new", params));

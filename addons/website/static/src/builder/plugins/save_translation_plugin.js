@@ -32,7 +32,8 @@ export class SaveTranslationPlugin extends Plugin {
             updateTranslationProms.push(
                 rpc("/website/field/translation/update", {
                     model: els[0].dataset["oeModel"],
-                    record_id: [Number(els[0].dataset["oeId"])],
+                    // uuid record id: keep as string
+                    record_id: [els[0].dataset["oeId"]],
                     field_name: els[0].dataset["oeField"],
                     translations,
                 })
@@ -57,7 +58,8 @@ export class SaveTranslationPlugin extends Plugin {
             );
             return rpc("/website/field/translation/update", {
                 model: els[0].dataset["oeModel"],
-                record_id: [Number(els[0].dataset["oeId"])],
+                // uuid record id: keep as string
+                record_id: [els[0].dataset["oeId"]],
                 field_name: els[0].dataset["oeField"],
                 translations,
             });

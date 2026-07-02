@@ -1,6 +1,6 @@
 import { _t } from "@web/core/l10n/translation";
 import * as spreadsheet from "@odoo/o-spreadsheet";
-const { arg, toString, toJsDate, toNumber } = spreadsheet.helpers;
+const { arg, toString, toJsDate } = spreadsheet.helpers;
 const { functionRegistry } = spreadsheet.registries;
 
 functionRegistry.add("ODOO.CURRENCY.RATE", {
@@ -12,7 +12,7 @@ functionRegistry.add("ODOO.CURRENCY.RATE", {
         const from = toString(currencyFrom);
         const to = toString(currencyTo);
         const _date = date ? toJsDate(date, this.locale) : undefined;
-        const _companyId = companyId ? toNumber(companyId) : undefined;
+        const _companyId = companyId ? toString(companyId) : undefined; // uuid company id: keep as string
         return this.getters.getCurrencyRate(from, to, _date, _companyId);
     },
     args: [

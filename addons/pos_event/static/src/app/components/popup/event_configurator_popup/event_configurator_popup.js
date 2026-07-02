@@ -59,7 +59,7 @@ export class EventConfiguratorPopup extends Component {
         const data = [];
         for (const [ticketId, { qty }] of Object.entries(this.state)) {
             if (qty > 0) {
-                const ticket = this.pos.models["event.event.ticket"].get(parseInt(ticketId));
+                const ticket = this.pos.models["event.event.ticket"].get(ticketId); // ticket id is a uuid string
                 const available = this.ticketIsAvailable(ticket);
 
                 if (!available) {

@@ -7,7 +7,7 @@ export class DataServiceOptions {
                 key: "uuid",
                 condition: (record) =>
                     record.canBeRemovedFromIndexedDB &&
-                    record.pos_session_id !== parseInt(odoo.pos_session_id),
+                    record.pos_session_id !== odoo.pos_session_id, // pos.session id is a uuid string
             },
             "pos.order.line": {
                 key: "uuid",

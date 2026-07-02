@@ -816,7 +816,8 @@ export class SeoChecks extends Component {
         // Transform the Set of unique strings back into structured objects.
         const models = Array.from(uniqueRecords).map((entry) => {
             const [model, id, field, type] = entry.split("||");
-            return { model, id: parseInt(id), field, type };
+            // uuid record id: keep as string
+            return { model, id, field, type };
         });
 
         const results = await rpc("/website/get_alt_images", { models });
@@ -876,7 +877,8 @@ export class SeoChecks extends Component {
                 return {
                     link: path.pathname + path.search,
                     res_model: recordEl.dataset.resModel || recordEl.dataset.oeModel,
-                    res_id: parseInt(recordEl.dataset.resId || recordEl.dataset.oeId, 10),
+                    // uuid record id: keep as string
+                    res_id: recordEl.dataset.resId || recordEl.dataset.oeId,
                     field: recordEl.dataset.oeField || null,
                     label: label,
                     isImageLink: isImageLink,

@@ -29,7 +29,7 @@ export class WebsiteEventTrackReminder extends Interaction {
     setup() {
         this.notification = this.services.notification;
         this.orm = this.services.orm;
-        this.trackId = parseInt(this.el.dataset.trackId);
+        this.trackId = this.el.dataset.trackId; // track record id is a uuid string
         this.reminderOn = this.el.dataset.reminderOn;
         this.bellSelectorEl = this.el.querySelector(".o_wetrack_js_reminder_bell");
     }

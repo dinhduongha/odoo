@@ -192,7 +192,7 @@ export class SnippetModel extends Reactive {
                     title: snippetEl.getAttribute("name"),
                     name: snippetEl.children[0].dataset.snippet,
                     content: snippetEl.children[0],
-                    viewId: parseInt(snippetEl.dataset.oeSnippetId),
+                    viewId: snippetEl.dataset.oeSnippetId, // uuid record id, keep as string
                     key: snippetEl.dataset.oeSnippetKey,
                     thumbnailSrc: snippetEl.dataset.oeThumbnail,
                     imagePreviewSrc: snippetEl.dataset.oImagePreview,

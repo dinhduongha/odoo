@@ -68,13 +68,12 @@ export class MenuDataPlugin extends Plugin {
         }
         this.isEditMenuOpening = true;
         return new Promise((resolve) => {
-            const rootID = parseInt(
-                linkEl?.closest("[data-content_menu_id]")?.dataset.content_menu_id
-            );
+            // uuid record id: keep as string
+            const rootID = linkEl?.closest("[data-content_menu_id]")?.dataset.content_menu_id;
             this.services.dialog.add(
                 EditMenuDialog,
                 {
-                    rootID: isNaN(rootID) ? null : rootID,
+                    rootID: rootID || null,
                     save: async (newPageUrl) => {
                         // Save the page before reloading the editor.
                         await this.dependencies.savePlugin.save();

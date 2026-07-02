@@ -949,9 +949,7 @@ export class AddActionFieldAction extends BuilderAction {
             }
         }
         const fieldName = params.fieldName;
-        if (params.isSelect === "true") {
-            value = parseInt(value);
-        }
+        // uuid record id (many2one preset value): keep as string
         this.dependencies.websiteFormOption.addHiddenField(el, value, fieldName);
     }
     // TODO clear ? if field is a boolean ?

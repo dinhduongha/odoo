@@ -19,7 +19,8 @@ export class SlideUnsubscribeDialog extends Component {
         this.state = useState({
             buttonDisabled: false,
         });
-        this.channelID = parseInt(this.props.channelId, 10);
+        // uuid record id: keep as string
+        this.channelID = this.props.channelId;
         this.isFollower = this.props.isFollower === "True";
         this.updateState("subscription");
         this.isChecked = this.isFollower;

@@ -42,7 +42,8 @@ class WebsiteLinksCharts extends Interaction {
 
     setup() {
         this.orm = this.services.orm;
-        const linkId = parseInt(this.el.querySelector("#link_id").value);
+        // uuid record id: keep as string
+        const linkId = this.el.querySelector("#link_id").value;
         this.error = null;
         this.linksDomain = ["link_id", "=", linkId];
         this.totalClicks = [];

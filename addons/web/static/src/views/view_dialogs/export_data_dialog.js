@@ -240,14 +240,14 @@ export class ExportDataDialog extends Component {
     }
 
     async loadExportList(value) {
-        this.state.templateId = value === "new_template" ? value : Number(value);
+        this.state.templateId = value; // uuid ir.exports id: keep as string
         this.state.isEditingTemplate = value === "new_template";
         if (!value || value === "new_template") {
             return;
         }
         const fields = await rpc("/web/export/namelist", {
             model: this.props.root.resModel,
-            export_id: Number(value),
+            export_id: value, // uuid ir.exports id: keep as string
         });
         // Don't safe the result in this.knownFields because, the result is only partial
         this.state.exportList = fields;
@@ -361,7 +361,7 @@ export class ExportDataDialog extends Component {
         this.dialog.add(DeleteExportListDialog, {
             text: _t("Do you really want to delete this export template?"),
             delete: async () => {
-                const id = Number(this.state.templateId);
+                const id = this.state.templateId; // uuid ir.exports id: keep as string
                 await this.orm.unlink("ir.exports", [id], { context: this.props.context });
                 this.templates.splice(
                     this.templates.findIndex((i) => i.id === id),

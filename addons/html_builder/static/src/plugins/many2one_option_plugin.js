@@ -79,7 +79,7 @@ export class Many2OneAction extends BuilderAction {
         }
     }
     getValue({ editingElement }) {
-        return JSON.stringify({ id: parseInt(editingElement.dataset.oeMany2oneId) });
+        return JSON.stringify({ id: editingElement.dataset.oeMany2oneId }); // uuid record id, keep as string
     }
 }
 

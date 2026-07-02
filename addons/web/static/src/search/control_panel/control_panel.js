@@ -665,11 +665,11 @@ export class ControlPanel extends Component {
      */
     _sortEmbeddedActionDrop({ element, previous }) {
         const order = this.state.embeddedInfos.embeddedActions.map((el) => el.id);
-        const elementId = Number(element.dataset.id) || false;
+        const elementId = element.dataset.id || false; // uuid record id: keep as string
         const elementIndex = order.indexOf(elementId);
         order.splice(elementIndex, 1);
         if (previous) {
-            const prevIndex = order.indexOf(Number(previous.dataset.id) || false);
+            const prevIndex = order.indexOf(previous.dataset.id || false); // uuid record id: keep as string
             order.splice(prevIndex + 1, 0, elementId);
         } else {
             order.splice(0, 0, elementId);

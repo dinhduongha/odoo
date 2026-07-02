@@ -113,7 +113,8 @@ export class DynamicSnippet extends Interaction {
                     "/website/snippet/filters",
                     Object.assign(
                         {
-                            filter_id: parseInt(nodeData.filterId),
+                            // uuid record id: keep as string
+                            filter_id: nodeData.filterId,
                             template_key: nodeData.templateKey,
                             limit: parseInt(nodeData.numberOfRecords),
                             search_domain: this.getSearchDomain(),

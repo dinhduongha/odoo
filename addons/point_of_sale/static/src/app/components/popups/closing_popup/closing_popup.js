@@ -175,7 +175,7 @@ export class ClosePosPopup extends Component {
     getMaxDifference() {
         return Math.max(
             ...Object.keys(this.state.payments).map((id) =>
-                Math.abs(this.getDifference(parseInt(id)))
+                Math.abs(this.getDifference(id)) // payment method id is a uuid string
             )
         );
     }

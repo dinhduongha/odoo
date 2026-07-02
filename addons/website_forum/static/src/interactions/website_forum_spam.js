@@ -56,7 +56,8 @@ export class WebsiteForumSpam extends Interaction {
     async onMarkSpamClick() {
         const key = this.el.querySelector(".modal .tab-pane.active").dataset.key;
         const inputEls = this.el.querySelectorAll(".modal .tab-pane.active input.form-check-input:checked");
-        const values = Array.from(inputEls).map((inputEl) => parseInt(inputEl.value));
+        // uuid record ids (create_uid/country_id/post_id): keep as strings
+        const values = Array.from(inputEls).map((inputEl) => inputEl.value);
         await this.waitFor(this.services.orm.call("forum.post", "mark_as_offensive_batch", [
             this.spamIDs,
             key,

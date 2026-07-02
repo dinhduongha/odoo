@@ -92,7 +92,7 @@ patch(PortalComposer.prototype, {
         if (this.options.force_submit_url === "/mail/message/update_content") {
             return {
                 hash: this.options.hash,
-                message_id: parseInt(this.options.default_message_id),
+                message_id: this.options.default_message_id, // uuid record id, keep as string
                 update_data: {
                     attachment_ids: this.attachments.map((a) => a.id),
                     attachment_tokens: this.attachments.map((a) => a.ownership_token),

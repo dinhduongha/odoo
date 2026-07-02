@@ -55,10 +55,10 @@ export class CartLine extends Interaction {
     async _changeQuantity(input) {
         let quantity = parseInt(input.value || 0);
         if (isNaN(quantity)) quantity = 1;
-        const lineId = parseInt(input.dataset.lineId);
+        const lineId = input.dataset.lineId; // uuid PKs: keep record id as string
         const data = await this.waitFor(rpc('/shop/cart/update', {
             line_id: lineId,
-            product_id: parseInt(input.dataset.productId),
+            product_id: input.dataset.productId, // uuid PKs: keep record id as string
             quantity: quantity,
         }));
 

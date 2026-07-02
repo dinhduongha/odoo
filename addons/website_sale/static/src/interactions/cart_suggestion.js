@@ -13,8 +13,8 @@ export class CartSuggestion extends Interaction {
     addSuggestedProduct(ev) {
         const dataset = ev.currentTarget.dataset;
         this.services['cart'].add({
-            productTemplateId: parseInt(dataset.productTemplateId),
-            productId: parseInt(dataset.productId),
+            productTemplateId: dataset.productTemplateId, // uuid PKs: keep record id as string
+            productId: dataset.productId, // uuid PKs: keep record id as string
             isCombo: dataset.productType === 'combo',
         }, {
             isBuyNow: true,

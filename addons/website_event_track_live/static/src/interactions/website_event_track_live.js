@@ -54,7 +54,7 @@ class WebsiteEventTrackLive extends Interaction {
         this.insert(divEl, this.el);
         this.nextSuggestion = await this.waitFor(
             rpc("/event_track/get_track_suggestion", {
-                track_id: parseInt(this.el.dataset.trackId),
+                track_id: this.el.dataset.trackId, // track record id is a uuid string
             })
         );
         this.showSuggestion();

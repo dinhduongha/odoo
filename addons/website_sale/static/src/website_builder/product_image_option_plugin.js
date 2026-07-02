@@ -73,7 +73,7 @@ export class RemoveMediaAction extends BuilderAction {
         if (el.parentElement.dataset.oeModel === "product.image") {
             // Unlink the "product.image" record as it is not the main product image.
             await this.services.orm.unlink("product.image", [
-                parseInt(el.parentElement.dataset.oeId),
+                el.parentElement.dataset.oeId, // uuid PKs: keep record id as string
             ]);
         }
         el.remove();

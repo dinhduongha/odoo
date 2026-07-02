@@ -50,7 +50,7 @@ export class EventSlotSelectionPopup extends Component {
         return slots;
     }
     select(ev) {
-        this.slotId = parseInt(ev.currentTarget.dataset.slotId);
+        this.slotId = ev.currentTarget.dataset.slotId; // slot record id is a uuid string
         const selectedSlot = this.pos.models["event.slot"].get(this.slotId);
         // Return if not available
         if (!selectedSlot || !this.props.availabilityPerSlot[this.slotId]) {

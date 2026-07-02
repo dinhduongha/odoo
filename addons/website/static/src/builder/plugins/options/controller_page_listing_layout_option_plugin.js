@@ -42,8 +42,8 @@ export class ListingLayoutAction extends BuilderAction {
                 if (!e) {
                     return [];
                 }
-                const id = parseInt(e);
-                return id ? [id] : [];
+                // uuid record id: keep as string
+                return e ? [e] : [];
             });
         }
         const results = await this.services.orm.read("website.controller.page", this.resIds, [

@@ -22,7 +22,7 @@ patch(ProductComparison.prototype, {
         if (this._checkMaxComparisonProducts()) return;
 
         const el = ev.currentTarget;
-        const productId = parseInt(el.dataset.productId);
+        const productId = el.dataset.productId; // uuid PKs: keep record id as string
         if (!productId || this._checkProductAlreadyInComparison(productId)) {
             comparisonUtils.updateDisabled(el, true);
             return;

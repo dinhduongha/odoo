@@ -9,8 +9,9 @@ export class BlogPosts extends DynamicSnippet {
      */
     getSearchDomain() {
         const searchDomain = super.getSearchDomain(...arguments);
-        const filterByBlogId = parseInt(this.el.dataset.filterByBlogId);
-        if (filterByBlogId >= 0) {
+        // uuid record id: keep as string
+        const filterByBlogId = this.el.dataset.filterByBlogId;
+        if (filterByBlogId) {
             searchDomain.push(["blog_id", "=", filterByBlogId]);
         }
         return searchDomain;

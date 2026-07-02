@@ -21,7 +21,7 @@ export class RecentlyViewedProducts extends Interaction {
         if (!parseInt(this.el.querySelector('#product_detail').dataset.viewTrack)) {
             return; // Product not tracked.
         }
-        const productId = parseInt(currentTargetEl.value);
+        const productId = currentTargetEl.value; // uuid PKs: keep record id as string
         const cookieName = 'seen_product_id_' + productId;
         if (cookie.get(cookieName)) {
             return; // Product already tracked in the last 30 min.

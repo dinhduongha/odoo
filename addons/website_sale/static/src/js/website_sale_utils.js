@@ -171,7 +171,7 @@ function showWarning(message) {
 function getSelectedAttributeValues(container) {
     return Array.from(container.querySelectorAll(
         'input.js_variant_change:checked, select.js_variant_change'
-    )).map(el => parseInt(el.value));
+    )).map(el => el.value); // uuid PKs: keep record id as string
 }
 
 export default {

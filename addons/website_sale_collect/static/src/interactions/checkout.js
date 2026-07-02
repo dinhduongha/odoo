@@ -35,8 +35,8 @@ patch(Checkout.prototype, {
      */
     async onClickUpdateProductQty(ev) {
         await this.waitFor(rpc('/shop/cart/update', {
-            line_id: parseInt(ev.currentTarget.dataset.lineId, 10),
-            product_id: parseInt(ev.currentTarget.dataset.productId, 10),
+            line_id: ev.currentTarget.dataset.lineId, // uuid PKs: keep record id as string
+            product_id: ev.currentTarget.dataset.productId, // uuid PKs: keep record id as string
             quantity: parseInt(ev.currentTarget.dataset.availableQty || 0, 10),
         }));
         window.location.reload(); // Reload all cart values.

@@ -306,7 +306,8 @@
          * @param {*} ev
          */
         _onClickMiniQuiz: function (ev) {
-            var slideID = parseInt($(ev.currentTarget).data().slide_id);
+            // uuid record id: keep as string
+            var slideID = $(ev.currentTarget).data().slide_id;
             this._updateSlideEntry({
                 slideID: slideID,
                 isMiniQuiz: true
@@ -324,7 +325,8 @@
             const $elem = $(ev.currentTarget).closest('.o_wslides_fs_sidebar_list_item');
             if ($elem.data('canAccess') === 'True') {
                 var isQuiz = $elem.data('isQuiz');
-                var slideID = parseInt($elem.data('id'));
+                // uuid record id: keep as string
+                var slideID = $elem.data('id');
                 var slide = findSlide(this.slideEntries, {id: slideID, isQuiz: isQuiz});
                 this._updateSlideEntry(slide);
             }
@@ -725,7 +727,8 @@
             return this.$el.data();
         },
         _getCurrentSlideID: function (){
-            return parseInt(this.$('.o_wslides_fs_sidebar_list_item.active').data('id'));
+            // uuid record id: keep as string
+            return this.$('.o_wslides_fs_sidebar_list_item.active').data('id');
         },
         /**
          * @private

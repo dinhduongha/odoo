@@ -103,7 +103,8 @@ publicWidget.registry.websiteSlidesCourseSlidesList = SlideCoursePage.extend({
     _getSlides: function (){
         var categories = [];
         this.$('.o_wslides_js_list_item').each(function (){
-            categories.push(parseInt($(this).data('slideId')));
+            // uuid record id: keep as string
+            categories.push($(this).data('slideId'));
         });
         return categories;
     },

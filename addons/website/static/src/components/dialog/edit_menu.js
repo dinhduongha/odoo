@@ -268,9 +268,8 @@ export class EditMenuDialog extends Component {
     }
 
     _getMenuIdForElement(element) {
-        const menuIdStr = element.dataset.menuId;
-        const menuId = parseInt(menuIdStr);
-        return isNaN(menuId) ? menuIdStr : menuId;
+        // uuid record id: keep as string
+        return element.dataset.menuId;
     }
 
     _moveMenu({ element, parent, previous }) {
@@ -361,7 +360,8 @@ export class EditMenuDialog extends Component {
         const parent = this.map.get(parentId);
         parent.children = parent.children.filter((menu) => menu.fields["id"] !== id);
         this.map.delete(id);
-        if (parseInt(id)) {
+        // only persisted menus (uuid id) are deleted server-side; new ones use a "menu_" temp id
+        if (!String(id).startsWith("menu_")) {
             this.toDelete.push(id);
         }
     }

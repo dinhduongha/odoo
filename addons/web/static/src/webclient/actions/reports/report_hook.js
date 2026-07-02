@@ -53,7 +53,7 @@ function enrich(component, targetElement, selector, isIFrame = false) {
                 component.env.services.action.doAction({
                     type: "ir.actions.act_window",
                     view_mode: element.getAttribute("view-type"),
-                    res_id: Number(element.getAttribute("res-id")),
+                    res_id: element.getAttribute("res-id"), // uuid record id: keep as string
                     res_model: element.getAttribute("res-model"),
                     views: [[element.getAttribute("view-id"), element.getAttribute("view-type")]],
                 });

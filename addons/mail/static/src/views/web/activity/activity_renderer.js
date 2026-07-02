@@ -151,7 +151,7 @@ export class ActivityRenderer extends Component {
                     .filter(
                         ([, resIds]) => typeId in resIds && name in resIds[typeId].count_by_state
                     )
-                    .map(([key]) => parseInt(key))
+                    .map(([key]) => key) // uuid res id, keep as string
             );
         }
     }

@@ -185,12 +185,13 @@ class ProductsRibbonOptionPlugin extends Plugin {
         for (const [templateId, ribbonId] of Object.entries(finalTemplateRibbons)) {
             const serverRibbonId = this.getServerId(ribbonId);
             const templates = (ribbonTemplates[serverRibbonId] ||= []);
-            templates.push(parseInt(templateId));
+            templates.push(templateId); // uuid PKs: keep record id as string
         }
 
         const promises = [];
         for (const [ribbonIdStr, templateIds] of Object.entries(ribbonTemplates)) {
-            const ribbonId = parseInt(ribbonIdStr) || false;
+            // uuid PKs: keep record id as string ("false" is the no-ribbon sentinel key)
+            const ribbonId = ribbonIdStr && ribbonIdStr !== "false" ? ribbonIdStr : false;
             promises.push(
                 this.services.orm.write('product.template', templateIds, {
                     website_ribbon_id: ribbonId,
@@ -206,7 +207,7 @@ class ProductsRibbonOptionPlugin extends Plugin {
      *
      */
     async deleteRibbon(editingElement) {
-        const ribbonId = parseInt(editingElement.querySelector('.o_ribbons')?.dataset.ribbonId);
+        const ribbonId = editingElement.querySelector('.o_ribbons')?.dataset.ribbonId; // uuid PKs: keep record id as string
         if (this.ribbonsObject[ribbonId]) {
             const ribbonIndex = this.ribbons.findIndex(ribbon => ribbon.id === ribbonId);
             if (ribbonIndex !== -1 ) {
@@ -219,11 +220,10 @@ class ProductsRibbonOptionPlugin extends Plugin {
             this.count.value++;
         }
         const isProductPage = editingElement.ownerDocument.querySelector('#product_detail');
-        this.productTemplateID = parseInt(
+        this.productTemplateID = // uuid PKs: keep record id as string
             editingElement
                 .querySelector('[data-oe-model="product.template"]')
-                .getAttribute("data-oe-id")
-        );
+                .getAttribute("data-oe-id");
         const ribbons = editingElement.ownerDocument.querySelectorAll(
             `[data-ribbon-id="${ribbonId}"]`
         );
@@ -301,20 +301,18 @@ class SetRibbonAction extends BuilderAction {
         this.ribbonOptions = this.dependencies.productsRibbonOptionPlugin
     }
     isApplied({ editingElement, value }) {
-        const ribbonId = parseInt(
-            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId,
-        );
+        const ribbonId = // uuid PKs: keep record id as string
+            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId;
         const match = !ribbonId || !this.ribbonOptions.getRibbonsObject().hasOwnProperty(ribbonId)
             ? ''
             : ribbonId;
         return match === value;
     }
     apply({ isPreviewing, editingElement, value }) {
-        const productTemplateID = parseInt(
+        const productTemplateID = // uuid PKs: keep record id as string
             editingElement
                 .querySelector('[data-oe-model="product.template"]')
-                .getAttribute('data-oe-id')
-        );
+                .getAttribute('data-oe-id');
         this.ribbonOptions.setProductTemplateID(productTemplateID)
         this.ribbonOptions.addProductTemplatesRibbons({
             templateId: productTemplateID,
@@ -344,11 +342,10 @@ class CreateRibbonAction extends BuilderAction {
         this.ribbonOptions = this.dependencies.productsRibbonOptionPlugin
     }
     apply({ editingElement }) {
-        const productTemplateId = parseInt(
+        const productTemplateId = // uuid PKs: keep record id as string
             editingElement
                 .querySelector('[data-oe-model="product.template"]')
-                .getAttribute('data-oe-id')
-        );
+                .getAttribute('data-oe-id');
         this.ribbonOptions.setProductTemplateID(productTemplateId);
         const ribbonId = Date.now();
         this.ribbonOptions.addProductTemplatesRibbons({
@@ -376,9 +373,8 @@ class ModifyRibbonAction extends BuilderAction {
         this.ribbonOptions = this.dependencies.productsRibbonOptionPlugin
     }
     getValue({ editingElement, params }) {
-        const ribbonId = parseInt(
-            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId
-        );
+        const ribbonId = // uuid PKs: keep record id as string
+            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId;
         if (!ribbonId || !this.ribbonOptions.getRibbonsObject().hasOwnProperty(ribbonId)) {
             return;
         }
@@ -386,9 +382,8 @@ class ModifyRibbonAction extends BuilderAction {
         return this.ribbonOptions.getRibbonsObject()[ribbonId][params.mainParam];
     }
     isApplied({ editingElement, params, value }) {
-        let ribbonId = parseInt(
-            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId
-        );
+        let ribbonId = // uuid PKs: keep record id as string
+            editingElement.querySelector('.o_ribbons')?.dataset.ribbonId;
         if (!ribbonId || !this.ribbonOptions.getRibbonsObject().hasOwnProperty(ribbonId)) {
             return;
         }
@@ -398,7 +393,7 @@ class ModifyRibbonAction extends BuilderAction {
         const isPreviewMode = this.dependencies.history.getIsPreviewing();
         const ribbonEl = editingElement.querySelector('.o_ribbons')
         const setting = params.mainParam;
-        const ribbonId = parseInt(ribbonEl.dataset.ribbonId);
+        const ribbonId = ribbonEl.dataset.ribbonId; // uuid PKs: keep record id as string
         const previousRibbon = this.ribbonOptions.getRibbonsObject()[ribbonId];
         this.ribbonOptions.setRibbonObject(ribbonId, {...previousRibbon, [setting]: value});
         this.ribbonOptions.setRibbon(ribbonId, {...previousRibbon, [setting]: value});

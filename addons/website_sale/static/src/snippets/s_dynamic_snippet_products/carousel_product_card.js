@@ -21,8 +21,8 @@ export class CarouselProductCard extends Interaction {
     async onClickAddToCart(ev) {
         const dataset = ev.currentTarget.dataset;
 
-        const productTemplateId = parseInt(dataset.productTemplateId);
-        const productId = parseInt(dataset.productId);
+        const productTemplateId = dataset.productTemplateId; // uuid PKs: keep record id as string
+        const productId = dataset.productId; // uuid PKs: keep record id as string
         const isCombo = dataset.productType === 'combo';
         const showQuantity = Boolean(dataset.showQuantity);
 

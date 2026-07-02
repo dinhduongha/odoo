@@ -465,7 +465,7 @@ export class PaymentForm extends Interaction {
         if (this.paymentContext['transactionRoute'] === '/payment/transaction') {
             Object.assign(transactionRouteParams, {
                 'currency_id': this.paymentContext['currencyId']
-                    ? parseInt(this.paymentContext['currencyId']) : null,
+                    ? this.paymentContext['currencyId'] : null, // currency record id is a uuid string
                 'partner_id': this.paymentContext['partnerId'], // keep partner record id as string (uuid)
                 'reference_prefix': this.paymentContext['referencePrefix']?.toString(),
             });
@@ -603,7 +603,7 @@ export class PaymentForm extends Interaction {
      * @return {number} The id of the selected payment option.
      */
     _getPaymentOptionId(radio) {
-        return Number(radio.dataset['paymentOptionId']);
+        return radio.dataset['paymentOptionId']; // payment option record id is a uuid string
     }
 
     /**
@@ -625,7 +625,7 @@ export class PaymentForm extends Interaction {
      * @return {number} The id of the provider of the selected payment option.
      */
     _getProviderId(radio) {
-        return Number(radio.dataset['providerId']);
+        return radio.dataset['providerId']; // provider record id is a uuid string
     }
 
     /**

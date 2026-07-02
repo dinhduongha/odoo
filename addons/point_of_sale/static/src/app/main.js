@@ -31,7 +31,7 @@ whenReady(() => {
     // If a deletion beacon was sent on unload for this exact session, reload once so
     // pos_web assigns a clean session. Removing the flag before reloading prevents looping.
     const recoverySessionId = browser.sessionStorage.getItem("pos_reload_recovery");
-    if (recoverySessionId && parseInt(recoverySessionId) === odoo.pos_session_id) {
+    if (recoverySessionId && recoverySessionId === odoo.pos_session_id) { // pos.session id is a uuid string
         browser.sessionStorage.removeItem("pos_reload_recovery");
         window.location.reload();
         return;

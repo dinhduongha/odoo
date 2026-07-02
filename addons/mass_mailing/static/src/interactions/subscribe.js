@@ -89,8 +89,8 @@ export class Subscribe extends Interaction {
 
     setup() {
         this.customerData = { ...document.getElementById("o_mailing_portal_subscription").dataset };
-        this.customerData.documentId = parseInt(this.customerData.documentId || 0);
-        this.customerData.mailingId = parseInt(this.customerData.mailingId || 0);
+        this.customerData.documentId = this.customerData.documentId || false; // uuid record id, keep as string
+        this.customerData.mailingId = this.customerData.mailingId || false; // uuid record id, keep as string
         this.lastAction = this.customerData.lastAction;
         this.listInfo = this.getListInfo();
         this.showFeedbackTextbox = false;
@@ -155,7 +155,7 @@ export class Subscribe extends Interaction {
         );
         const mailingListOptinIds = formData
             .getAll("mailing_list_ids")
-            .map((id_str) => parseInt(id_str));
+            .map((id_str) => id_str); // uuid record ids, keep as strings
         const result = await this.waitFor(
             rpc("/mailing/list/update", {
                 csrf_token: formData.get("csrf_token"),
@@ -195,7 +195,7 @@ export class Subscribe extends Interaction {
         const formData = new FormData(
             document.querySelector("div#o_mailing_subscription_feedback form")
         );
-        const optoutReasonId = parseInt(formData.get("opt_out_reason_id"));
+        const optoutReasonId = formData.get("opt_out_reason_id"); // uuid record id, keep as string
         const result = await this.waitFor(
             rpc("/mailing/feedback", {
                 csrf_token: formData.get("csrf_token"),

@@ -139,7 +139,7 @@ export class SavePlugin extends Plugin {
      * @param {HTMLElement} el - the element to save.
      */
     saveView(el, delayTranslations = true) {
-        const viewID = Number(el.dataset["oeId"]);
+        const viewID = el.dataset["oeId"]; // uuid record id, keep as string
         if (!viewID) {
             return;
         }

@@ -20,7 +20,7 @@ export class CRMPartnerAssign extends Interaction {
         ".edit_opp_form .activity_date_deadline": { "t-att-value": () => formatDate(this.dateNextActivity) },
         "#new-opp-dialog .contact_name": { "t-on-change": (ev) => this.contactName = ev.currentTarget.value.trim() },
         ".title": { "t-att-value": (el) => this.contactName && !el.value.trim() ? _t("%s's Opportunity", this.contactName) : "" },
-        ".edit_contact_form .country_id": { "t-on-change": (ev) => this.countryID = parseInt(ev.currentTarget.selectedOptions[0].value) },
+        ".edit_contact_form .country_id": { "t-on-change": (ev) => this.countryID = ev.currentTarget.selectedOptions[0].value },
         ".edit_contact_form .state": {
             "t-att-style": (el) => ({
                 "display": el.getAttribute("country") != this.countryID ? "none" : "block",
@@ -43,7 +43,8 @@ export class CRMPartnerAssign extends Interaction {
 
     async confirmInterestedPartner() {
         await this.services.orm.call("crm.lead", "partner_interested", [
-            [parseInt(this.interestedPartnerFormEl.querySelector(".assign_lead_id").value)],
+            // uuid record id: keep as string
+            [this.interestedPartnerFormEl.querySelector(".assign_lead_id").value],
             this.interestedPartnerFormEl.querySelector(".comment_interested").value,
         ]);
         window.location.href = "/my/leads";
@@ -51,7 +52,8 @@ export class CRMPartnerAssign extends Interaction {
 
     async onDesinterestedPartnerConfirmClick() {
         await this.services.orm.call("crm.lead", "partner_desinterested", [
-            [parseInt(this.desinterestedPartnerFormEl.querySelector(".assign_lead_id").value)],
+            // uuid record id: keep as string
+            [this.desinterestedPartnerFormEl.querySelector(".assign_lead_id").value],
             this.desinterestedPartnerFormEl.querySelector(".comment_desinterested").value,
             this.desinterestedPartnerFormEl.querySelector(".contacted_desinterested").checked,
             this.desinterestedPartnerFormEl.querySelector(".customer_mark_spam").checked,
@@ -70,7 +72,8 @@ export class CRMPartnerAssign extends Interaction {
 
     async onEditContactClick() {
         await this.services.orm.call("crm.lead", "update_contact_details_from_portal", [
-            [parseInt(this.contactFormEl.querySelector(".opportunity_id").value)],
+            // uuid record id: keep as string
+            [this.contactFormEl.querySelector(".opportunity_id").value],
             {
                 partner_name: this.contactFormEl.querySelector(".partner_name").value,
                 phone: this.contactFormEl.querySelector(".phone").value,
@@ -79,8 +82,9 @@ export class CRMPartnerAssign extends Interaction {
                 street2: this.contactFormEl.querySelector(".street2").value,
                 city: this.contactFormEl.querySelector(".city").value,
                 zip: this.contactFormEl.querySelector(".zip").value,
-                state_id: parseInt(this.contactFormEl.querySelector(".state_id").selectedOptions[0].value),
-                country_id: parseInt(this.contactFormEl.querySelector(".country_id").selectedOptions[0].value),
+                // uuid record ids: keep as strings
+                state_id: this.contactFormEl.querySelector(".state_id").selectedOptions[0].value,
+                country_id: this.contactFormEl.querySelector(".country_id").selectedOptions[0].value,
             },
         ]);
         window.location.reload();

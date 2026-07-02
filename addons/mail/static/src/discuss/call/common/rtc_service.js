@@ -1363,7 +1363,7 @@ export class Rtc extends Record {
         for (const [id, info] of Object.entries(payload)) {
             (async () => {
                 const session = await this.store["discuss.channel.rtc.session"].getWhenReady(
-                    Number(id)
+                    id // uuid record id, keep as string
                 );
                 if (!session || session.eq(this.localSession) || !this.channel) {
                     return;
@@ -2395,7 +2395,7 @@ export const rtcService = {
         });
         rtc.p2pService = services["discuss.p2p"];
         rtc.p2pService.acceptOffer = async (id, sequence) => {
-            const session = await store["discuss.channel.rtc.session"].getWhenReady(Number(id));
+            const session = await store["discuss.channel.rtc.session"].getWhenReady(id); // uuid record id, keep as string
             /**
              * We only accept offers for new connections (higher sequence),
              * or offers that renegotiate an existing connection (same sequence).

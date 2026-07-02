@@ -36,7 +36,7 @@ export class CustomerAddress extends Interaction {
     async onChangeState() {}
 
     async _onChangeCountry(init=false) {
-        const countryId = parseInt(this.addressForm.country_id.value);
+        const countryId = this.addressForm.country_id.value; // uuid record id, keep as string
         if (!countryId) return;
 
         const data = await this.waitFor(rpc(

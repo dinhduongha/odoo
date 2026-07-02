@@ -19,7 +19,8 @@ export class EnrollEmail extends Interaction {
      */
     openDialog(ev, currentTargetEl) {
         const alertEl = currentTargetEl.closest(".alert");
-        const channelId = parseInt(currentTargetEl.dataset.channelId);
+        // uuid record id: keep as string
+        const channelId = currentTargetEl.dataset.channelId;
         this.services.dialog.add(ConfirmationDialog, {
             title: _t("Request Access."),
             body: _t("Do you want to request access to this course?"),

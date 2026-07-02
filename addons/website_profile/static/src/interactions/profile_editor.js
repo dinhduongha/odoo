@@ -19,7 +19,8 @@ export class ProfileEditor extends Interaction {
             focusWebsiteDescription:
                 this.el.dataset.focusWebsiteDescription &&
                 this.el.dataset.focusWebsiteDescription === "true",
-            userId: parseInt(this.el.dataset.userId),
+            // uuid record id: keep as string
+            userId: this.el.dataset.userId,
         });
     }
 }

@@ -59,7 +59,7 @@ export function useActionLinks({ resModel, reload }) {
             keepLast.add(doAction(target.getAttribute("name"), options));
         } else {
             let views;
-            const resId = data.resid ? parseInt(data.resid, 10) : null;
+            const resId = data.resid || null; // uuid record id: keep as string
             if (data.views) {
                 views = evaluateExpr(data.views);
             } else {

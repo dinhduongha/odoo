@@ -80,7 +80,7 @@ export class Message extends Record {
             const parsedBody = createDocumentFragmentFromContent(this.body);
             const inlinedImageAttachmentIds = [
                 ...parsedBody.querySelectorAll("img[data-attachment-id]"),
-            ].map((img) => parseInt(img.dataset.attachmentId));
+            ].map((img) => img.dataset.attachmentId); // uuid attachment id, keep as string
 
             return this.attachment_ids.filter((a) => !inlinedImageAttachmentIds.includes(a.id));
         },

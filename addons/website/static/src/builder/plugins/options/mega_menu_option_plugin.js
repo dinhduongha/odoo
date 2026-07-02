@@ -47,7 +47,8 @@ export class MegaMenuOptionPlugin extends Plugin {
             );
 
             proms.push(
-                this.services.orm.write("website.menu", [parseInt(megaMenuEl.dataset.oeId)], {
+                // uuid record id: keep as string
+                this.services.orm.write("website.menu", [megaMenuEl.dataset.oeId], {
                     mega_menu_classes: classes.join(" "),
                 })
             );

@@ -109,7 +109,7 @@ export class MentionPlugin extends Plugin {
         }
         const channel = await this.store.Thread.getOrFetch({
             model: "discuss.channel",
-            id: Number(el.dataset.oeId),
+            id: el.dataset.oeId, // uuid record id, keep as string
         });
         if (!channel) {
             return false;

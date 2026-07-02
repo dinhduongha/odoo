@@ -28,7 +28,7 @@ export class ExhibitorConnect extends Interaction {
     }
 
     openClosedDialog() {
-        const sponsorId = parseInt(this.el.dataset.sponsorId);
+        const sponsorId = this.el.dataset.sponsorId; // sponsor record id is a uuid string
         this.services.dialog.add(ExhibitorConnectClosedDialog, { sponsorId });
     }
 }

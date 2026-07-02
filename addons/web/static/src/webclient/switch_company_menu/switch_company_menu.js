@@ -222,7 +222,7 @@ export class SwitchCompanyMenu extends Component {
                         return;
                     }
                     if (navItem.el.classList.contains("o_switch_company_item")) {
-                        const companyId = parseInt(navItem.el.dataset.companyId);
+                        const companyId = navItem.el.dataset.companyId; // uuid company id: keep as string
                         this.companySelector.switchCompany("toggle", companyId);
                     }
                 },
@@ -232,7 +232,7 @@ export class SwitchCompanyMenu extends Component {
                         return;
                     }
                     if (navItem.el.classList.contains("o_switch_company_item")) {
-                        const companyId = parseInt(navItem.el.dataset.companyId);
+                        const companyId = navItem.el.dataset.companyId; // uuid company id: keep as string
                         this.companySelector.switchCompany("loginto", companyId);
                         this.dropdown.close();
                     } else {

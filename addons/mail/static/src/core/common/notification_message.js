@@ -36,7 +36,7 @@ export class NotificationMessage extends Component {
         if (oeType === "highlight") {
             await this.env.messageHighlight?.highlightMessage(
                 this.store["mail.message"].insert({
-                    id: Number(oeId),
+                    id: oeId, // uuid record id, keep as string
                     res_id: this.props.thread.id,
                     model: this.props.thread.model,
                     thread: this.props.thread,

@@ -47,7 +47,7 @@ cellMenuRegistry.add("move_lines_see_records", {
         }
         offset = parseInt(offset?.value) || 0;
         dateRange.year += offset || 0;
-        companyId = parseInt(companyId?.value) || null;
+        companyId = companyId?.value || null; // uuid company id: keep as string
         try {
             includeUnposted = toBoolean(includeUnposted.value);
         } catch {

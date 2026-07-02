@@ -12,8 +12,8 @@ export class AddToCartSnippet extends Interaction {
     async onClickAddToCartButton(ev) {
         const dataset = ev.currentTarget.dataset;
 
-        const productTemplateId = parseInt(dataset.productTemplateId);
-        const productId = parseInt(dataset.productVariantId);
+        const productTemplateId = dataset.productTemplateId; // uuid PKs: keep record id as string
+        const productId = dataset.productVariantId; // uuid PKs: keep record id as string
         const isCombo = dataset.productType === 'combo';
         const showQuantity = Boolean(dataset.showQuantity);
         const action = dataset.action;

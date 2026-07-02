@@ -46,7 +46,7 @@ export class AccountProductCatalogSearchPanel extends SearchPanel {
 
     onDrop(targetSecId, ev) {
         ev.preventDefault();
-        const moveSecId = parseInt(ev.dataTransfer.getData('section_id'));
+        const moveSecId = ev.dataTransfer.getData('section_id'); // uuid section id: keep as string
         if (moveSecId !== targetSecId) this.reorderSections(moveSecId, targetSecId);
     }
 
@@ -133,7 +133,7 @@ export class AccountProductCatalogSearchPanel extends SearchPanel {
             })
         );
         for (const [id, sequence] of Object.entries(updatedSequences)) {
-            const section = sections.get(parseInt(id));
+            const section = sections.get(id); // uuid section id: keep as string
             section && (section.sequence = sequence);
         }
         const noSection = sections.get(false);

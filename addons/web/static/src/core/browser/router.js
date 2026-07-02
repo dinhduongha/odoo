@@ -194,19 +194,19 @@ function urlToState(urlObj) {
             const action = {};
             const [left, right] = [splitPath[i - 1], splitPath[i + 1]];
             if (isNumeric(left)) {
-                action.active_id = parseInt(left);
+                action.active_id = left; // uuid record id: keep as string
             }
 
             if (right === "new") {
                 action.resId = "new";
             } else if (isNumeric(right)) {
-                action.resId = parseInt(right);
+                action.resId = right; // uuid record id: keep as string
             }
 
             if (part.startsWith("action-")) {
                 // numeric id or xml_id
                 const actionId = part.slice(7);
-                action.action = isNumeric(actionId) ? parseInt(actionId) : actionId;
+                action.action = actionId; // uuid action id or xml_id: keep as string
             } else if (part.startsWith("m-")) {
                 action.model = part.slice(2);
             } else if (part.includes(".")) {

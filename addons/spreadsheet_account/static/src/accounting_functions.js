@@ -192,7 +192,7 @@ functionRegistry.add("ODOO.CREDIT", {
             .sort();
         const _offset = toNumber(offset, this.locale);
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = companyId.value === null ? null : toNumber(companyId.value, this.locale);
+        const _companyId = companyId.value === null ? null : toString(companyId.value); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         return {
             value: this.getters.getAccountPrefixCredit(
@@ -225,7 +225,7 @@ functionRegistry.add("ODOO.DEBIT", {
             .sort();
         const _offset = toNumber(offset, this.locale);
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = companyId.value === null ? null : toNumber(companyId.value, this.locale);
+        const _companyId = companyId.value === null ? null : toString(companyId.value); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         return {
             value: this.getters.getAccountPrefixDebit(
@@ -258,7 +258,7 @@ functionRegistry.add("ODOO.BALANCE", {
             .sort();
         const _offset = toNumber(offset, this.locale);
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = companyId.value === null ? null : toNumber(companyId.value, this.locale);
+        const _companyId = companyId.value === null ? null : toString(companyId.value); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         const value =
             this.getters.getAccountPrefixDebit(
@@ -290,7 +290,7 @@ functionRegistry.add("ODOO.FISCALYEAR.START", {
     compute: function (date, companyId = { value: null }) {
         const startDate = this.getters.getFiscalStartDate(
             toJsDate(date, this.locale),
-            companyId.value === null ? null : toNumber(companyId, this.locale)
+            companyId.value === null ? null : toString(companyId) // uuid company id: keep as string
         );
         return {
             value: toNumber(startDate, this.locale),
@@ -310,7 +310,7 @@ functionRegistry.add("ODOO.FISCALYEAR.END", {
     compute: function (date, companyId = { value: null }) {
         const endDate = this.getters.getFiscalEndDate(
             toJsDate(date, this.locale),
-            companyId.value === null ? null : toNumber(companyId, this.locale)
+            companyId.value === null ? null : toString(companyId) // uuid company id: keep as string
         );
         return {
             value: toNumber(endDate, this.locale),
@@ -377,7 +377,7 @@ functionRegistry.add("ODOO.RESIDUAL", {
             dateRange = { value: new Date().getFullYear() };
         }
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = toNumber(companyId, this.locale);
+        const _companyId = toString(companyId); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         return {
             value: this.getters.getAccountResidual(
@@ -407,7 +407,7 @@ functionRegistry.add("ODOO.PARTNER.BALANCE", {
     ) {
         const _partnerIds = toString(partnerIds)
             .split(",")
-            .map((partnerId) => toNumber(partnerId, this.locale))
+            .map((partnerId) => partnerId.trim()) // uuid partner id: keep as string
             .sort();
         const _accountCodes = toString(accountCodes)
             .split(",")
@@ -419,7 +419,7 @@ functionRegistry.add("ODOO.PARTNER.BALANCE", {
             dateRange = { value: new Date().getFullYear() };
         }
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = toNumber(companyId, this.locale);
+        const _companyId = toString(companyId); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         return {
             value: this.getters.getAccountPartnerData(
@@ -460,7 +460,7 @@ functionRegistry.add("ODOO.BALANCE.TAG", {
     ) {
         const _accountTagIds = toString(accountTagIds)
             .split(",")
-            .map((accountTagId) => toNumber(accountTagId, this.locale))
+            .map((accountTagId) => accountTagId.trim()) // uuid account tag id: keep as string
             .sort();
         const _offset = toNumber(offset, this.locale);
 
@@ -468,7 +468,7 @@ functionRegistry.add("ODOO.BALANCE.TAG", {
             dateRange = { value: new Date().getFullYear() };
         }
         const _dateRange = parseAccountingDate(dateRange, this.locale);
-        const _companyId = toNumber(companyId, this.locale);
+        const _companyId = toString(companyId); // uuid company id: keep as string
         const _includeUnposted = toBoolean(includeUnposted);
         return {
             value: this.getters.getAccountTagData(

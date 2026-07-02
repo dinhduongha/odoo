@@ -61,7 +61,7 @@ export function isMarkdownIrMenuIdUrl(url) {
  */
 export function parseIrMenuIdLink(irMenuLink) {
     if (irMenuLink.startsWith(IR_MENU_ID_PREFIX)) {
-        return parseInt(irMenuLink.substring(IR_MENU_ID_PREFIX.length), 10);
+        return irMenuLink.substring(IR_MENU_ID_PREFIX.length); // uuid menu id: keep as string
     }
     throw new Error(`${irMenuLink} is not a valid menu id link`);
 }

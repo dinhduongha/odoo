@@ -57,7 +57,8 @@ export class SlideUploadDialog extends Component {
     static template = "website_slides.SlideUploadDialog";
 
     setup() {
-        this.defaultCategoryID = parseInt(this.props.categoryId, 10);
+        // uuid record id: keep as string
+        this.defaultCategoryID = this.props.categoryId;
         this.modulesToInstallStatus = null;
         this.dialog = useService("dialog");
         this.orm = useService("orm");

@@ -163,7 +163,7 @@ const StorePatch = {
     },
     handleClickOnLink(ev, thread) {
         const model = ev.target.dataset.oeModel;
-        const id = Number(ev.target.dataset.oeId);
+        const id = ev.target.dataset.oeId; // uuid record id, keep as string
         const isLinkHandledBySuper = super.handleClickOnLink(...arguments);
         if (!isLinkHandledBySuper && ev.target.tagName === "A" && id && model) {
             ev.preventDefault();

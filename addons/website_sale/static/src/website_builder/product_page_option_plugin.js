@@ -349,7 +349,7 @@ export class ProductReplaceMainImageAction extends BaseProductPageAction {
                 ctx.drawImage(imgEl, 0, 0);
                 image.src = canvas.toDataURL("image/webp");
                 const { model, productProductID: productID, productTemplateID: templateID } = this;
-                const resID = parseInt(model === "product.product" ? productID : templateID);
+                const resID = model === "product.product" ? productID : templateID; // uuid PKs: keep record id as string
                 this.services.orm.write(model, [resID], {
                     image_1920: image.src.split(",")[1],
                 });

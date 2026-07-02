@@ -27,8 +27,8 @@ export class ProductWishlist extends Interaction {
      */
     async addToCart(ev) {
         const button = ev.currentTarget;
-        const productId = parseInt(button.dataset.productProductId);
-        const productTemplateId = parseInt(button.dataset.productTemplateId);
+        const productId = button.dataset.productProductId; // uuid PKs: keep record id as string
+        const productTemplateId = button.dataset.productTemplateId; // uuid PKs: keep record id as string
         const isCombo = button.dataset.productType === 'combo';
         const ptavs = JSON.parse(button.dataset.ptavIds || '[]');
         const showQuantity = Boolean(button.dataset.showQuantity);
@@ -58,7 +58,7 @@ export class ProductWishlist extends Interaction {
     async _removeProduct(button, emptyRedirectUrl) {
         const article = button.closest('article');
         const wish = article.dataset.wishId;
-        const productId = parseInt(article.dataset.productId);
+        const productId = article.dataset.productId; // uuid PKs: keep record id as string
 
         await this.waitFor(rpc(`/shop/wishlist/remove/${wish}`));
         article.style.display = 'none';

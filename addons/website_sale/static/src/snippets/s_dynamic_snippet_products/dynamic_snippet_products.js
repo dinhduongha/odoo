@@ -15,7 +15,7 @@ export class DynamicSnippetProducts extends DynamicSnippetCarousel {
                 productCategoryId = undefined;
                 const productCategoryFieldEl = this.el.closest("body").querySelector("#product_details .product_category_id");
                 if (productCategoryFieldEl) {
-                    productCategoryId = parseInt(productCategoryFieldEl.value);
+                    productCategoryId = productCategoryFieldEl.value; // uuid PKs: keep record id as string
                 }
                 if (!productCategoryId) {
                     const mainObject = this.services.website_page.mainObject;
@@ -27,12 +27,12 @@ export class DynamicSnippetProducts extends DynamicSnippetCarousel {
                     // Try with categories from product, unfortunately the category hierarchy is not matched with this approach
                     const productTemplateIdEl = this.el.closest("body").querySelector("#product_details .product_category_id");
                     if (productTemplateIdEl) {
-                        searchDomain.push(["public_categ_ids.product_tmpl_ids", "=", parseInt(productTemplateIdEl.value)]);
+                        searchDomain.push(["public_categ_ids.product_tmpl_ids", "=", productTemplateIdEl.value]); // uuid PKs: keep record id as string
                     }
                 }
             }
             if (productCategoryId) {
-                searchDomain.push(["public_categ_ids", "child_of", parseInt(productCategoryId)]);
+                searchDomain.push(["public_categ_ids", "child_of", productCategoryId]); // uuid PKs: keep record id as string
             }
         }
         return searchDomain;

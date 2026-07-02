@@ -590,7 +590,8 @@ export class WebsiteBuilderClientAction extends Component {
             this.ui.block();
             await beforeInstall();
             await this.orm.call("ir.module.module", "button_immediate_install", [
-                [parseInt(snippet.moduleId)],
+                // uuid record id: keep as string
+                [snippet.moduleId],
             ]);
             this.reloadWebClient();
         } catch (e) {

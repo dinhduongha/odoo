@@ -54,7 +54,8 @@ export const websiteCustomMenus = {
                                     (menu, index) => ({
                                         ...section,
                                         name: _t("Edit %s", menu[0]),
-                                        dynamicProps: { rootID: parseInt(menu[1], 10) },
+                                        // uuid record id: keep as string
+                                        dynamicProps: { rootID: menu[1] },
                                         // Prevent a 't-foreach' duplicate key on menus template.
                                         id: `${section.id}-${index}`,
                                     })

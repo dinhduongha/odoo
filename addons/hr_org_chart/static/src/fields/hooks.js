@@ -16,7 +16,7 @@ export function onEmployeeSubRedirect() {
     const orm = useService('orm');
 
     return async (event) => {
-        const employeeId = parseInt(event.currentTarget.dataset.employeeId);
+        const employeeId = event.currentTarget.dataset.employeeId; // uuid record id, keep as string
         if (!employeeId) {
             return {};
         }

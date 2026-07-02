@@ -159,7 +159,7 @@ export class ReferenceField extends Component {
             return false;
         }
         const [resModel, _resId] = recordData.split(",");
-        const resId = parseInt(_resId, 10);
+        const resId = _resId; // uuid record id: keep as string
         if (resModel && resId) {
             const { specialDataCaches, orm } = props.record.model;
             const key = `__reference__name_get-${recordData}`;

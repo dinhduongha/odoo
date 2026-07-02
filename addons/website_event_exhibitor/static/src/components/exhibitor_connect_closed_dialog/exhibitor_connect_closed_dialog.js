@@ -8,7 +8,7 @@ export class ExhibitorConnectClosedDialog extends Component {
     static template = "website_event_exhibitor.ExhibitorConnectClosedDialog";
     static components = { Dialog };
     static props = {
-        sponsorId: Number,
+        sponsorId: String, // sponsor record id is a uuid string
         close: Function,
     };
 

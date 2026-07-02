@@ -157,10 +157,10 @@ patch(ProductScreen.prototype, {
 
         const { globalSimpleChoice, globalTextAnswer } = Object.entries(result.byOrder).reduce(
             (acc, [questionId, answer]) => {
-                const question = this.pos.models["event.question"].get(parseInt(questionId));
+                const question = this.pos.models["event.question"].get(questionId);
                 if (
                     question.question_type === "simple_choice" &&
-                    this.pos.models["event.question.answer"].get(parseInt(answer))
+                    this.pos.models["event.question.answer"].get(answer)
                 ) {
                     acc.globalSimpleChoice[questionId] = answer;
                 } else if (answer) {
@@ -179,7 +179,8 @@ patch(ProductScreen.prototype, {
         );
 
         for (const [ticketId, data] of Object.entries(result.byRegistration)) {
-            const ticket = this.pos.models["event.event.ticket"].get(parseInt(ticketId));
+            // ids are uuid strings; look up records without numeric casting
+        const ticket = this.pos.models["event.event.ticket"].get(ticketId);
             const priceExtra = ticket.price - ticket.product_id.lst_price;
             const priceUnit = ticket.product_id.getPrice(
                 this.pos.getOrder().pricelist_id,
@@ -203,7 +204,7 @@ patch(ProductScreen.prototype, {
                 // Global answers have precedence for identification question types.
                 const userData = { ...globalIdentificationAnswers };
                 for (const [questionId, answer] of Object.entries(registration)) {
-                    const question = this.pos.models["event.question"].get(parseInt(questionId));
+                    const question = this.pos.models["event.question"].get(questionId);
 
                     if (
                         !question ||
@@ -228,11 +229,11 @@ patch(ProductScreen.prototype, {
                 const { simpleChoice, textAnswer } = Object.entries(registration).reduce(
                     (acc, [questionId, answer]) => {
                         const question = this.pos.models["event.question"].get(
-                            parseInt(questionId)
+                            questionId
                         );
                         if (
                             question.question_type === "simple_choice" &&
-                            this.pos.models["event.question.answer"].get(parseInt(answer))
+                            this.pos.models["event.question.answer"].get(answer)
                         ) {
                             acc.simpleChoice[questionId] = answer;
                         } else if (answer) {
@@ -259,7 +260,7 @@ patch(ProductScreen.prototype, {
                             "create",
                             {
                                 question_id: this.pos.models["event.question"].get(
-                                    parseInt(questionId)
+                                    questionId
                                 ),
                                 value_text_box: answer,
                             },
@@ -272,10 +273,10 @@ patch(ProductScreen.prototype, {
                                 "create",
                                 {
                                     question_id: this.pos.models["event.question"].get(
-                                        parseInt(questionId)
+                                        questionId
                                     ),
                                     value_answer_id: this.pos.models["event.question.answer"].get(
-                                        parseInt(answer)
+                                        answer
                                     ),
                                 },
                             ])
