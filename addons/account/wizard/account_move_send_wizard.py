@@ -1,3 +1,5 @@
+import json
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.misc import get_lang
@@ -253,7 +255,9 @@ class AccountMoveSendWizard(models.TransientModel):
     @api.depends('template_id')
     def _compute_res_ids(self):
         for wizard in self:
-            wizard.res_ids = wizard.move_id.ids
+            # uuid PKs: store as JSON (not a raw list -> "[UUID('019f…')]" repr) so the
+            # res_ids Text field is valid for the JS attachments selector's JSON.parse.
+            wizard.res_ids = json.dumps([str(i) for i in wizard.move_id.ids])
 
     # Similar of mail.compose.message
     @api.depends('template_id')
