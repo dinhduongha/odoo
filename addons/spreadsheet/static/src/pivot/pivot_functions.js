@@ -45,7 +45,8 @@ const ODOO_FILTER_LABEL = /** @satisfies {CustomFunctionDescription} */ ({
             if (!csvIds) {
                 return value;
             }
-            const ids = csvIds.split(",").map((id) => parseInt(id, 10));
+            // uuid PKs: relation ids are uuid strings, not ints.
+            const ids = csvIds.split(",");
             const result = this.odooDataProvider.serverData.get(
                 filter.modelName,
                 "web_search_read",

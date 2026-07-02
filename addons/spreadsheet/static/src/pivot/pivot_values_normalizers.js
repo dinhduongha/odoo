@@ -13,8 +13,9 @@ pivotNormalizationValueRegistry
     .add("text", (value) => toString(value))
     .add("reference", (value) => toString(value))
     .add("selection", (value) => toString(value))
-    .add("many2one_reference", (value) => toNumber(value, DEFAULT_LOCALE))
+    // uuid PKs: relational record ids are uuid strings, not numbers.
+    .add("many2one_reference", (value) => toString(value))
     .add("monetary", (value) => toNumber(value, DEFAULT_LOCALE))
-    .add("many2one", (value) => toNumber(value, DEFAULT_LOCALE))
-    .add("many2many", (value) => toNumber(value, DEFAULT_LOCALE))
+    .add("many2one", (value) => toString(value))
+    .add("many2many", (value) => toString(value))
     .add("float", (value) => toNumber(value, DEFAULT_LOCALE));
