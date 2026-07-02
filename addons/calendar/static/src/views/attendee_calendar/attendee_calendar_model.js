@@ -105,7 +105,8 @@ export class AttendeeCalendarModel extends CalendarModel {
         const attendeeFilters = data.filterSections.partner_ids;
         let isEveryoneFilterActive = false;
         let attendeeIds = [];
-        const eventIds = Object.keys(data.records).map((id) => Number.parseInt(id));
+        // uuid PKs: keep record id as string
+        const eventIds = Object.keys(data.records);
         if (attendeeFilters) {
             const allFilter = attendeeFilters.filters.find((filter) => filter.type === "all");
             isEveryoneFilterActive = (allFilter && allFilter.active) || false;

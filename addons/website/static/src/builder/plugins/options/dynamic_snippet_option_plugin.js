@@ -305,7 +305,8 @@ export class DynamicFilterAction extends BuilderAction {
     static id = "dynamicFilter";
     static dependencies = ["dynamicSnippetOption"];
     isApplied({ editingElement: el, params }) {
-        return parseInt(el.dataset.filterId) === params.id;
+        // uuid record id: compare as strings
+        return el.dataset.filterId === params.id;
     }
     async apply({ editingElement: el, params }) {
         const utils = this.dependencies.dynamicSnippetOption;

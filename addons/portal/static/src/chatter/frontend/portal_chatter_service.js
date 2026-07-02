@@ -26,7 +26,8 @@ export class PortalChatterService {
     async initialize(env) {
         const chatterEl = document.querySelector(".o_portal_chatter");
         const props = {
-            resId: parseInt(chatterEl.getAttribute("data-res_id")),
+            // uuid PKs: keep record id as string
+            resId: chatterEl.getAttribute("data-res_id"),
             resModel: chatterEl.getAttribute("data-res_model"),
             composer:
                 parseInt(chatterEl.getAttribute("data-allow_composer")) &&
@@ -56,7 +57,8 @@ export class PortalChatterService {
         Object.assign(thread, {
             access_token: chatterEl.getAttribute("data-token"),
             hash: chatterEl.getAttribute("data-hash"),
-            pid: parseInt(chatterEl.getAttribute("data-pid")),
+            // uuid PKs: keep record id as string
+            pid: chatterEl.getAttribute("data-pid"),
         });
         const data = await rpc(
             "/portal/chatter_init",

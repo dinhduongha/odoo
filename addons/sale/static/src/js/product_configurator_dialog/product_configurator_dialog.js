@@ -503,7 +503,7 @@ export class ProductConfiguratorDialog extends Component {
                 product.attribute_lines.some(ptal => ptal.create_variant === "dynamic")
             ) {
                 const productId = await this._createProduct(product);
-                product.id = parseInt(productId);
+                product.id = productId; // uuid: keep created product id as string
             }
         }
         await this.props.save(

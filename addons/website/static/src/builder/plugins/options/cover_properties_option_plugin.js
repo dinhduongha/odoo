@@ -28,7 +28,8 @@ class CoverPropertiesOptionPlugin extends Plugin {
             const bgImage = bgEl?.style.backgroundImage;
             if (bgImage && bgEl.classList.contains("o_b64_cover_image_to_save")) {
                 const resModel = coverEl.dataset.resModel;
-                const resID = Number(coverEl.dataset.resId);
+                // uuid record id: keep as string
+                const resID = coverEl.dataset.resId;
                 if (!resModel || !resID) {
                     throw new Error("There should be a model and id associated to the cover");
                 }
@@ -71,7 +72,8 @@ class CoverPropertiesOptionPlugin extends Plugin {
         delete el.dataset.coverPropertiesToBeSaved;
 
         const resModel = el.dataset.resModel;
-        const resID = Number(el.dataset.resId);
+        // uuid record id: keep as string
+        const resID = el.dataset.resId;
 
         if (!resModel || !resID) {
             throw new Error("There should be a model and id associated to the cover");

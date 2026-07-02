@@ -71,7 +71,8 @@ export class ViewHierarchy extends Component {
                     this.isViewDisplayed(currentView) &&
                     (currentView.name.toLowerCase() === lowercaseKeyword ||
                         currentView.key.toLowerCase() === lowercaseKeyword ||
-                        currentView.id === parseInt(lowercaseKeyword))
+                        // uuid record id: compare as strings
+                        currentView.id === lowercaseKeyword)
                 ) {
                     exactMatches.push(currentView);
                 } else if (

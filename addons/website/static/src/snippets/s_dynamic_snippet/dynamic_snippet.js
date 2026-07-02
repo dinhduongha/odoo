@@ -99,7 +99,8 @@ export class DynamicSnippet extends Interaction {
         return this.isSingleMode
             ? {
                   res_model: this.el.dataset.snippetModel,
-                  res_id: parseInt(this.el.dataset.snippetResId),
+                  // uuid record id: keep as string
+                  res_id: this.el.dataset.snippetResId,
               }
             : {};
     }

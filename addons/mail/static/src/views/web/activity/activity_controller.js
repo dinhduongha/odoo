@@ -120,7 +120,8 @@ export class ActivityController extends Component {
             const activityByType = groupedActivities[resId];
             const activity = activityByType[activityTypeID];
             if (activity) {
-                resIds.push(parseInt(resId));
+                // uuid PKs: keep record id as string
+                resIds.push(resId);
             }
         }
         this.model.orm.call(this.props.resModel, "activity_send_mail", [resIds, templateID], {});

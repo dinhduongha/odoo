@@ -75,7 +75,7 @@ patch(PaymentForm.prototype, {
                     '/payment/adyen/payment_methods',
                     {
                         'provider_id': providerId,
-                        'partner_id': parseInt(this.paymentContext['partnerId']),
+                        'partner_id': this.paymentContext['partnerId'], // keep partner record id as string (uuid)
                         'formatted_amount': formattedAmount,
                     },
                 ));

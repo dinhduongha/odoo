@@ -30,7 +30,7 @@ export class Share extends Interaction {
                 this.getDocumentMaxPage(),
             emailSharing: data.emailSharing === 'True',
             embedCode: data.embedCode,
-            id: parseInt(data.id),
+            id: data.id, // keep slide record id as string (uuid)
             isChannel: data.isChannel === 'True',
             name: data.name,
             url: data.url,

@@ -24,7 +24,7 @@ export class CommonSkillsListRenderer extends ListRenderer {
 
             if (grouped[group.display_name] === undefined) {
                 grouped[group.display_name] = {
-                    id: parseInt(group.id),
+                    id: group.id, // uuid: keep related record id as string
                     name: group.display_name || _t('Other'),
                     list: {
                         records: [],

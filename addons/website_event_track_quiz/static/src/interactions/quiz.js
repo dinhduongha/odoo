@@ -39,9 +39,9 @@ export class Quiz extends Interaction {
         const questions = this.extractQuestionsAndAnswers();
         const data = this.el.querySelector(".o_quiz_js_quiz").dataset;
         this.track = {
-            id: parseInt(data.id) || 0,
+            id: data.id || "", // keep track record id as string (uuid)
             name: data.name || "",
-            eventId: parseInt(data.eventId) || "",
+            eventId: data.eventId || "", // keep event record id as string (uuid)
             completed: data.completed || false,
             isMember: data.isMember || false,
             progressBar: data.progressBar || false,

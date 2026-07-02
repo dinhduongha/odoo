@@ -902,7 +902,8 @@ export class SelectAction extends BuilderAction {
         }
         const activeForm = this.dependencies.websiteFormOption
             .getModelsCache(el)
-            .find((model) => model.id === parseInt(modelId));
+            // uuid record id: compare as strings
+            .find((model) => model.id === modelId);
         return {
             formInfo: await this.dependencies.websiteFormOption.prepareFormModel(el, activeForm),
         };
@@ -917,7 +918,8 @@ export class SelectAction extends BuilderAction {
         this.dependencies.websiteFormOption.applyFormModel(
             el,
             activeForm,
-            parseInt(modelId),
+            // uuid record id: keep as string
+            modelId,
             loadResult.formInfo
         );
     }
@@ -925,7 +927,8 @@ export class SelectAction extends BuilderAction {
         const models = this.dependencies.websiteFormOption.getModelsCache(el);
         const targetModelName = getModelName(el);
         const activeForm = models.find((m) => m.model === targetModelName);
-        return parseInt(modelId) === activeForm.id;
+        // uuid record id: compare as strings
+        return modelId === activeForm.id;
     }
 }
 // Select the value of a field (hidden) that will be used on the model as a preset.

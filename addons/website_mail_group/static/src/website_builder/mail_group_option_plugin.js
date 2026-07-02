@@ -88,7 +88,7 @@ export class MailGroupAction extends BuilderAction {
         if (!id) {
             return;
         }
-        value.id = parseInt(id);
+        value.id = id; // keep mail.group record id as string (uuid)
         return JSON.stringify(value);
     }
 }

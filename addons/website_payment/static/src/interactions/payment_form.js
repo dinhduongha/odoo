@@ -131,7 +131,7 @@ patch(PaymentForm.prototype, {
         return document.querySelector('.o_donation_payment_form')
             ? {
             ...transactionRouteParams,
-            partner_id: parseInt(this.paymentContext['partnerId']),
+            partner_id: this.paymentContext['partnerId'], // keep partner record id as string (uuid)
             currency_id: this.paymentContext['currencyId']
                     ? parseInt(this.paymentContext['currencyId']) : null,
             reference_prefix:this.paymentContext['referencePrefix']?.toString(),

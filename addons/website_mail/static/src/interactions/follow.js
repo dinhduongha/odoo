@@ -30,7 +30,7 @@ export class Follow extends Interaction {
             if (!(model in records)) {
                 records[model] = [];
             }
-            records[model].push(parseInt(jsFollowEl.dataset.id));
+            records[model].push(jsFollowEl.dataset.id); // keep record id as string (uuid)
         }
 
         const promises = [
@@ -43,7 +43,7 @@ export class Follow extends Interaction {
         for (const jsFollowEl of jsFollowEls) {
             const model = this.el.dataset.object;
             const email = data[0].email;
-            const needToEnable = model in data[1] && data[1][model].includes(parseInt(this.el.dataset.id));
+            const needToEnable = model in data[1] && data[1][model].includes(this.el.dataset.id); // record id as string (uuid)
             this.toggleSubscription(needToEnable, email, jsFollowEl);
             jsFollowEl.classList.remove("d-none");
         }
@@ -124,7 +124,7 @@ export class Follow extends Interaction {
             const turnstile = turnstileCaptcha ? turnstileCaptcha.value : "";
 
             const data = await this.waitFor(rpc("/website_mail/follow", {
-                "id": parseInt(jsFollowEl.dataset.id),
+                "id": jsFollowEl.dataset.id, // keep record id as string (uuid)
                 "object": jsFollowEl.dataset.object,
                 "message_is_follower": jsFollowEl.dataset.follow || "off",
                 "email": email,

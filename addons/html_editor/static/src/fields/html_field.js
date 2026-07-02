@@ -274,7 +274,8 @@ export class HtmlField extends Component {
                 collaborationChannel: {
                     collaborationModelName: this.props.record.resModel,
                     collaborationFieldName: this.props.name,
-                    collaborationResId: parseInt(this.props.record.resId),
+                    // uuid PKs: keep record id as string
+                    collaborationResId: this.props.record.resId,
                 },
                 peerId: this.generateId(),
             },

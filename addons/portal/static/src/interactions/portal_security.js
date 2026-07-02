@@ -110,7 +110,8 @@ export class PortalSecurity extends Interaction {
         await this.waitFor(
             await handleCheckIdentity(
                 this.waitFor(
-                    this.services.orm.call("res.users.apikeys", "remove", [parseInt(ev.target.id)])
+                    // uuid PKs: keep record id as string
+                    this.services.orm.call("res.users.apikeys", "remove", [ev.target.id])
                 ),
                 this.services.orm,
                 this.services.dialog

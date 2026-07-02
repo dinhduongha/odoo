@@ -53,7 +53,8 @@ export class AttendeeCalendarCommonRenderer extends CalendarCommonRenderer {
         const record = this.props.model.records[event.id];
         if (
             record &&
-            this.env.searchModel?.context?.default_calendar_event_id === parseInt(event.id) &&
+            // uuid PKs: keep record id as string
+            String(this.env.searchModel?.context?.default_calendar_event_id) === String(event.id) &&
             !this.popover.isOpen &&
             !el.classList.contains('fc-event-dragging')
         ) {

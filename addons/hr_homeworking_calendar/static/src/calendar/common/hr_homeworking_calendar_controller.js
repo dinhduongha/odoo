@@ -46,7 +46,7 @@ patch(AttendeeCalendarController.prototype, {
                     title: _t("Confirmation"),
                     body: _t("Are you sure you want to delete this exception?"),
                     confirm: async () => {
-                        await this.orm.unlink("hr.employee.location", [parseInt(record.id)]);
+                        await this.orm.unlink("hr.employee.location", [record.id]); // uuid: keep record id as string
                         this.model.load();
                     },
                     cancel: () => {

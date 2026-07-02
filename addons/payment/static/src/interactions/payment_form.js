@@ -466,7 +466,7 @@ export class PaymentForm extends Interaction {
             Object.assign(transactionRouteParams, {
                 'currency_id': this.paymentContext['currencyId']
                     ? parseInt(this.paymentContext['currencyId']) : null,
-                'partner_id': parseInt(this.paymentContext['partnerId']),
+                'partner_id': this.paymentContext['partnerId'], // keep partner record id as string (uuid)
                 'reference_prefix': this.paymentContext['referencePrefix']?.toString(),
             });
         }

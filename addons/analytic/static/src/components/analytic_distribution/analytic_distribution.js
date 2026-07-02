@@ -232,7 +232,8 @@ export class AnalyticDistribution extends Component {
     }
 
     async jsonToData(jsonFieldValue) {
-        const analyticAccountIds = jsonFieldValue ? Object.keys(jsonFieldValue).filter((key) => key != '__update__' ).map((key) => key.split(',')).flat().map((id) => parseInt(id)) : [];
+        // uuid: analytic account ids are uuid strings, keep as-is (no parseInt)
+        const analyticAccountIds = jsonFieldValue ? Object.keys(jsonFieldValue).filter((key) => key != '__update__' ).map((key) => key.split(',')).flat() : [];
         const analyticAccountDict = analyticAccountIds.length ? await this.fetchAnalyticAccounts([["id", "in", analyticAccountIds]]) : [];
 
         let distribution = [];
@@ -244,7 +245,7 @@ export class AnalyticDistribution extends Component {
             const ids = accountIds.split(',');
 
             for (const id of ids) {
-                const account = analyticAccountDict[parseInt(id)];
+                const account = analyticAccountDict[id]; // uuid: dict keyed by uuid account id
                 if (account) {
                     // since tags are displayed even though plans might not be retrieved (ie defaultVals is empty)
                     // push the accounts anyway, as order doesn't matter
@@ -366,7 +367,8 @@ export class AnalyticDistribution extends Component {
         if (this.props.force_applicability) {
             args['applicability'] = this.props.force_applicability;
         }
-        const existing_account_ids = Object.keys(record.data[this.props.name]).map((k) => k.split(",")).flat().map((i) => parseInt(i));
+        // uuid: analytic account ids are uuid strings, keep as-is (no parseInt)
+        const existing_account_ids = Object.keys(record.data[this.props.name]).map((k) => k.split(",")).flat();
         if (existing_account_ids.length) {
             args['existing_account_ids'] = existing_account_ids;
         }

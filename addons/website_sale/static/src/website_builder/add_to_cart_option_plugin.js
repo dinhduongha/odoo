@@ -73,7 +73,7 @@ export class ProductToCartAction extends BuilderAction {
         if (!id) {
             return;
         }
-        value.id = parseInt(id);
+        value.id = id; // keep product.template record id as string (uuid)
         const type = editingElement.dataset.productType;
         if (type !== undefined) {
             value.type = type;

@@ -17,7 +17,7 @@ export class PortalPasskey extends Interaction {
     };
 
     setup() {
-        this.id = parseInt(this.el.attributes.id.value);
+        this.id = this.el.attributes.id.value; // uuid: keep passkey record id as string
         this.name = this.el.querySelector(".o_passkey_name").innerText;
         this.dropDown = this.el.querySelector(".o_passkey_dropdown");
     }

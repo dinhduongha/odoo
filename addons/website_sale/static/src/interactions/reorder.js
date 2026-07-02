@@ -18,7 +18,7 @@ export class SaleOrderPortalReorder extends Interaction {
      * @param {Event} ev - The event triggered when the reorder button is clicked.
      */
     async onReorder(ev) {
-        this.orderId = parseInt(ev.currentTarget.dataset.saleOrderId);
+        this.orderId = ev.currentTarget.dataset.saleOrderId; // keep sale order record id as string (uuid)
         this.accessToken = new URLSearchParams(window.location.search).get('access_token');
         if (!this.orderId) return;
 

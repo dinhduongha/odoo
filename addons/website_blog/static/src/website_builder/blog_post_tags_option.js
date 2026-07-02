@@ -8,7 +8,7 @@ export class BlogPostTagsOption extends BaseOptionComponent {
     setup() {
         super.setup();
         this.domState = useDomState((el) => ({
-            blogId: parseInt(el.dataset.resId),
+            blogId: el.dataset.resId, // keep blog.post record id as string (uuid)
         }));
     }
 }

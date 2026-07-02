@@ -75,7 +75,7 @@ export class ProjectTaskCalendarController extends CalendarController {
 
     async dropTaskToPlan(params) {
         const { element, calendarCell, timeSlotElement } = params;
-        const taskId = Number(element.dataset.resId);
+        const taskId = element.dataset.resId; // uuid: keep task id as string
         let dateStr = calendarCell.dataset.date;
         if (timeSlotElement) {
             dateStr += `T${timeSlotElement.dataset.time}`;

@@ -48,7 +48,7 @@ patch(ExpressCheckout.prototype, {
                 {partial_delivery_address: expressDeliveryAddress},
             ));
             if (delivery_methods.length > 0) {
-                const id = parseInt(delivery_methods[0].id);
+                const id = delivery_methods[0].id; // keep delivery method record id as string (uuid)
                 await this.waitFor(rpc('/shop/set_delivery_method', {dm_id: id}));
             } else {
                 this.services.dialog.add(ConfirmationDialog, {

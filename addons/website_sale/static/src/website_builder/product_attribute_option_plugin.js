@@ -35,9 +35,8 @@ export class ProductAttributeDisplayAction extends BuilderAction {
         return this.getProductAttributeDisplay(el);
     }
     async apply({ editingElement: el, value }) {
-        const attributeID = parseInt(
-            el.closest("[data-attribute-id]").dataset.attributeId
-        );
+        // keep attribute record id as string (uuid)
+        const attributeID = el.closest("[data-attribute-id]").dataset.attributeId;
         await rpc("/shop/config/attribute", {
             attribute_id: attributeID,
             display_type: value,

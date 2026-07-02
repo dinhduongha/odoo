@@ -176,7 +176,8 @@ export const WebsiteRoot = publicRootData.PublicRoot.extend({
         const publishEl = ev.currentTarget.closest(".js_publish_management");
         this.orm
             .call(publishEl.dataset.object, "website_publish_button", [
-                [parseInt(publishEl.dataset.id, 10)],
+                // uuid record id: keep as string
+                [publishEl.dataset.id],
             ])
             .then(function (result) {
                 publishEl.classList.toggle("css_published", result);

@@ -60,7 +60,8 @@ export class EditWebsiteSystrayItem extends Component {
                 const model = el.dataset.resModel || el.dataset.oeModel;
                 if (!recordsOnPage[model]) {
                     // Keep one record of each type.
-                    recordsOnPage[model] = parseInt(el.dataset.resId || el.dataset.oeId);
+                    // uuid record id: keep as string
+                    recordsOnPage[model] = el.dataset.resId || el.dataset.oeId;
                 }
             }
             await rpc("/website/check_can_modify_any", {

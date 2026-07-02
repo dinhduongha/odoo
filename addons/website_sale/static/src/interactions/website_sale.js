@@ -617,9 +617,9 @@ export class WebsiteSale extends Interaction {
         let customPTAVsValues = [];
         for(const el of customPTAVsValuesElements) {
             customPTAVsValues.push({
-                'custom_product_template_attribute_value_id': parseInt(
-                    el.dataset.customProductTemplateAttributeValueId
-                ),
+                // keep PTAV record id as string (uuid)
+                'custom_product_template_attribute_value_id':
+                    el.dataset.customProductTemplateAttributeValueId,
                 'custom_value': el.value,
             });
         }

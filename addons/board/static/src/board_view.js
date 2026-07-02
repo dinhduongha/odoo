@@ -35,7 +35,7 @@ export class BoardArchParser {
                     const action = {
                         id: nextId++,
                         title: node.getAttribute("string"),
-                        actionId: parseInt(node.getAttribute("name"), 10),
+                        actionId: node.getAttribute("name"), // uuid: keep action id as string
                         viewMode: node.getAttribute("view_mode"),
                         context: node.getAttribute("context"),
                         isFolded,

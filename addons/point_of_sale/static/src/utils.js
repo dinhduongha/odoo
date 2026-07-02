@@ -41,7 +41,7 @@ export function constructAttributeString(line) {
             if (value.is_custom) {
                 const customValue = line.custom_attribute_value_ids.find(
                     (cus) =>
-                        cus.custom_product_template_attribute_value_id?.id == parseInt(value.id)
+                        String(cus.custom_product_template_attribute_value_id?.id) === String(value.id) // uuid: compare ptav ids as strings
                 );
                 if (customValue) {
                     attributeString += `${value.attribute_id.name}: ${value.name}: ${customValue.custom_value}, `;

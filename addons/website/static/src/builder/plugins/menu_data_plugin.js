@@ -34,7 +34,8 @@ export class MenuDataPlugin extends Plugin {
                             save: async (name, url) => {
                                 const websiteId = this.services.website.currentWebsite.id;
                                 const data = {
-                                    id: parseInt(menuEl.attributes["data-oe-id"].nodeValue),
+                                    // uuid record id: keep as string
+                                    id: menuEl.attributes["data-oe-id"].nodeValue,
                                     name,
                                     url,
                                 };

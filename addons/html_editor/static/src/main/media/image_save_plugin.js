@@ -182,7 +182,8 @@ export class ImageSavePlugin extends Plugin {
             `/html_editor/modify_image/${encodeURIComponent(el.dataset.originalId)}`,
             {
                 res_model: resModel,
-                res_id: parseInt(resId),
+                // uuid PKs: keep record id as string
+                res_id: resId,
                 data: getImageSrc(el).split(",")[1],
                 alt_data: altData,
                 mimetype: isBackground

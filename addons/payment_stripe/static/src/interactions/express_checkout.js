@@ -128,10 +128,11 @@ patch(ExpressCheckout.prototype, {
                 addresses.shipping_option = ev.shippingOption;
             }
             // Update the customer addresses on the related document.
-            this.paymentContext.partnerId = parseInt(await this.waitFor(rpc(
+            // keep partner record id as string (uuid)
+            this.paymentContext.partnerId = await this.waitFor(rpc(
                 this.paymentContext['expressCheckoutRoute'],
                 addresses,
-            )));
+            ));
             // Call the transaction route to create the transaction and retrieve the client secret.
             const { client_secret } = await this.waitFor(rpc(
                 this.paymentContext['transactionRoute'],
@@ -204,7 +205,7 @@ patch(ExpressCheckout.prototype, {
             // When the customer selects a different shipping option, update the displayed total.
             paymentRequest.on('shippingoptionchange', async (ev) => {
                 const result = await this.waitFor(rpc('/shop/set_delivery_method', {
-                    dm_id: parseInt(ev.shippingOption.id),
+                    dm_id: ev.shippingOption.id, // keep delivery method record id as string (uuid)
                 }));
                 ev.updateWith({
                     status: 'success',

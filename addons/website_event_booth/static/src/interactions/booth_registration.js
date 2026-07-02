@@ -41,7 +41,7 @@ export class BoothRegistration extends Interaction {
         this.boothCache = {};
         this.isFirstRender = true;
 
-        this.eventId = parseInt(this.el.dataset.eventId);
+        this.eventId = this.el.dataset.eventId; // keep event record id as string (uuid)
 
         this.activeBoothCategoryId = false;
         this.selectedBoothIds = [];

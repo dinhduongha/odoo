@@ -121,8 +121,9 @@ class ProductsRibbonOptionPlugin extends Plugin {
     }
 
     async _saveRibbons() {
-        const originalIds = Object.keys(this.originalRibbons).map((id) => parseInt(id));
-        const currentIds = this.ribbons.map((ribbon) => parseInt(ribbon.id));
+        // keep ribbon record ids as strings (uuid); do not numeric-cast
+        const originalIds = Object.keys(this.originalRibbons);
+        const currentIds = this.ribbons.map((ribbon) => ribbon.id);
         const created = this.ribbons.filter((ribbon) => !originalIds.includes(ribbon.id));
         const deletedIds = originalIds.filter((id) => !currentIds.includes(id));
         const modified = this.ribbons.filter((ribbon) => {
@@ -236,9 +237,10 @@ class ProductsRibbonOptionPlugin extends Plugin {
                 // Find the product template ID from the ribbon element's parent form
                 const productForm = ribbonElement.closest('form.oe_product_cart');
                 const templateElement = productForm?.querySelector('[data-oe-model="product.template"]');
-                templateId = templateElement ? parseInt(templateElement.getAttribute('data-oe-id')) : null;
+                // keep product.template record id as string (uuid)
+                templateId = templateElement ? templateElement.getAttribute('data-oe-id') : null;
             }
-            if (templateId && !isNaN(templateId)) {
+            if (templateId) {
                 this.addProductTemplatesRibbons({
                     templateId: templateId,
                     ribbonId: false,

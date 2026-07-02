@@ -100,7 +100,7 @@ export class CRMPartnerAssign extends Interaction {
             const parentEl = this.el.querySelector("#new-opp-dialog");
             this.insert(alertEl, parentEl, "afterbegin");
         } else {
-            window.location = `/my/opportunity/${parseInt(response.id)}`;
+            window.location = `/my/opportunity/${response.id}`; // keep opportunity record id as string (uuid)
         }
     }
 
@@ -114,12 +114,12 @@ export class CRMPartnerAssign extends Interaction {
         }
 
         await this.services.orm.call("crm.lead", "update_lead_portal", [
-            [parseInt(this.editOppFormEl.querySelector(".opportunity_id").value)],
+            [this.editOppFormEl.querySelector(".opportunity_id").value], // keep opportunity record id as string (uuid)
             {
                 date_deadline: checkAndParseDate(this.editOppFormEl.querySelector(".date_deadline").value),
                 expected_revenue: parseFloat(this.editOppFormEl.querySelector(".expected_revenue").value),
                 probability: parseFloat(this.editOppFormEl.querySelector(".probability").value),
-                activity_type_id: parseInt(this.editOppFormEl.querySelector(".next_activity").selectedOptions[0].getAttribute("data")),
+                activity_type_id: this.editOppFormEl.querySelector(".next_activity").selectedOptions[0].getAttribute("data"), // keep activity type record id as string (uuid)
                 activity_summary: this.editOppFormEl.querySelector(".activity_summary").value,
                 activity_date_deadline: checkAndParseDate(this.editOppFormEl.querySelector(".activity_date_deadline").value),
                 priority: this.el.querySelector("input[name='PriorityRadioOptions']:checked").value,
@@ -138,7 +138,8 @@ export class CRMPartnerAssign extends Interaction {
     }
 
     async onOppStageButtonClick(ev, currentTargetEl) {
-        await this.changeOppStage(parseInt(currentTargetEl.getAttribute("opp")), parseInt(currentTargetEl.getAttribute("data")));
+        // keep opp/stage record ids as strings (uuid)
+        await this.changeOppStage(currentTargetEl.getAttribute("opp"), currentTargetEl.getAttribute("data"));
     }
 
     onNextActivityChange() {

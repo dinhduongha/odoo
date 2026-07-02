@@ -182,7 +182,7 @@ export class ProductPricelistReport extends Component {
             this.action.doAction({
                 type: 'ir.actions.act_window',
                 res_model: resModel,
-                res_id: parseInt(resId),
+                res_id: resId, // uuid: keep res_id as string
                 views: [[false, 'form']],
                 target: 'self',
             });
@@ -266,7 +266,7 @@ export class ProductPricelistReport extends Component {
 
     onSelectPricelist(ev) {
         this.state.selectedPricelist = this.pricelists.filter(pricelist =>
-            pricelist.id === parseInt(ev.target.value)
+            String(pricelist.id) === ev.target.value // uuid: compare ids as strings
         )[0];
 
         this.renderHtml();

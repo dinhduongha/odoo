@@ -235,7 +235,7 @@ export class Subscribe extends Interaction {
         return [...document.querySelectorAll("#o_mailing_subscription_form_manage input")].map(
             (node) => {
                 const listInfo = {
-                    id: parseInt(node.getAttribute("value")),
+                    id: node.getAttribute("value"), // uuid: keep mailing list id as string
                     member: node.dataset.member === "1",
                     name: node.getAttribute("title"),
                     opt_out: node.getAttribute("checked") !== "checked",

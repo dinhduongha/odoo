@@ -93,7 +93,8 @@ export class SlotDetails extends Interaction {
         this.selectedSlotDatetime =
             deserializeDateTime(dataset.slotStart, {tz: dataset.eventTz}).toLocaleString(DateTime.DATETIME_MED_WITH_WEEKDAY) +
             " - " + deserializeDateTime(dataset.slotEnd, {tz: dataset.eventTz}).toLocaleString(DateTime.TIME_SIMPLE);
-        this.form.setAttribute("data-selected-slot-id", parseInt(ev.currentTarget.dataset.slotId));
+        // keep slot record id as string (uuid)
+        this.form.setAttribute("data-selected-slot-id", ev.currentTarget.dataset.slotId);
     }
 
     /**
