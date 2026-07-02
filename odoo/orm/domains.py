@@ -1792,6 +1792,9 @@ def _operator_hierarchy(condition, model):
         value = [value]
     elif not isinstance(value, COLLECTION_TYPES):
         condition._raise(f"Value of type {type(value)} is not supported")
+    # uuid PKs: ids may arrive as uuid strings (JSON-RPC / stored domains);
+    # coerce them so the partition below classifies them as ids, not names.
+    value = [uuid.UUID(v) if isinstance(v, str) and is_uuid(v) else v for v in value]
     coids, other_values = partition(lambda v: isinstance(v, UUID), value)
     search_domain = _FALSE_DOMAIN
     if field.type == 'many2many':
