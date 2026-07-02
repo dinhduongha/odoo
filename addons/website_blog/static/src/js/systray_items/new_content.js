@@ -28,7 +28,7 @@ patch(NewContentSystrayItem.prototype, {
 
         if (isBlogPage) {
             const blogEl = iframeEl.querySelector("#wrap.website_blog [data-oe-model='blog.blog']");
-            const blogId = parseInt(blogEl?.dataset.oeId);
+            const blogId = blogEl?.dataset.oeId;
 
             if (blogId) {
                 return { default_blog_id: blogId };
