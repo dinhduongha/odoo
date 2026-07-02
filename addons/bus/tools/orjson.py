@@ -10,7 +10,9 @@ except ImportError:
     import json
 
     def dumps(value):
-        return json.dumps(value, separators=(",", ":")).encode()
+        # uuid PKs: bus payloads carry uuid.UUID ids; stdlib json can't
+        # serialize them (orjson does natively) -> stringify via default=str.
+        return json.dumps(value, separators=(",", ":"), default=str).encode()
 
     def loads(value):
         return json.loads(value)
