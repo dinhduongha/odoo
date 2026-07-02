@@ -43,7 +43,7 @@ class PosPaymentMethod(models.Model):
     def _send_notification(self, data):
         if not data.get("pos_session_id"):
             return super()._send_notification(data)
-        pos_session = self.env["pos.session"].browse(int(data["pos_session_id"]))
+        pos_session = self.env["pos.session"].browse(data["pos_session_id"])
         if not pos_session or pos_session.config_id.self_ordering_mode != "kiosk":
             return super()._send_notification(data)
 
