@@ -60,7 +60,7 @@ class SmsTemplate(models.Model):
                 'type': 'ir.actions.act_window',
                 'res_model': 'sms.composer',
                 # Add default_composition_mode to guess to determine if need to use mass or comment composer
-                'context': "{'default_template_id' : %d, 'sms_composition_mode': 'guess', 'default_res_ids': active_ids, 'default_res_id': active_id}" % (template.id),
+                'context': "{'default_template_id' : '%s', 'sms_composition_mode': 'guess', 'default_res_ids': active_ids, 'default_res_id': active_id}" % (template.id),
                 'view_mode': 'form',
                 'view_id': view.id,
                 'target': 'new',
