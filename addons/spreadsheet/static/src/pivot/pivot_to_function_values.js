@@ -45,9 +45,11 @@ pivotToFunctionValueRegistry
     .replace("integer", _toNumber)
     .add("reference", _toString)
     .add("monetary", _toNumber)
-    .add("many2one", _toNumber)
-    .add("many2one_reference", _toNumber)
-    .add("many2many", _toNumber)
+    // uuid PKs: relational record ids are uuid strings, not numbers, so the
+    // pivot dimension value must be emitted as a (quoted) string literal.
+    .add("many2one", _toString)
+    .add("many2one_reference", _toString)
+    .add("many2many", _toString)
     .add("float", _toNumber)
     .replace("date", _toDate)
     .replace("datetime", _toDate);
