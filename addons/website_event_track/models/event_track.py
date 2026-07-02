@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 import logging
+import uuid
 
 from markupsafe import Markup
 from random import randint
@@ -320,7 +321,9 @@ class EventTrack(models.Model):
             if track.website_image:
                 track.website_image_url = self.env['website'].image_url(track, 'website_image', size=1024)
             else:
-                track.website_image_url = '/website_event_track/static/src/img/event_track_default_%d.jpeg' % (track.id % 2)
+                # uuidv7 PKs: no integer modulo; derive a stable 0/1 from the id's last hex digit
+                variant = int(str(track.id)[-1], 16) % 2 if isinstance(track.id, (uuid.UUID, str)) else 0
+                track.website_image_url = '/website_event_track/static/src/img/event_track_default_%d.jpeg' % variant
 
     # WISHLIST / VISITOR MANAGEMENT
 
