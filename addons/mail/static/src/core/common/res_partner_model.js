@@ -1,5 +1,6 @@
 import { Store } from "@mail/core/common/store_service";
 import { fields, Record } from "@mail/core/common/record";
+import { isPersistedId } from "@mail/utils/common/misc";
 import { imageUrl } from "@web/core/utils/urls";
 import { debounce } from "@web/core/utils/timing";
 
@@ -66,7 +67,7 @@ export class ResPartner extends Record {
     main_user_id = fields.One("res.users");
     monitorPresence = fields.Attr(false, {
         compute() {
-            if (!this.store.env.services.bus_service.isActive || this.id <= 0) {
+            if (!this.store.env.services.bus_service.isActive || !isPersistedId(this.id)) {
                 return false;
             }
             return this.im_status !== "im_partner" && !this.is_public;

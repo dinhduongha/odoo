@@ -1,5 +1,6 @@
 import { Component } from "@odoo/owl";
 import { MessageCardList } from "./message_card_list";
+import { minId } from "@mail/utils/common/misc";
 import { _t } from "@web/core/l10n/translation";
 
 /**
@@ -23,7 +24,7 @@ export class SearchMessageResult extends Component {
 
     onLoadMoreVisible() {
         const before = this.props.messageSearch?.messages
-            ? Math.min(...this.props.messageSearch.messages.map((message) => message.id))
+            ? minId(this.props.messageSearch.messages.map((message) => message.id))
             : false;
         this.props.messageSearch.search(before);
     }

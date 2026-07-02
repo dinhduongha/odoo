@@ -2,7 +2,7 @@ import { Thread } from "@mail/core/common/thread_model";
 
 import { patch } from "@web/core/utils/patch";
 import { fields } from "../common/record";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 import { rpc } from "@web/core/network/rpc";
 
 /** @type {import("models").Thread} */
@@ -13,7 +13,7 @@ const threadPatch = {
         this.recipientsCount = undefined;
         this.recipients = fields.Many("mail.followers");
         this.activities = fields.Many("mail.activity", {
-            sort: (a, b) => compareDatetime(a.date_deadline, b.date_deadline) || a.id - b.id,
+            sort: (a, b) => compareDatetime(a.date_deadline, b.date_deadline) || compareId(a.id, b.id),
             onDelete(r) {
                 r.remove();
             },

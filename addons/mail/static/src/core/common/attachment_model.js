@@ -83,9 +83,8 @@ export class Attachment extends FileModelMixin(Record) {
         return `${this.create_date.monthLong}, ${this.create_date.year}`;
     }
 
-    get uploading() {
-        return this.id < 0;
-    }
+    /** Set on the optimistic record during upload; real server attachments default to false. */
+    uploading = fields.Attr(false);
 
     /** Remove the given attachment globally. */
     delete() {
@@ -100,7 +99,7 @@ export class Attachment extends FileModelMixin(Record) {
      * globally.
      */
     async remove() {
-        if (this.id > 0) {
+        if (!this.uploading) {
             await rpc(
                 "/mail/attachment/delete",
                 assignDefined({ attachment_id: this.id }, { access_token: this.ownership_token })

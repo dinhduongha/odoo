@@ -1,6 +1,6 @@
 import { fields } from "@mail/core/common/record";
 import { Thread } from "@mail/core/common/thread_model";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 import "@mail/chatter/web_portal/thread_model_patch";
 
 import { patch } from "@web/core/utils/patch";
@@ -10,7 +10,7 @@ const threadPatch = {
     setup() {
         super.setup();
         this.scheduledMessages = fields.Many("mail.scheduled.message", {
-            sort: (a, b) => compareDatetime(a.scheduled_date, b.scheduled_date) || a.id - b.id,
+            sort: (a, b) => compareDatetime(a.scheduled_date, b.scheduled_date) || compareId(a.id, b.id),
             inverse: "thread",
         });
     },

@@ -2,6 +2,7 @@ import { EventBus } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { Deferred } from "@web/core/utils/concurrency";
+import { uuid7 } from "@mail/utils/common/misc";
 
 export class AttachmentUploadService {
     constructor(env, services) {
@@ -15,7 +16,6 @@ export class AttachmentUploadService {
         this.store = services["mail.store"];
         this.notificationService = services["notification"];
 
-        this.nextId = -1;
         this.abortByAttachmentId = new Map();
         this.deferredByAttachmentId = new Map();
         this.uploadingAttachmentIds = new Set();
@@ -25,7 +25,7 @@ export class AttachmentUploadService {
         this.fileUploadService.bus.addEventListener(
             "FILE_UPLOAD_ADDED",
             ({ detail: { upload } }) => {
-                const tmpId = parseInt(upload.data.get("temporary_id"));
+                const tmpId = upload.data.get("temporary_id");
                 if (!this.uploadingAttachmentIds.has(tmpId)) {
                     return;
                 }
@@ -41,7 +41,7 @@ export class AttachmentUploadService {
         this.fileUploadService.bus.addEventListener(
             "FILE_UPLOAD_LOADED",
             ({ detail: { upload } }) => {
-                const tmpId = parseInt(upload.data.get("temporary_id"));
+                const tmpId = upload.data.get("temporary_id");
                 if (!this.uploadingAttachmentIds.has(tmpId)) {
                     return;
                 }
@@ -72,7 +72,7 @@ export class AttachmentUploadService {
         this.fileUploadService.bus.addEventListener(
             "FILE_UPLOAD_ERROR",
             ({ detail: { upload } }) => {
-                const tmpId = parseInt(upload.data.get("temporary_id"));
+                const tmpId = upload.data.get("temporary_id");
                 if (!this.uploadingAttachmentIds.has(tmpId)) {
                     return;
                 }
@@ -125,7 +125,7 @@ export class AttachmentUploadService {
     }
 
     async upload(thread, composer, file, options) {
-        const tmpId = this.nextId--;
+        const tmpId = uuid7();
         const tmpURL = URL.createObjectURL(file);
         return this._upload(thread, composer, file, options, tmpId, tmpURL);
     }

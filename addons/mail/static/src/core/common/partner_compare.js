@@ -102,4 +102,4 @@ partnerCompareRegistry.add(
     { sequence: 55 }
 );
 
-partnerCompareRegistry.add("mail.id", (p1, p2) => p1.id - p2.id, { sequence: 75 });
+partnerCompareRegistry.add("mail.id", (p1, p2) => compareId(p1.id, p2.id), { sequence: 75 });

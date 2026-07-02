@@ -1,5 +1,5 @@
 import { ActivityListPopoverItem } from "@mail/core/web/activity_list_popover_item";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 
 import { Component, onWillUpdateProps } from "@odoo/owl";
 
@@ -42,7 +42,7 @@ export class ActivityListPopover extends Component {
         const allActivities = Object.values(this.store["mail.activity"].records);
         return allActivities
             .filter((activity) => this.props.activityIds.includes(activity.id))
-            .sort((a, b) => compareDatetime(a.date_deadline, b.date_deadline) || a.id - b.id);
+            .sort((a, b) => compareDatetime(a.date_deadline, b.date_deadline) || compareId(a.id, b.id));
     }
 
     onClickAddActivityButton() {

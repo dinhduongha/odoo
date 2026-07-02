@@ -1,5 +1,6 @@
 import { partnerCompareRegistry } from "@mail/core/common/partner_compare";
 import { cleanTerm } from "@mail/utils/common/format";
+import { compareId } from "@mail/utils/common/misc";
 import { toRaw } from "@odoo/owl";
 import { loadEmoji } from "@web/core/emoji_picker/emoji_picker";
 
@@ -140,7 +141,7 @@ export class SuggestionService {
             if (cleanedName1 > cleanedName2) {
                 return 1;
             }
-            return c1.id - c2.id;
+            return compareId(c1.id, c2.id);
         };
         return {
             type: "mail.canned.response",
@@ -220,7 +221,7 @@ export class SuggestionService {
             if (cleanedName1 > cleanedName2) {
                 return 1;
             }
-            return r1.id - r2.id;
+            return compareId(r1.id, r2.id);
         };
         return {
             suggestions: roles.sort(sortFunc),
@@ -346,7 +347,7 @@ export class SuggestionService {
             if (cleanedDisplayName1 > cleanedDisplayName2) {
                 return 1;
             }
-            return c1.id - c2.id;
+            return compareId(c1.id, c2.id);
         };
         return {
             type: "Thread",

@@ -146,6 +146,77 @@ export function compareDatetime(date1, date2) {
     return date1.ts - date2.ts;
 }
 
+/** The all-zero uuid, used as the "nothing / absent" sentinel (e.g. unset new_message_separator). */
+export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A real, server-persisted record id: a uuid string, excluding the nil sentinel.
+ * With uuidv7 primary keys every real id is a uuid string, so numeric or nil ids are not persisted.
+ */
+export function isPersistedId(id) {
+    return typeof id === "string" && id !== NIL_UUID && UUID_RE.test(id);
+}
+
+/**
+ * A client-fabricated local id: a positive-int client counter (e.g. failure model) or a
+ * "~"-prefixed sentinel string (e.g. livechat display messages). Temp messages/attachments use
+ * a real `uuid7()` and are identified by flags, not by this.
+ */
+export function isLocalId(id) {
+    return typeof id === "number" || (typeof id === "string" && id.startsWith("~"));
+}
+
+/**
+ * uuid-safe id comparator (ascending). uuidv7 ids are time-ordered, so lexicographic string
+ * order == chronological order. Coerces to string so mixed/undefined ids never yield NaN.
+ *
+ * @returns {number} -1 if a < b, 1 if a > b, 0 if equal.
+ */
+export function compareId(a, b) {
+    const sa = a == null ? "" : String(a);
+    const sb = b == null ? "" : String(b);
+    return sa === sb ? 0 : sa < sb ? -1 : 1;
+}
+
+/** Smallest id in a list (uuid-safe replacement for `Math.min(...ids)`). */
+export function minId(ids) {
+    return ids.reduce((m, id) => (m === undefined || compareId(id, m) < 0 ? id : m), undefined);
+}
+
+/** Largest id in a list (uuid-safe replacement for `Math.max(...ids)`). */
+export function maxId(ids) {
+    return ids.reduce((m, id) => (m === undefined || compareId(id, m) > 0 ? id : m), undefined);
+}
+
+/** Whether a new_message_separator points at "nothing read" (the nil uuid). */
+export function isNilSeparator(sep) {
+    return sep === NIL_UUID;
+}
+
+/**
+ * Client-side uuidv7 generator (48-bit ms timestamp + random). Time-ordered, so a temp id minted
+ * "now" sorts after all earlier (server) uuidv7 ids. Used for optimistic/transient message and
+ * attachment ids; persistence is decided by flags (is_transient/isPending/uploading), never by id
+ * shape, so a temp uuid7 being shape-identical to a real id is fine.
+ *
+ * @returns {string}
+ */
+export function uuid7() {
+    const ts = Date.now();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[0] = Math.floor(ts / 2 ** 40) & 0xff;
+    b[1] = Math.floor(ts / 2 ** 32) & 0xff;
+    b[2] = Math.floor(ts / 2 ** 24) & 0xff;
+    b[3] = Math.floor(ts / 2 ** 16) & 0xff;
+    b[4] = Math.floor(ts / 2 ** 8) & 0xff;
+    b[5] = ts & 0xff;
+    b[6] = (b[6] & 0x0f) | 0x70; // version 7
+    b[8] = (b[8] & 0x3f) | 0x80; // variant 10
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0"));
+    return `${h[0]}${h[1]}${h[2]}${h[3]}-${h[4]}${h[5]}-${h[6]}${h[7]}-${h[8]}${h[9]}-${h[10]}${h[11]}${h[12]}${h[13]}${h[14]}${h[15]}`;
+}
+
 /**
  * Compares two version strings.
  *

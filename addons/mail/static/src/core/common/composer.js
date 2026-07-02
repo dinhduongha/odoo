@@ -957,7 +957,7 @@ export class Composer extends Component {
             composer.emailAddSignature = config.emailAddSignature;
             composer.composerHtml = config.composerHtml;
         }
-        if (Number.isInteger(config.replyToMessageId)) {
+        if (config.replyToMessageId) {
             composer.replyToMessage = this.store["mail.message"].insert(config.replyToMessageId);
         }
     }

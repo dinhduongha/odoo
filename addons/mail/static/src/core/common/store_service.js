@@ -6,7 +6,7 @@ import {
     generateEmojisOnHtml,
     prettifyMessageText,
 } from "@mail/utils/common/format";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId, NIL_UUID, uuid7 } from "@mail/utils/common/misc";
 
 import { reactive } from "@odoo/owl";
 
@@ -29,9 +29,6 @@ import { isMarkup, createDocumentFragmentFromContent } from "@web/core/utils/htm
 /**
  * @typedef {{isSpecial: boolean, channel_types: string[], label: string, displayName: string, description: string}} SpecialMention
  */
-
-let prevLastMessageId = null;
-let temporaryIdOffset = 0.01;
 
 export const pyToJsModels = {
     "discuss.channel": "Thread",
@@ -118,7 +115,7 @@ export class Store extends BaseStore {
          * @param {import("models").Failure} f1
          * @param {import("models").Failure} f2
          */
-        sort: (f1, f2) => f2.lastMessage?.id - f1.lastMessage?.id,
+        sort: (f1, f2) => compareId(f2.lastMessage?.id, f1.lastMessage?.id),
     });
     settings = fields.One("Settings");
     emojiLoader = loader;
@@ -229,7 +226,7 @@ export class Store extends BaseStore {
         compute() {
             const messages = (this.store.inbox?.messages ?? []).filter((m) => !m.thread);
             return messages.sort(
-                (m1, m2) => compareDatetime(m2.datetime, m1.datetime) || m2.id - m1.id
+                (m1, m2) => compareDatetime(m2.datetime, m1.datetime) || compareId(m2.id, m1.id)
             );
         },
     });
@@ -562,14 +559,6 @@ export class Store extends BaseStore {
         }
     }
 
-    /** @returns {number} */
-    getLastMessageId() {
-        return Object.values(this["mail.message"].records).reduce(
-            (lastMessageId, message) => Math.max(lastMessageId, message.id),
-            0
-        );
-    }
-
     handleValidChannelMention(channelLinks) {
         for (const linkEl of channelLinks.filter(
             (el) => !el.querySelector(".fa-comments-o, .fa-hashtag")
@@ -696,14 +685,9 @@ export class Store extends BaseStore {
     }
 
     getNextTemporaryId() {
-        const lastMessageId = this.getLastMessageId();
-        if (prevLastMessageId === lastMessageId) {
-            temporaryIdOffset += 0.01;
-        } else {
-            prevLastMessageId = lastMessageId;
-            temporaryIdOffset = 0.01;
-        }
-        return lastMessageId + temporaryIdOffset;
+        // uuidv7 is time-ordered, so an optimistic message minted now sorts after all persisted
+        // messages; persistence is decided by is_transient/isPending flags, not by id shape.
+        return uuid7();
     }
 
     /**
@@ -837,7 +821,7 @@ export const storeService = {
          * these values will still be executed immediately. Providing a dummy default is enough to
          * avoid crashes, the actual values being filled at livechat init when they are necessary.
          */
-        store.self_guest ??= { id: -1 };
+        store.self_guest ??= { id: NIL_UUID };
         store.settings ??= {};
         store.initialize();
         store.onStarted();

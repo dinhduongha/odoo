@@ -1,6 +1,6 @@
 import { AND, fields, Record } from "@mail/core/common/record";
 import { generateEmojisOnHtml } from "@mail/utils/common/format";
-import { assignDefined } from "@mail/utils/common/misc";
+import { assignDefined, compareId, isLocalId, isPersistedId } from "@mail/utils/common/misc";
 import { rpc } from "@web/core/network/rpc";
 
 import { _t } from "@web/core/l10n/translation";
@@ -31,7 +31,7 @@ export class Thread extends Record {
     static async getOrFetch(data, fieldNames = []) {
         let thread = this.get(data);
         if (
-            data.id > 0 &&
+            isPersistedId(data.id) &&
             (!thread || fieldNames.some((fieldName) => thread[fieldName] === undefined))
         ) {
             await this.store.fetchStoreData("mail.thread", {
@@ -74,7 +74,7 @@ export class Thread extends Record {
          * @param {import("models").Attachment} a1
          * @param {import("models").Attachment} a2
          */
-        sort: (a1, a2) => (a1.id < a2.id ? 1 : -1),
+        sort: (a1, a2) => compareId(a2.id, a1.id),
     });
     get allowedToLeaveChannelTypes() {
         return ["channel", "group"];
@@ -237,7 +237,7 @@ export class Thread extends Record {
     pendingNewMessages = fields.Many("mail.message");
     needactionMessages = fields.Many("mail.message", {
         inverse: "threadAsNeedaction",
-        sort: (message1, message2) => message1.id - message2.id,
+        sort: (message1, message2) => compareId(message1.id, message2.id),
     });
     // FIXME: should be in the portal/frontend bundle but live chat can be loaded
     // before portal resulting in the field not being properly initialized.
@@ -311,7 +311,7 @@ export class Thread extends Record {
         const attachments = this.attachments.filter(
             (attachment) => (attachment.isPdf || attachment.isImage) && !attachment.uploading
         );
-        attachments.sort((a1, a2) => a2.id - a1.id);
+        attachments.sort((a1, a2) => compareId(a2.id, a1.id));
         return attachments;
     }
 
@@ -382,7 +382,7 @@ export class Thread extends Record {
     }
 
     get isTransient() {
-        return !this.id || this.id < 0;
+        return !this.id || isLocalId(this.id);
     }
 
     get lastEditableMessageOfSelf() {
@@ -407,15 +407,15 @@ export class Thread extends Record {
     });
 
     get newestPersistentMessage() {
-        return this.messages.findLast((msg) => Number.isInteger(msg.id));
+        return this.persistentMessages.at(-1);
     }
 
     newestPersistentAllMessages = fields.Many("mail.message", {
         compute() {
-            const allPersistentMessages = this.allMessages.filter((message) =>
-                Number.isInteger(message.id)
+            const allPersistentMessages = this.allMessages.filter(
+                (message) => !message.is_transient && !message.isPending
             );
-            allPersistentMessages.sort((m1, m2) => m2.id - m1.id);
+            allPersistentMessages.sort((m1, m2) => compareId(m2.id, m1.id));
             return allPersistentMessages;
         },
     });
@@ -427,7 +427,7 @@ export class Thread extends Record {
     });
 
     get oldestPersistentMessage() {
-        return this.messages.find((msg) => Number.isInteger(msg.id));
+        return this.persistentMessages[0];
     }
 
     onPinStateUpdated() {}
@@ -556,7 +556,7 @@ export class Thread extends Record {
                 );
                 if (missingMessages.length > 0) {
                     this.messages.push(...missingMessages);
-                    this.messages.sort((m1, m2) => m1.id - m2.id);
+                    this.messages.sort((m1, m2) => compareId(m1.id, m2.id));
                 }
             }
         }
@@ -892,9 +892,12 @@ export class Thread extends Record {
      */
     _enrichMessagesWithTransient() {
         for (const message of this.transientMessages) {
-            if (message.id < this.oldestPersistentMessage && !this.loadOlder) {
+            if (compareId(message.id, this.oldestPersistentMessage?.id) < 0 && !this.loadOlder) {
                 this.messages.unshift(message);
-            } else if (message.id > this.newestPersistentMessage && !this.loadNewer) {
+            } else if (
+                compareId(message.id, this.newestPersistentMessage?.id) > 0 &&
+                !this.loadNewer
+            ) {
                 this.messages.push(message);
             } else {
                 let afterIndex = this.messages.findIndex((msg) => msg.id > message.id);

@@ -1,4 +1,5 @@
 import { fields, Record } from "@mail/core/common/record";
+import { isPersistedId } from "@mail/utils/common/misc";
 import { imageUrl } from "@web/core/utils/urls";
 import { rpc } from "@web/core/network/rpc";
 import { debounce } from "@web/core/utils/timing";
@@ -36,7 +37,7 @@ export class MailGuest extends Record {
     debouncedSetImStatus;
     monitorPresence = fields.Attr(false, {
         compute() {
-            return this.store.env.services.bus_service.isActive && this.id > 0;
+            return this.store.env.services.bus_service.isActive && isPersistedId(this.id);
         },
     });
     _triggerPresenceSubscription = fields.Attr(null, {
@@ -62,7 +63,11 @@ export class MailGuest extends Record {
     /** @type {ImStatus} */
     im_status = fields.Attr(null, {
         onUpdate() {
-            if (this.eq(this.store.self_guest) && this.im_status === "offline" && this.id < 0) {
+            if (
+                this.eq(this.store.self_guest) &&
+                this.im_status === "offline" &&
+                !isPersistedId(this.id)
+            ) {
                 this.store.env.services.im_status.updateBusPresence();
             }
         },
