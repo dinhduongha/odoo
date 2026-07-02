@@ -1,4 +1,4 @@
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 import { fields, Record } from "@mail/core/common/record";
 import { browser } from "@web/core/browser/browser";
 
@@ -14,7 +14,7 @@ export class DiscussAppCategory extends Record {
             return String.prototype.localeCompare.call(t1.name, t2.name);
         }
         if (this.id === "chats") {
-            return compareDatetime(t2.lastInterestDt, t1.lastInterestDt) || t2.id - t1.id;
+            return compareDatetime(t2.lastInterestDt, t1.lastInterestDt) || compareId(t2.id, t1.id);
         }
     }
 

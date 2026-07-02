@@ -1,5 +1,6 @@
 import { patch } from "@web/core/utils/patch";
 import { fields } from "@mail/core/common/record";
+import { compareId } from "@mail/utils/common/misc";
 import { Thread } from "@mail/core/common/thread_model";
 
 import { rpc } from "@web/core/network/rpc";
@@ -16,7 +17,7 @@ patch(Thread.prototype, {
             },
             sort: (m1, m2) => {
                 if (m1.pinned_at === m2.pinned_at) {
-                    return m1.id - m2.id;
+                    return compareId(m1.id, m2.id);
                 }
                 return m1.pinned_at < m2.pinned_at ? 1 : -1;
             },

@@ -1,6 +1,7 @@
 import { Component, useEffect, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { Thread } from "@mail/core/common/thread_model";
+import { compareId } from "@mail/utils/common/misc";
 import { CALL_ICON_DEAFEN, CALL_ICON_MUTED } from "@mail/discuss/call/common/call_actions";
 import { AvatarStack } from "@mail/discuss/core/common/avatar_stack";
 import { useHover } from "@mail/utils/common/hooks";
@@ -83,8 +84,8 @@ export class DiscussSidebarCallParticipants extends Component {
             const persona2 = s2.channel_member_id?.persona;
             return (
                 persona1?.name?.localeCompare(persona2?.name) ||
-                s1.channel_member_id?.id - s2.channel_member_id?.id ||
-                s1.id - s2.id
+                compareId(s1.channel_member_id?.id, s2.channel_member_id?.id) ||
+                compareId(s1.id, s2.id)
             );
         });
     }

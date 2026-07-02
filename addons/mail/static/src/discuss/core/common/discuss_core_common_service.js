@@ -1,4 +1,5 @@
 import { markup, reactive } from "@odoo/owl";
+import { isNilSeparator, uuid7 } from "@mail/utils/common/misc";
 
 import { registry } from "@web/core/registry";
 
@@ -33,11 +34,10 @@ export class DiscussCoreCommon {
         });
         this.busService.subscribe("discuss.channel/transient_message", (payload) => {
             const { body, channel_id } = payload;
-            const lastMessageId = this.store.getLastMessageId();
             const message = this.store["mail.message"].insert({
                 author_id: this.store.odoobot,
                 body: markup(body),
-                id: lastMessageId + 0.01,
+                id: uuid7(),
                 subtype_id: this.store.mt_note,
                 is_transient: true,
                 thread: { id: channel_id, model: "discuss.channel" },
@@ -99,8 +99,12 @@ export class DiscussCoreCommon {
             if (message.isSelfAuthored) {
                 channel.onNewSelfMessage(message);
             } else {
-                if (channel.isDisplayed && channel.self_member_id?.new_message_separator_ui === 0) {
-                    channel.self_member_id.new_message_separator_ui = message.id;
+                if (
+                    channel.isDisplayed &&
+                    isNilSeparator(channel.self_member_id?.new_message_separator_ui)
+                ) {
+                    channel.self_member_id.new_message_separator_ui =
+                        channel.messageIdBefore(message);
                 }
                 if (!channel.isDisplayed && channel.self_member_id) {
                     channel.scrollUnread = true;

@@ -11,7 +11,7 @@ const attachmentPatch = {
         return !this.voice && super.isViewable;
     },
     delete() {
-        if (this.voice && this.id > 0) {
+        if (this.voice && !this.uploading) {
             this.store.env.services["discuss.voice_message"].activePlayer = null;
         }
         super.delete(...arguments);

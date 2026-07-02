@@ -16,15 +16,18 @@ registerMessageAction("set-new-message-separator", {
     name: _t("Mark as Unread"),
     onSelected: ({ message: msg }) => {
         const message = toRaw(msg);
+        // separator holds the last-READ id; to make this message the first unread, the boundary
+        // is its predecessor (server marks unread as id > separator).
+        const separatorId = message.thread.messageIdBefore(message);
         const selfMember = message.thread?.self_member_id;
         if (selfMember) {
-            selfMember.new_message_separator = message.id;
-            selfMember.new_message_separator_ui = selfMember.new_message_separator;
+            selfMember.new_message_separator = separatorId;
+            selfMember.new_message_separator_ui = separatorId;
         }
         message.thread.markedAsUnread = true;
         rpc("/discuss/channel/set_new_message_separator", {
             channel_id: message.thread.id,
-            message_id: message.id,
+            message_id: separatorId,
         });
     },
     sequence: 70,

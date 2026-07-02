@@ -1,5 +1,5 @@
 import { Store } from "@mail/core/common/store_service";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 import { AvatarCardPopover } from "@mail/discuss/web/avatar_card/avatar_card_popover";
 
 import { patch } from "@web/core/utils/patch";
@@ -40,7 +40,7 @@ const StorePatch = {
     getSelfRecentChannels() {
         return Object.values(this.Thread.records)
             .filter((thread) => thread.model === "discuss.channel" && thread.self_member_id)
-            .sort((a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || b.id - a.id);
+            .sort((a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || compareId(b.id, a.id));
     },
     onStarted() {
         super.onStarted();

@@ -3,8 +3,12 @@ import { Thread } from "@mail/core/common/thread_model";
 import { useSequential } from "@mail/utils/common/hooks";
 import {
     compareDatetime,
+    compareId,
     effectWithCleanup,
-    nearestGreaterThanOrEqual,
+    isNilSeparator,
+    isPersistedId,
+    minId,
+    NIL_UUID,
 } from "@mail/utils/common/misc";
 import { _t } from "@web/core/l10n/translation";
 
@@ -41,7 +45,7 @@ const threadStaticPatch = {
         return thread;
     },
     async getOrFetch(data, fieldNames = []) {
-        if (data.model !== "discuss.channel" || data.id < 1) {
+        if (data.model !== "discuss.channel" || !isPersistedId(data.id)) {
             return super.getOrFetch(...arguments);
         }
         const thread = this.store.Thread.get({ id: data.id, model: data.model });
@@ -87,7 +91,7 @@ const threadPatch = {
         this.channel_member_ids = fields.Many("discuss.channel.member", {
             inverse: "channel_id",
             onDelete: (r) => r.delete(),
-            sort: (m1, m2) => m1.id - m2.id,
+            sort: (m1, m2) => compareId(m1.id, m2.id),
         });
         this.correspondent = fields.One("discuss.channel.member", {
             /** @this {import("models").Thread} */
@@ -127,19 +131,21 @@ const threadPatch = {
                     return null;
                 }
                 const messages = this.messages.filter((m) => !m.isNotification);
-                const separator = this.self_member_id.new_message_separator_ui;
-                if (separator === 0 && !this.loadOlder) {
-                    return messages[0];
-                }
-                if (!separator || messages.length === 0 || messages.at(-1).id < separator) {
+                if (messages.length === 0) {
                     return null;
                 }
-                // try to find a perfect match according to the member's separator
-                let message = this.store["mail.message"].get({ id: separator });
-                if (!message || this.notEq(message.thread)) {
-                    message = nearestGreaterThanOrEqual(messages, separator, (msg) => msg.id);
+                const separator = this.self_member_id.new_message_separator_ui;
+                if (separator == null) {
+                    return null; // not loaded yet
                 }
-                return message;
+                if (isNilSeparator(separator)) {
+                    return this.loadOlder ? null : messages[0]; // nothing read → all unread
+                }
+                if (compareId(messages.at(-1).id, separator) <= 0) {
+                    return null; // everything read
+                }
+                // separator = last-read id; the line goes above the first strictly-later message
+                return messages.find((m) => compareId(m.id, separator) > 0) ?? null;
             },
             inverse: "threadAsFirstUnread",
         });
@@ -164,7 +170,9 @@ const threadPatch = {
                 return this.channel_member_ids.reduce((lastMessageSeenByAllId, member) => {
                     if (member.notEq(this.selfMember) && member.seen_message_id) {
                         return lastMessageSeenByAllId
-                            ? Math.min(lastMessageSeenByAllId, member.seen_message_id.id)
+                            ? compareId(member.seen_message_id.id, lastMessageSeenByAllId) < 0
+                                ? member.seen_message_id.id
+                                : lastMessageSeenByAllId
                             : member.seen_message_id.id;
                     } else {
                         return lastMessageSeenByAllId;
@@ -311,7 +319,7 @@ const threadPatch = {
         }
         if (this.channel_name_member_ids.length && !this.name) {
             const nameParts = this.channel_name_member_ids
-                .sort((m1, m2) => m1.id - m2.id)
+                .sort((m1, m2) => compareId(m1.id, m2.id))
                 .slice(0, 3)
                 .map((member) => member.name);
             if (this.member_count > 3) {
@@ -352,7 +360,7 @@ const threadPatch = {
         this.isLoadingAttachments = true;
         try {
             const data = await rpc("/discuss/channel/attachments", {
-                before: Math.min(...this.attachments.map(({ id }) => id)),
+                before: minId(this.attachments.filter((a) => !a.uploading).map((a) => a.id)),
                 channel_id: this.id,
                 limit,
             });
@@ -414,8 +422,8 @@ const threadPatch = {
             return;
         }
         const alreadyReadBySelf =
-            this.self_member_id.seen_message_id?.id >= newestPersistentMessage.id &&
-            this.self_member_id.new_message_separator > newestPersistentMessage.id;
+            compareId(this.self_member_id.seen_message_id?.id, newestPersistentMessage.id) >= 0 &&
+            compareId(this.self_member_id.new_message_separator, newestPersistentMessage.id) >= 0;
         if (alreadyReadBySelf) {
             return;
         }
@@ -452,13 +460,29 @@ const threadPatch = {
     },
     /** @override */
     onNewSelfMessage(message) {
-        if (!this.self_member_id || message.id < this.self_member_id.seen_message_id?.id) {
+        if (
+            !this.self_member_id ||
+            compareId(message.id, this.self_member_id.seen_message_id?.id) < 0
+        ) {
             return;
         }
         this.self_member_id.seen_message_id = message;
-        this.self_member_id.new_message_separator = message.id + 1;
+        // separator holds the last-READ id (server: unread = id > separator)
+        this.self_member_id.new_message_separator = message.id;
         this.self_member_id.new_message_separator_ui = this.self_member_id.new_message_separator;
         this.markedAsUnread = false;
+    },
+    /**
+     * The last-read id that would make `message` the first unread one: its persistent
+     * predecessor in this thread, or the nil uuid if it is the first message.
+     *
+     * @param {import("models").Message} message
+     * @returns {string}
+     */
+    messageIdBefore(message) {
+        const msgs = this.messages.filter((m) => !m.isNotification && m.persistent);
+        const idx = msgs.findIndex((m) => m.eq(message));
+        return idx > 0 ? msgs[idx - 1].id : NIL_UUID;
     },
     /** @override */
     open(options) {

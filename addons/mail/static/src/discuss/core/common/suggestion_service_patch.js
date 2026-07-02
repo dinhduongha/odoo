@@ -1,5 +1,6 @@
 import { SuggestionService } from "@mail/core/common/suggestion_service";
 import { cleanTerm } from "@mail/utils/common/format";
+import { compareId } from "@mail/utils/common/misc";
 
 import { registry } from "@web/core/registry";
 import { patch } from "@web/core/utils/patch";
@@ -118,7 +119,7 @@ const suggestionServicePatch = {
             if (cleanedName1 > cleanedName2) {
                 return 1;
             }
-            return c1.id - c2.id;
+            return compareId(c1.id, c2.id);
         };
         return {
             type: "ChannelCommand",

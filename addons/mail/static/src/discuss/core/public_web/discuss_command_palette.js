@@ -1,4 +1,5 @@
 import { cleanTerm } from "@mail/utils/common/format";
+import { compareId } from "@mail/utils/common/misc";
 
 import { Component, useState } from "@odoo/owl";
 
@@ -189,7 +190,7 @@ export class DiscussCommandPalette {
                 } else if (!c1.self_member_id && c2.self_member_id) {
                     return 1;
                 }
-                return c1.id - c2.id;
+                return compareId(c1.id, c2.id);
             })
             .slice(0, TOTAL_LIMIT);
         // balance remaining: half personas, half channels

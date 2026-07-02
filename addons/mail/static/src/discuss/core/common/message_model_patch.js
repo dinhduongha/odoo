@@ -16,8 +16,9 @@ const messagePatch = {
         this.hasNewMessageSeparator = fields.Attr(false, {
             compute() {
                 // compute for caching the value and not re-rendering all
-                // messages when new_message_separator changes
-                return this.thread?.self_member_id?.new_message_separator === this.id;
+                // messages when new_message_separator changes. The "New" line is drawn on the
+                // first unread message (first with id > the last-read separator).
+                return this.eq(this.thread?.firstUnreadMessage);
             },
         });
         this.hasSomeoneFetched = fields.Attr(false, {

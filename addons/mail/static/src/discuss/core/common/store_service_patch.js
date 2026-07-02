@@ -1,5 +1,5 @@
 import { Store } from "@mail/core/common/store_service";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 
 import { patch } from "@web/core/utils/patch";
 import { debounce } from "@web/core/utils/timing";
@@ -62,7 +62,7 @@ const storeServicePatch = {
     getRecentChatPartnerIds() {
         return Object.values(this.Thread.records)
             .filter((thread) => thread.channel_type === "chat" && thread.correspondent?.partner_id)
-            .sort((a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || b.id - a.id)
+            .sort((a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || compareId(b.id, a.id))
             .map((thread) => thread.correspondent.partner_id.id);
     },
     /**
@@ -70,7 +70,7 @@ const storeServicePatch = {
      * @param {import("models").ChannelMember} m2
      */
     sortMembers(m1, m2) {
-        return m1.name?.localeCompare(m2.name) || m1.id - m2.id;
+        return m1.name?.localeCompare(m2.name) || compareId(m1.id, m2.id);
     },
     /** @param {number[]} partnerIds */
     async startChat(partnerIds) {
