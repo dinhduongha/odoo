@@ -1,5 +1,5 @@
 import { Store } from "@mail/core/common/store_service";
-import { compareDatetime } from "@mail/utils/common/misc";
+import { compareDatetime, compareId } from "@mail/utils/common/misc";
 import { _t } from "@web/core/l10n/translation";
 
 import { patch } from "@web/core/utils/patch";
@@ -30,7 +30,7 @@ const storePatch = {
                 (t1, t2) =>
                     !t2.livechat_end_dt - !t1.livechat_end_dt ||
                     compareDatetime(t1.lastInterestDt, t2.lastInterestDt) ||
-                    t1.id - t2.id
+                    compareId(t1.id, t2.id)
             );
         if (!oldestUnreadThread) {
             return false;

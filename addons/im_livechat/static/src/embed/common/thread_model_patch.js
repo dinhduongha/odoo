@@ -29,7 +29,7 @@ patch(Thread.prototype, {
             compute() {
                 if (this.chatbot) {
                     return {
-                        id: -0.1 - this.id,
+                        id: `~lc-chatbot-typing-${this.id}`,
                         thread: this,
                         author_id: this.livechat_operator_id,
                     };
@@ -41,7 +41,7 @@ patch(Thread.prototype, {
                 if (this.hasWelcomeMessage) {
                     const livechatService = this.store.env.services["im_livechat.livechat"];
                     return {
-                        id: -0.2 - this.id,
+                        id: `~lc-welcome-${this.id}`,
                         body: livechatService.options.default_message,
                         thread: this,
                         author_id: this.livechat_operator_id,

@@ -35,7 +35,7 @@ export class Chatbot extends Record {
         compute() {
             if (this.isTyping && this.thread) {
                 return {
-                    id: -0.1 - this.thread.id,
+                    id: `~lc-chatbot-typing-${this.thread.id}`,
                     thread: this.thread,
                     author_id: this.script.operator_partner_id,
                 };

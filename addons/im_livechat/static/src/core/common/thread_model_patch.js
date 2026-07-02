@@ -1,5 +1,6 @@
 import { fields } from "@mail/core/common/record";
 import { Thread } from "@mail/core/common/thread_model";
+import { compareId } from "@mail/utils/common/misc";
 
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
@@ -21,7 +22,7 @@ patch(Thread.prototype, {
                 // For livechat threads, the correspondent is the first
                 // channel member that is not the operator.
                 const orderedChannelMembers = [...this.channel_member_ids].sort(
-                    (a, b) => a.id - b.id
+                    (a, b) => compareId(a.id, b.id)
                 );
                 const isFirstMemberOperator = orderedChannelMembers[0]?.partner_id?.eq(
                     this.livechat_operator_id
