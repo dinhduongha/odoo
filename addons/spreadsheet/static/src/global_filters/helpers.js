@@ -373,7 +373,11 @@ function isNumericFilterValueValid(value) {
 }
 
 function isArrayOfIds(ids) {
-    return Array.isArray(ids) && ids.length && ids.every((id) => Number.isInteger(id));
+    return (
+        Array.isArray(ids) &&
+        ids.length &&
+        ids.every((id) => Number.isInteger(id) || (typeof id === "string" && id.length > 0))
+    );
 }
 
 function isCurrentUserOrArrayOfIds(value) {
