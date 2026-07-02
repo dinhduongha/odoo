@@ -778,7 +778,7 @@ class PosConfig(models.Model):
     def _action_to_open_ui(self):
         if not self.current_session_id:
             self.env['pos.session'].create({'user_id': self.env.uid, 'config_id': self.id})
-        pos_url = '/pos/ui/%d?from_backend=True' % self.id
+        pos_url = '/pos/ui/%s?from_backend=True' % self.id
         debug = request and request.session.debug
         if debug:
             pos_url += '&debug=%s' % debug

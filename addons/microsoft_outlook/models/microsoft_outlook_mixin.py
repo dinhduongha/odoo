@@ -271,7 +271,7 @@ class MicrosoftOutlookMixin(models.AbstractModel):
         This will prevent a malicious person to make an admin user disconnect the mail servers.
         """
         self.ensure_one()
-        _logger.info('Microsoft Outlook: generate CSRF token for %s #%i', self._name, self.id)
+        _logger.info('Microsoft Outlook: generate CSRF token for %s #%s', self._name, self.id)
         return hmac(
             env=self.env(su=True),
             scope='microsoft_outlook_oauth',

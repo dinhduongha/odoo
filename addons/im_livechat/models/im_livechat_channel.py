@@ -234,7 +234,7 @@ class Im_LivechatChannel(models.Model):
 
     def _compute_web_page_link(self):
         for record in self:
-            record.web_page = "%s/im_livechat/support/%i" % (record.get_base_url(), record.id) if record.id else False
+            record.web_page = "%s/im_livechat/support/%s" % (record.get_base_url(), record.id) if record.id else False
 
     @api.depends('channel_ids')
     def _compute_nbr_channel(self):

@@ -257,7 +257,7 @@ class Website(Home):
         url_root = request.httprequest.url_root
         # For a same website, each domain has its own sitemap (cache)
         hashed_url_root = md5(url_root.encode()).hexdigest()[:8]
-        sitemap_base_url = '/sitemap-%d-%s' % (current_website.id, hashed_url_root)
+        sitemap_base_url = '/sitemap-%s-%s' % (current_website.id, hashed_url_root)
 
         def create_sitemap(url, content):
             return Attachment.create({
@@ -308,7 +308,7 @@ class Website(Home):
                 })
             else:
                 # TODO: in master/saas-15, move current_website_id in template directly
-                pages_with_website = ["%d-%s-%d" % (current_website.id, hashed_url_root, p) for p in range(1, pages + 1)]
+                pages_with_website = ["%s-%s-%d" % (current_website.id, hashed_url_root, p) for p in range(1, pages + 1)]
 
                 # Sitemaps must be split in several smaller files with a sitemap index
                 content = View._render_template('website.sitemap_index_xml', {

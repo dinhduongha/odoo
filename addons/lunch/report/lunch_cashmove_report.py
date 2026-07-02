@@ -19,7 +19,7 @@ class LunchCashmoveReport(models.Model):
 
     def _compute_display_name(self):
         for cashmove in self:
-            cashmove.display_name = '{} {}'.format(_('Lunch Cashmove'), '#%d' % cashmove.id)
+            cashmove.display_name = '{} {}'.format(_('Lunch Cashmove'), '#%s' % cashmove.id)
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)

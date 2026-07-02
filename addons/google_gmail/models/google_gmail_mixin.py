@@ -270,7 +270,7 @@ class GoogleGmailMixin(models.AbstractModel):
         This will prevent a malicious person to make an admin user disconnect the mail servers.
         """
         self.ensure_one()
-        _logger.info('Google Gmail: generate CSRF token for %s #%i', self._name, self.id)
+        _logger.info('Google Gmail: generate CSRF token for %s #%s', self._name, self.id)
         return tools.misc.hmac(
             env=self.env(su=True),
             scope='google_gmail_oauth',

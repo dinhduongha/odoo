@@ -274,7 +274,7 @@ odoo_mailgate: "|/path/to/odoo-mailgate.py --host=localhost -u %(uid)d -p PASSWO
         for server in servers:
             total_remaining -= 1  # the server is checked
             if not server.try_lock_for_update(allow_referencing=True).filtered_domain(MAIL_SERVER_DOMAIN):
-                _logger.info('Skip checking for new mails on mail server id %d (unavailable)', server.id)
+                _logger.info('Skip checking for new mails on mail server id %s (unavailable)', server.id)
                 continue
             server_type_and_name = server.server_type, server.name  # avoid reading this after each commit
             _logger.info('Start checking for new emails on %s server %s', *server_type_and_name)

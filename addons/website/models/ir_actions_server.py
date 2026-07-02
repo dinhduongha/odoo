@@ -27,7 +27,7 @@ class IrActionsServer(models.Model):
 
     def _compute_website_url(self, website_path, xml_id):
         base_url = self.get_base_url()
-        link = website_path or xml_id or (self.id and '%d' % self.id) or ''
+        link = website_path or xml_id or (self.id and '%s' % self.id) or ''
         if base_url and link:
             path = '%s/%s' % ('/website/action', link)
             return urls.urljoin(base_url, path)
