@@ -20,7 +20,7 @@ class SaleReport(models.Model):
             s.date_order <= (timezone('utc', now()) - ((COALESCE(w.cart_abandoned_delay, '1.0') || ' hour')::INTERVAL))
             AND s.website_id IS NOT NULL
             AND s.state = 'draft'
-            AND s.partner_id != %s""" % self.env.ref('base.public_partner').id
+            AND s.partner_id != '%s'""" % self.env.ref('base.public_partner').id
         return res
 
     def _from_sale(self):
