@@ -1,5 +1,6 @@
 import DevicesSynchronisation from "@point_of_sale/app/utils/devices_synchronisation";
 import { patch } from "@web/core/utils/patch";
+import { compareId } from "@mail/utils/common/misc";
 
 patch(DevicesSynchronisation.prototype, {
     async processDynamicRecords(dynamicRecords) {
@@ -24,7 +25,7 @@ patch(DevicesSynchronisation.prototype, {
                 const localOrders = orders.filter((order) => !order.isSynced);
                 const syncedOrder = orders
                     .filter((order) => order.isSynced)
-                    .sort((a, b) => a.id - b.id);
+                    .sort((a, b) => compareId(a.id, b.id));
 
                 if (
                     (syncedOrder.length === 0 || localOrders.length === 0) &&

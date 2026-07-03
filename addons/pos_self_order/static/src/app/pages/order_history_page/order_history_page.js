@@ -1,5 +1,6 @@
 import { Component } from "@odoo/owl";
 import { useSelfOrder } from "@pos_self_order/app/services/self_order_service";
+import { compareId } from "@mail/utils/common/misc";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 
@@ -15,7 +16,7 @@ export class OrdersHistoryPage extends Component {
     get orders() {
         return this.selfOrder.models["pos.order"]
             .filter((o) => o.access_token)
-            .sort((a, b) => b.id - a.id);
+            .sort((a, b) => compareId(b.id, a.id));
     }
 
     get lines() {

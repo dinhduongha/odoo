@@ -18,6 +18,7 @@ import {
     onWillUnmount,
     onPatched,
 } from "@odoo/owl";
+import { compareId } from "@mail/utils/common/misc";
 import { ask } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { loadImage } from "@point_of_sale/utils";
 import { getDataURLFromFile } from "@web/core/utils/urls";
@@ -638,7 +639,11 @@ export class FloorScreen extends Component {
             : null;
     }
     get activeTables() {
-        return this.activeFloor?.table_ids?.filter((table) => table.active) || [];
+        return (
+            this.activeFloor?.table_ids
+                ?.filter((table) => table.active)
+                .sort((a, b) => compareId(a.id, b.id)) || []
+        );
     }
     get selectedTables() {
         return this.state.selectedTableIds.map((id) => this.pos.models["restaurant.table"].get(id));
