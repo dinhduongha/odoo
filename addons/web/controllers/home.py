@@ -55,10 +55,10 @@ class Home(http.Controller):
         if not security.check_session(request.session, request.env, request):
             raise http.SessionExpiredException("Session expired")
         if not is_user_internal(request.session.uid):
-            _logger.info("[UUID DEBUG] session.uid not is_user_internal = %s", request.session.uid)
+            # _logger.info("[UUID DEBUG] session.uid not is_user_internal = %s", request.session.uid)
             return request.redirect('/web/login_successful', 303)
 
-        _logger.info("[UUID DEBUG] session.uid = %s update", request.session.uid)
+        # _logger.info("[UUID DEBUG] session.uid = %s update", request.session.uid)
         # Side-effect, refresh the session lifetime
         request.session.touch()
 
@@ -127,7 +127,7 @@ class Home(http.Controller):
 
         if request.httprequest.method == 'POST':
             try:
-                _logger.info("[UUID DEBUG] POST web_login ")
+                # _logger.info("[UUID DEBUG] POST web_login ")
                 credential = {key: value for key, value in request.params.items() if key in CREDENTIAL_PARAMS and value}
                 credential.setdefault('type', 'password')
                 if request.env['res.users']._should_captcha_login(credential):

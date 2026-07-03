@@ -1239,16 +1239,15 @@ class ResUsers(models.Model):
         #     group_definitions
         # )
         # for new record don't fill the ormcache
-        val = group_id in (self._get_group_ids() if self.id else self.all_group_ids._origin._ids)
-        _logger.info(
-            "[UUID DEBUG] _has_group for user %s %s (type=%s): %s val: %s",
-            self.id,
-            group_ext_id,
-            type(self.id),
-            group_id,
-            val
-        )
-        
+        # _logger.info(
+        #     "[UUID DEBUG] _has_group for user %s %s (type=%s): %s val: %s",
+        #     self.id,
+        #     group_ext_id,
+        #     type(self.id),
+        #     group_id,
+        #     group_id in (self._get_group_ids() if self.id else self.all_group_ids._origin._ids),
+        # )
+
         # stack = ''.join(traceback.format_stack()[:-1])  # Bỏ dòng hiện tại    
         # _logger.info(
         #     "[UUID DEBUG] _has_group CALL TRACE\n"

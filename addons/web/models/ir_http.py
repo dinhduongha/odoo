@@ -173,7 +173,7 @@ class IrHttp(models.AbstractModel):
     @api.model
     def get_frontend_session_info(self):
         user = self.env.user
-        _logger.info("[UUID DEBUG] IrHttp get_frontend_session_info: %s ", user)
+        # _logger.info("[UUID DEBUG] IrHttp get_frontend_session_info: %s ", user)
         session_uid = request.session.uid
         session_info = {
             'is_admin': user._is_admin() if session_uid else False,

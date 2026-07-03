@@ -243,7 +243,7 @@ class IrModuleModule(models.Model):
             def format_view(v):
                 return '%s%s (%s)' % (v.inherit_id and '* INHERIT ' or '', v.name, v.type)
 
-            _logger.info("[UUID DEBUG] imd_models keys: %s", imd_models)
+            # _logger.info("[UUID DEBUG] imd_models keys: %s", imd_models)
             # module.views_by_module = "\n".join(sorted(format_view(v) for v in self.env['ir.ui.view'].search([])))
             # module.reports_by_module = "\n".join(sorted(r.name for r in self.env['ir.actions.report'].search([])))
             # module.menus_by_module = "\n".join(sorted(m.complete_name for m in self.env['ir.ui.menu'].search([])))
@@ -252,13 +252,13 @@ class IrModuleModule(models.Model):
             #menus = self.env['ir.ui.menu'].search([])
             for m in menus:
                 m._compute_complete_name()
-                _logger.warning(
-                    "[UUID DEBUG] MENU RECORD: id=%s, name=%s, parent_id=%s, complete_name=%s",
-                    m.id, m.name, getattr(m.parent_id, 'id', None), m.complete_name
-                )
+                # _logger.warning(
+                #     "[UUID DEBUG] MENU RECORD: id=%s, name=%s, parent_id=%s, complete_name=%s",
+                #     m.id, m.name, getattr(m.parent_id, 'id', None), m.complete_name
+                # )
 
-            _logger.info("[UUID DEBUG] Menu names for %s: %s",
-                module.name, [m.complete_name for m in browse('ir.ui.menu')])
+            # _logger.info("[UUID DEBUG] Menu names for %s: %s",
+            #     module.name, [m.complete_name for m in browse('ir.ui.menu')])
 
             module.views_by_module = "\n".join(sorted(format_view(v) for v in browse('ir.ui.view')))
             module.reports_by_module = "\n".join(sorted(r.name for r in browse('ir.actions.report')))
