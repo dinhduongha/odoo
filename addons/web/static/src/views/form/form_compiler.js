@@ -354,7 +354,7 @@ export class FormCompiler extends ViewCompiler {
                         record: `__comp__.props.record`,
                         string: child.hasAttribute("string")
                             ? toStringExpression(child.getAttribute("string"))
-                            : `__comp__.props.record.fields.${fieldName}.string`,
+                            : `__comp__.props.record.fields['${fieldName}'].string`,
                         fieldInfo: `__comp__.props.archInfo.fieldNodes[${fieldId}]`,
                     };
                     mainSlot.setAttribute("props", objectToString(props));
