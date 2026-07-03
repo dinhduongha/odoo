@@ -12,15 +12,26 @@ import { EventBus } from "@odoo/owl";
 
 export const userBus = new EventBus();
 
+// uuid PKs: company ids are uuids that themselves contain '-', so the '-'-joined 'cids'
+// cookie cannot be split on '-'. Extract each uuid (mirrors the server-side parsing in
+// e.g. mail/models/ir_http.py, spreadsheet_dashboard controllers).
+const COMPANY_UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
 function getCookieCompanyIds() {
-    if (cookie.get("cids")) {
-        const cids = cookie.get("cids");
-        if (typeof cids === "string") {
-            return cids.split("-").map(Number);
+    const cids = cookie.get("cids");
+    if (typeof cids === "string") {
+        const uuids = cids.match(COMPANY_UUID_RE);
+        if (uuids) {
+            return uuids;
         }
-        if (typeof cids === "number") {
-            return [cids];
-        }
+        // fallback: non-uuid (integer) company ids, still '-'-joined
+        return cids
+            .split("-")
+            .map(Number)
+            .filter((n) => !isNaN(n));
+    }
+    if (typeof cids === "number") {
+        return [cids];
     }
     return [];
 }
