@@ -59,14 +59,20 @@ export class CachedModelPlugin extends Plugin {
             for (const [recordId, record] of Object.entries(records)) {
                 for (const [field, value] of Object.entries(record)) {
                     // Currently only ids selection values are supported.
+                    // A freshly typed value gets a "new-<uid>" placeholder id (see
+                    // model_many2many.js create()); every existing record keeps its
+                    // db id — a uuid string since the int->uuid PK migration, so we
+                    // can no longer tell new from existing by string-vs-number.
+                    const isNewValue = (value) =>
+                        typeof value.id === "string" && value.id.startsWith("new-");
                     const proms = value
-                        .filter((value) => typeof value.id === "string")
+                        .filter((value) => isNewValue(value))
                         .map((value) =>
                             this.services.orm.create(value.model, [{ name: value.name }])
                         );
                     const createdIDs = (await Promise.all(proms)).flat();
                     const ids = value
-                        .filter((value) => typeof value.id === "number")
+                        .filter((value) => !isNewValue(value))
                         .map((value) => value.id)
                         .concat(createdIDs);
                     await this.services.orm.write(model, [recordId], { // uuid record id, keep as string
