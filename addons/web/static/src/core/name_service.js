@@ -4,8 +4,10 @@ import { Deferred } from "@web/core/utils/concurrency";
 
 export const ERROR_INACCESSIBLE_OR_MISSING = Symbol("INACCESSIBLE OR MISSING RECORD ID");
 
+// uuid: a record id is now either a legacy positive int or a uuid string
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isId(val) {
-    return Number.isInteger(val) && val >= 1;
+    return (Number.isInteger(val) && val >= 1) || (typeof val === "string" && UUID_RE.test(val));
 }
 
 /**

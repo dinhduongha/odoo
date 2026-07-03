@@ -174,7 +174,12 @@ export class SearchArchParser {
                 } else if (
                     ["many2many", "one2many"].includes(fieldType) &&
                     Array.isArray(val) &&
-                    val.every((v) => Number.isInteger(v) && v > 0)
+                    // uuid: ids are positive ints or uuid strings
+                    val.every(
+                        (v) =>
+                            (Number.isInteger(v) && v > 0) ||
+                            (typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))
+                    )
                 ) {
                     preField.defaultAutocompleteValue.operator = "in";
                     preField.defaultAutocompleteValue.value = val;
