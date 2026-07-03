@@ -81,18 +81,20 @@ export async function clearUncommittedChanges(env, { forceLeave } = {}) {
 
 export const standardActionServiceProps = {
     action: Object, // prop added by _getActionInfo
-    actionId: { type: Number, optional: true }, // prop added by _getActionInfo
+    actionId: { type: [Number, String], optional: true }, // prop added by _getActionInfo
     className: { type: String, optional: true }, // prop added by the ActionContainer
     globalState: { type: Object, optional: true }, // prop added by _updateUI
     state: { type: Object, optional: true }, // prop added by _updateUI
-    resId: { type: [Number, Boolean], optional: true },
+    resId: { type: [Number, String, Boolean], optional: true },
     updateActionState: { type: Function, optional: true },
 };
 
 function parseActiveIds(ids) {
     const activeIds = [];
     if (typeof ids === "string") {
-        activeIds.push(...ids.split(",").map(Number));
+        // uuid PKs: keep uuid string ids as-is; only coerce pure-integer ids (e.g. _auto=False
+        // SQL views) to Number. `Number("019f…")` would be NaN.
+        activeIds.push(...ids.split(",").map((id) => (/^\d+$/.test(id) ? Number(id) : id)));
     } else if (typeof ids === "number") {
         activeIds.push(ids);
     }
