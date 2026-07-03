@@ -933,7 +933,7 @@ class ProjectProject(models.Model):
     def action_view_tasks(self):
         action = self.env['ir.actions.act_window'].with_context(active_id=self.id)._for_xml_id('project.act_project_project_2_project_task_all')
         action['display_name'] = self.name
-        context = action['context'].replace('active_id', str(self.id))
+        context = action['context'].replace('active_id', repr(str(self.id)))
         context = ast.literal_eval(context)
         context.update({
             'create': self.active,

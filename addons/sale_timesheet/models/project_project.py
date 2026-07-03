@@ -249,7 +249,7 @@ class ProjectProject(models.Model):
     def action_project_timesheets(self):
         action = super().action_project_timesheets()
         if not self.allow_billable:
-            context = action['context'].replace('active_id', str(self.id))
+            context = action['context'].replace('active_id', repr(str(self.id)))
             action['context'] = {
                 **ast.literal_eval(context),
                 'hide_so_line': True,
