@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 import pytz
 from collections import defaultdict
 
@@ -125,7 +126,7 @@ class PosConfig(models.Model):
     proxy_ip = fields.Char(string='IP Address', size=45,
         help='The hostname or ip address of the hardware proxy, Will be autodetected if left empty.')
     active = fields.Boolean(default=True)
-    uuid = fields.Char(readonly=True, default=lambda self: str(uuid4()), copy=False,
+    uuid = fields.Char(readonly=True, default=lambda self: str(uuid7()), copy=False,
         help='A globally unique identifier for this pos configuration, used to prevent conflicts in client-generated data.')
     session_ids = fields.One2many('pos.session', 'config_id', string='Sessions')
     current_session_id = fields.Many2one('pos.session', compute='_compute_current_session', string="Current Session")

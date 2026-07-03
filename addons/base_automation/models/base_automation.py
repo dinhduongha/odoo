@@ -6,6 +6,7 @@ import re
 import traceback
 from collections import defaultdict
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 from dateutil.relativedelta import relativedelta
 from odoo import _, api, exceptions, fields, models
@@ -141,7 +142,7 @@ class BaseAutomation(models.Model):
         readonly=False,
     )
     url = fields.Char(compute='_compute_url', help="Use this URL in the third-party app to call this webhook.")
-    webhook_uuid = fields.Char(string="Webhook UUID", readonly=True, copy=False, default=lambda self: str(uuid4()))
+    webhook_uuid = fields.Char(string="Webhook UUID", readonly=True, copy=False, default=lambda self: str(uuid7()))
     record_getter = fields.Char(default="model.env[payload.get('_model')].browse(payload.get('_id'))",
                                 help="This code will be run to find on which record the automation rule should be run.")
     log_webhook_calls = fields.Boolean(string="Log Calls", default=False)
@@ -543,7 +544,7 @@ class BaseAutomation(models.Model):
 
     def action_rotate_webhook_uuid(self):
         for automation in self:
-            automation.webhook_uuid = str(uuid4())
+            automation.webhook_uuid = str(uuid7())
 
     def action_view_webhook_logs(self):
         self.ensure_one()

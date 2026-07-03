@@ -2,6 +2,7 @@ from odoo import api, fields, models, _
 from odoo.tools import formatLang, float_is_zero
 from odoo.exceptions import ValidationError
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 
 class PosPayment(models.Model):
@@ -41,7 +42,7 @@ class PosPayment(models.Model):
     ticket = fields.Char(string='Payment Receipt Info')
     is_change = fields.Boolean(string='Is this payment change?', default=False)
     account_move_id = fields.Many2one('account.move', index='btree_not_null')
-    uuid = fields.Char(string='Uuid', readonly=True, default=lambda self: str(uuid4()), copy=False)
+    uuid = fields.Char(string='Uuid', readonly=True, default=lambda self: str(uuid7()), copy=False)
 
     _unique_uuid = models.Constraint('unique (uuid)', 'A payment with this uuid already exists')
 

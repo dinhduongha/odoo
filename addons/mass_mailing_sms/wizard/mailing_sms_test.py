@@ -3,6 +3,7 @@
 
 from markupsafe import Markup
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 from odoo import fields, models, _
 from odoo.tools.urls import urljoin as url_join
@@ -58,7 +59,7 @@ class MailingSmsTest(models.TransientModel):
                 continue
             sms_values = {
                 'number': sanitized_number,
-                'uuid': uuid4().hex,
+                'uuid': uuid7().hex,
                 'state': 'outgoing',
             }
             # include unsubscribe link and generate fake trace to test unsubscribe

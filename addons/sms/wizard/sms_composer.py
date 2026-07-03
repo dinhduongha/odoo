@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 from odoo import api, fields, models, _
 from odoo.addons.mail.tools.parser import parse_res_ids
@@ -347,7 +348,7 @@ class SmsComposer(models.TransientModel):
                 'number': sanitized if sanitized else recipients['number'],
                 'partner_id': recipients['partner'].id,
                 'state': state,
-                'uuid': uuid4().hex,
+                'uuid': uuid7().hex,
             }
         return result
 

@@ -3,6 +3,7 @@
 import logging
 
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 from odoo import api, fields, models, tools, _
 from odoo.addons.sms.tools.sms_api import SmsApi
@@ -35,7 +36,7 @@ class SmsSms(models.Model):
     BOUNCE_DELIVERY_ERRORS = {'sms_invalid_destination', 'sms_not_allowed', 'sms_rejected'}
     DELIVERY_ERRORS = {'sms_expired', 'sms_not_delivered', *BOUNCE_DELIVERY_ERRORS}
 
-    uuid = fields.Char('UUID', copy=False, readonly=True, default=lambda self: uuid4().hex,
+    uuid = fields.Char('UUID', copy=False, readonly=True, default=lambda self: uuid7().hex,
                        help='Alternate way to identify a SMS record, used for delivery reports')
     number = fields.Char('Number')
     body = fields.Text()

@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import api, fields, models
 from uuid import uuid4
+from odoo.tools.uuid_utils import uuid7
 
 
 class RestaurantOrderCourse(models.Model):
@@ -11,7 +12,7 @@ class RestaurantOrderCourse(models.Model):
 
     fired = fields.Boolean(string="Fired", default=False)
     fired_date = fields.Datetime(string="Fired Date")
-    uuid = fields.Char(string='Uuid', readonly=True, default=lambda self: str(uuid4()), copy=False)
+    uuid = fields.Char(string='Uuid', readonly=True, default=lambda self: str(uuid7()), copy=False)
     index = fields.Integer(string="Course index", default=0)
     order_id = fields.Many2one('pos.order', string='Order Ref', required=True, index=True, ondelete='cascade')
     line_ids = fields.One2many('pos.order.line', 'course_id', string="Order Lines", readonly=True)
