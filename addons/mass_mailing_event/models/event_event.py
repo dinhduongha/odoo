@@ -16,7 +16,8 @@ class EventEvent(models.Model):
             'target': 'current',
             'context': {
                 'default_mailing_model_id': self.env.ref('event.model_event_registration').id,
-                'default_mailing_domain': repr([('event_id', 'in', self.ids), ('state', 'not in', ['cancel', 'draft'])]),
+                # uuid: str() ids so repr emits quoted strings, not UUID(...) (a non-literal)
+                'default_mailing_domain': repr([('event_id', 'in', [str(eid) for eid in self.ids]), ('state', 'not in', ['cancel', 'draft'])]),
                 'default_subject': _("Event: %s", self.name),
             },
         }
