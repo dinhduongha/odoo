@@ -7,6 +7,7 @@ import { MentionPlugin } from "./mention_plugin";
 import { ContentExpandablePlugin } from "./content_expandable_plugin";
 import { DisableBannerCommandsPlugin } from "./disable_banner_commands_plugin";
 import { fillEmpty } from "@html_editor/utils/dom";
+import { parseResIds } from "@mail/utils/common/misc";
 import { markup } from "@odoo/owl";
 
 export class HtmlComposerMessageField extends HtmlMailField {
@@ -66,7 +67,7 @@ export class HtmlComposerMessageField extends HtmlMailField {
         };
         config.thread = this.env.services["mail.store"]?.Thread.get({
             model: this.props.record.data.model,
-            id: JSON.parse(this.props.record.data.res_ids || "[]")[0],
+            id: parseResIds(this.props.record.data.res_ids)[0],
         });
         return config;
     }

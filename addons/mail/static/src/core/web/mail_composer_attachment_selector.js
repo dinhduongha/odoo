@@ -3,6 +3,7 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { useX2ManyCrud } from "@web/views/fields/relational_utils";
+import { parseResIds } from "@mail/utils/common/misc";
 
 import { Component } from "@odoo/owl";
 import { FileUploader } from "@web/views/fields/file_handler";
@@ -28,7 +29,7 @@ export class MailComposerAttachmentSelector extends Component {
         } else {
             // composer does not store res_ids past a certain limit, assume active_ids is used
             resIds = this.props.record.data.res_ids
-                ? JSON.parse(this.props.record.data.res_ids)
+                ? parseResIds(this.props.record.data.res_ids)
                 : this.props.record.context.active_ids;
         }
         const thread = await this.mailStore.Thread.insert({

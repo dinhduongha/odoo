@@ -195,6 +195,21 @@ export function isNilSeparator(sep) {
 }
 
 /**
+ * Parse the `res_ids` value of a mail composer record into an array of ids.
+ *
+ * The value can arrive in two shapes: a JSON string when read back from the stored Text field
+ * (server writes it via `json.dumps`), or a raw array when the web form applied the action's
+ * `default_res_ids` context default client-side for a fresh record. `JSON.parse` on the latter
+ * would coerce the array to a string and throw, so accept both.
+ *
+ * @param {string|Array|undefined} raw
+ * @returns {Array}
+ */
+export function parseResIds(raw) {
+    return Array.isArray(raw) ? raw : JSON.parse(raw || "[]");
+}
+
+/**
  * Client-side uuidv7 generator (48-bit ms timestamp + random). Time-ordered, so a temp id minted
  * "now" sorts after all earlier (server) uuidv7 ids. Used for optimistic/transient message and
  * attachment ids; persistence is decided by flags (is_transient/isPending/uploading), never by id

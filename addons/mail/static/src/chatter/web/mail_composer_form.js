@@ -4,6 +4,7 @@ import { EventBus, toRaw, useEffect, useRef, useSubEnv } from "@odoo/owl";
 import { useCustomDropzone } from "@web/core/dropzone/dropzone_hook";
 import { useService } from "@web/core/utils/hooks";
 import { useX2ManyCrud } from "@web/views/fields/relational_utils";
+import { parseResIds } from "@mail/utils/common/misc";
 import { MailAttachmentDropzone } from "@mail/core/common/mail_attachment_dropzone";
 
 export class MailComposerFormController extends formView.Controller {
@@ -47,7 +48,7 @@ export class MailComposerFormRenderer extends formView.Renderer {
         const getActiveMailThreads = () => {
             // composer does not store res_ids past a certain limit, assume active_ids is used
             const resIds = this.props.record.data.res_ids
-                ? JSON.parse(this.props.record.data.res_ids)
+                ? parseResIds(this.props.record.data.res_ids)
                 : this.props.record.context.active_ids;
             return resIds.map((resId) => {
                 const thread = this.mailStore.Thread.insert({
