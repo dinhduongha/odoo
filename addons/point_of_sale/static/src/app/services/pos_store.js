@@ -14,7 +14,7 @@ import {
     orderUsageUTCtoLocalUtil,
 } from "@point_of_sale/utils";
 import { HWPrinter } from "@point_of_sale/app/utils/printer/hw_printer";
-import { compareId } from "@mail/utils/common/misc";
+import { compareId } from "@point_of_sale/utils";
 import { ConnectionLostError } from "@web/core/network/rpc";
 import { OrderReceipt } from "@point_of_sale/app/screens/receipt_screen/receipt/order_receipt";
 import { _t } from "@web/core/l10n/translation";

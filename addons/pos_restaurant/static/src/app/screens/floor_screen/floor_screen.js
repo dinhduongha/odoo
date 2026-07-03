@@ -18,7 +18,7 @@ import {
     onWillUnmount,
     onPatched,
 } from "@odoo/owl";
-import { compareId } from "@mail/utils/common/misc";
+import { compareId } from "@point_of_sale/utils";
 import { ask } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { loadImage } from "@point_of_sale/utils";
 import { getDataURLFromFile } from "@web/core/utils/urls";

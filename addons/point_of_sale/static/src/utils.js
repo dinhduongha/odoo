@@ -39,6 +39,20 @@ export function uuidv7() {
 }
 
 /**
+ * uuid-safe id comparator (ascending). uuidv7 ids are time-ordered, so
+ * lexicographic string order == chronological order. Coerces to string so
+ * mixed/undefined ids never yield NaN. POS-local so it works in every POS
+ * bundle (backend, kiosk, mobile) without depending on @mail.
+ *
+ * @returns {number} -1 if a < b, 1 if a > b, 0 if equal.
+ */
+export function compareId(a, b) {
+    const sa = a == null ? "" : String(a);
+    const sb = b == null ? "" : String(b);
+    return sa === sb ? 0 : sa < sb ? -1 : 1;
+}
+
+/**
  * Tell whether an id belongs to a server-persisted record (as opposed to a
  * record that only exists locally in the POS).
  *

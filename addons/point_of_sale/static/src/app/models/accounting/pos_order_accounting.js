@@ -289,7 +289,10 @@ export class PosOrderAccounting extends Base {
      */
     _computeAllPrices(opts = {}) {
         const currency = this.currency;
-        const lines = opts.lines || this.lines;
+        // Guard against a line whose product relation is not resolved (e.g. an
+        // order restored from indexedDB that references a product no longer
+        // loaded in this POS): it cannot be priced and must not crash boot.
+        const lines = (opts.lines || this.lines).filter((l) => l.product_id);
         const documentSign = this.isRefund ? -1 : 1;
         const company = this.company;
         const baseLines = lines.map((l) =>

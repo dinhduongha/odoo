@@ -1,6 +1,6 @@
 import { Component } from "@odoo/owl";
 import { useSelfOrder } from "@pos_self_order/app/services/self_order_service";
-import { compareId } from "@mail/utils/common/misc";
+import { compareId } from "@point_of_sale/utils";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 

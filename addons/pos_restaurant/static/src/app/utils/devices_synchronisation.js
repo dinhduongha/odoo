@@ -1,6 +1,6 @@
 import DevicesSynchronisation from "@point_of_sale/app/utils/devices_synchronisation";
 import { patch } from "@web/core/utils/patch";
-import { compareId } from "@mail/utils/common/misc";
+import { compareId } from "@point_of_sale/utils";
 
 patch(DevicesSynchronisation.prototype, {
     async processDynamicRecords(dynamicRecords) {
