@@ -252,7 +252,8 @@ export class AnalyticDistribution extends Component {
                     // once the popup is opened, plans are fetched and the analyticAccounts list will be ordered
                     Object.assign(defaultVals.find((plan) => plan.planId == account.root_plan_id[0]) || defaultVals.push({}) && defaultVals[defaultVals.length-1],
                     {
-                        accountId: parseInt(id),
+                        // uuid: analytic account ids are uuid strings, keep as-is (no parseInt)
+                        accountId: id,
                         accountDisplayName: account.display_name,
                         accountColor: account.color,
                         accountRootPlanId: account.root_plan_id[0],
