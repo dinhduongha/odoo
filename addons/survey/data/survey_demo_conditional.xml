@@ -3,7 +3,6 @@
 
     <record id="survey_demo_burger_quiz" model="survey.survey">
         <field name="title">Burger Quiz</field>
-        <field name="access_token">burger00-quiz-1234-abcd-344ca2tgb31e</field>
         <field name="user_id" ref="base.user_demo"/>
         <field name="access_mode">public</field>
         <field name="users_can_go_back" eval="True"/>
@@ -451,7 +450,6 @@
     <record id="survey_demo_food_preferences" model="survey.survey">
         <field name="title">Food Preferences</field>
         <field name="survey_type">survey</field>
-        <field name="access_token">foodpref-eren-ces1-abcd-344ca2tgb31e</field>
         <field name="user_id" ref="base.user_demo"/>
         <field name="access_mode">public</field>
         <field name="questions_layout">one_page</field>
