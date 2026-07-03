@@ -5,6 +5,7 @@ import json
 
 from odoo import _
 from odoo.http import request
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.addons.website.controllers.form import WebsiteForm
 
 
@@ -15,7 +16,7 @@ class WebsiteNewsletterForm(WebsiteForm):
             list_ids = kwargs.get('list_ids')
             if not list_ids:
                 return json.dumps({'error': _('Mailing List(s) not found!')})
-            list_ids = [int(x) for x in list_ids.split(',')]
+            list_ids = [to_uuid(x) if is_uuid(x) else int(x) for x in list_ids.split(',') if x]
             private_list_ids = request.env['mailing.list'].sudo().search([
                 ('id', 'in', list_ids), ('is_public', '=', False)])
             if private_list_ids:

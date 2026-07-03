@@ -9,6 +9,7 @@ from functools import partial
 from operator import itemgetter
 
 from odoo import http, _
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.addons.website.controllers.form import WebsiteForm
 from odoo.fields import Domain
 from odoo.http import request
@@ -106,16 +107,20 @@ class WebsiteHrRecruitment(WebsiteForm):
             )
             return counter_by_object_by_field
 
-        def to_int(query_arg):
-            return int(query_arg) if query_arg and query_arg.isdigit() else False
+        def to_id(query_arg):
+            if not query_arg:
+                return False
+            if is_uuid(query_arg):
+                return to_uuid(query_arg)
+            return int(query_arg) if query_arg.isdigit() else False
 
         env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
         website = request.website
-        department = env['hr.department'].browse(to_int(department_id)).exists().sudo()
-        country = env['res.country'].browse(to_int(country_id)).exists()
-        office = env['res.partner'].browse(to_int(office_id)).exists()
-        contract_type = env['hr.contract.type'].browse(to_int(contract_type_id)).exists().sudo()
-        industry = env['res.partner.industry'].browse(to_int(industry_id)).exists().sudo()
+        department = env['hr.department'].browse(to_id(department_id)).exists().sudo()
+        country = env['res.country'].browse(to_id(country_id)).exists()
+        office = env['res.partner'].browse(to_id(office_id)).exists()
+        contract_type = env['hr.contract.type'].browse(to_id(contract_type_id)).exists().sudo()
+        industry = env['res.partner.industry'].browse(to_id(industry_id)).exists().sudo()
 
         if not (country or department or office or contract_type or all_countries) \
             and (code := request.geoip.country_code) \
