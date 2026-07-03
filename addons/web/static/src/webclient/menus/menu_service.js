@@ -55,7 +55,8 @@ export const menuService = {
             return menusData[menuId];
         }
         function setCurrentMenu(menu) {
-            menu = typeof menu === "number" ? _getMenu(menu) : menu;
+            // uuid: menu ids are uuid strings now, resolve any non-object id (number or string)
+            menu = menu && typeof menu === "object" ? menu : _getMenu(menu);
             if (menu && menu.appID !== currentAppId) {
                 currentAppId = menu.appID;
                 browser.sessionStorage.setItem("menu_id", currentAppId);
@@ -85,7 +86,8 @@ export const menuService = {
                 return menu;
             },
             async selectMenu(menu) {
-                menu = typeof menu === "number" ? this.getMenu(menu) : menu;
+                // uuid: resolve any non-object id (number or uuid string) to its menu
+                menu = menu && typeof menu === "object" ? menu : this.getMenu(menu);
                 if (!menu.actionID) {
                     return;
                 }
