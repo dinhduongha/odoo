@@ -1,5 +1,6 @@
 import { serializeDateTime, serializeDate } from "@web/core/l10n/dates";
 import { X2MANY_TYPES, DATE_TIME_TYPE } from "./utils";
+import { isServerId } from "@point_of_sale/utils";
 
 const deepSerialization = (
     record,
@@ -150,7 +151,7 @@ const deepSerialization = (
                 }
                 serialized[relatedModel][record[fieldName].uuid] = record[fieldName].uuid;
             }
-            if (typeof recordId === "number" && recordId >= 0) {
+            if (isServerId(recordId)) {
                 result[fieldName] = recordId;
             } else if (record[fieldName] === undefined) {
                 result[fieldName] = false;

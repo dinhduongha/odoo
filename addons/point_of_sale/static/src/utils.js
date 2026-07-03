@@ -17,6 +17,28 @@ export function uuidv4() {
 }
 
 /**
+ * Tell whether an id belongs to a server-persisted record (as opposed to a
+ * record that only exists locally in the POS).
+ *
+ * Before the int->uuid PK migration this was simply `typeof id === "number"`
+ * (server ids were positive integers, local temps were negatives). Now every
+ * PK is a uuid string, so both cases look alike. The one invariant that still
+ * holds: a locally-created record gets a client-generated `uuidv4()` id (version
+ * nibble "4" at index 14), whereas any server record — a uuidv7 PK or a seeded
+ * low-uuid like `00000000-0000-0000-0000-000000000001` — is not a uuidv4.
+ * So "not a local uuidv4" == server id. Legacy numeric ids stay supported.
+ */
+export function isServerId(id) {
+    if (!id) {
+        return false;
+    }
+    if (typeof id === "number") {
+        return id >= 0;
+    }
+    return !(typeof id === "string" && id[14] === "4");
+}
+
+/**
  * Formats the given `url` with correct protocol and port.
  * Useful for communicating to local iot box instance.
  * @param {string} url

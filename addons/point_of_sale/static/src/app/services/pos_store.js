@@ -9,6 +9,7 @@ import {
     deduceUrl,
     random5Chars,
     uuidv4,
+    isServerId,
     Counter,
     orderUsageUTCtoLocalUtil,
 } from "@point_of_sale/utils";
@@ -646,7 +647,7 @@ export class PosStore extends WithLazyGetterTrap {
 
             if (serverIds.length > 0) {
                 await actionPosOrderCancelCall([
-                    ...new Set(serverIds.filter((id) => typeof id === "number")),
+                    ...new Set(serverIds.filter((id) => isServerId(id))),
                 ]);
             }
         } finally {
@@ -878,7 +879,7 @@ export class PosStore extends WithLazyGetterTrap {
             merge = false;
         }
 
-        if (typeof vals.product_tmpl_id == "number") {
+        if (typeof vals.product_tmpl_id === "number" || typeof vals.product_tmpl_id === "string") {
             vals.product_tmpl_id = this.data.models["product.template"].get(vals.product_tmpl_id);
         }
 
@@ -1444,7 +1445,7 @@ export class PosStore extends WithLazyGetterTrap {
         }
 
         for (const id of orderIds) {
-            if (typeof id === "number") {
+            if (isServerId(id)) {
                 this.pendingOrder["write"].add(id);
             } else {
                 this.pendingOrder["create"].add(id);

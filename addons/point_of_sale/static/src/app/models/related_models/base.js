@@ -1,5 +1,6 @@
 import { WithLazyGetterTrap } from "@point_of_sale/lazy_getter";
 import { deepImmutable, RAW_SYMBOL } from "./utils";
+import { isServerId } from "@point_of_sale/utils";
 import { toRaw } from "@odoo/owl";
 const { DateTime } = luxon;
 
@@ -29,7 +30,7 @@ export class Base extends WithLazyGetterTrap {
     }
 
     get isSynced() {
-        return typeof this.id === "number";
+        return isServerId(this.id);
     }
 
     get raw() {

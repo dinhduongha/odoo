@@ -5,7 +5,7 @@ import { markRaw, reactive } from "@odoo/owl";
 import { debounce } from "@web/core/utils/timing";
 import IndexedDB from "../models/utils/indexed_db";
 import { DataServiceOptions } from "../models/data_service_options";
-import { getOnNotified, uuidv4 } from "@point_of_sale/utils";
+import { getOnNotified, uuidv4, isServerId } from "@point_of_sale/utils";
 import { browser } from "@web/core/browser/browser";
 import { ConnectionLostError, rpc, RPCError } from "@web/core/network/rpc";
 import { _t } from "@web/core/l10n/translation";
@@ -857,7 +857,7 @@ export class PosData {
             }
 
             records.push(record);
-            if (typeof id === "number") {
+            if (isServerId(id)) {
                 this.ormWrite(model, [record.id], dataToUpdate);
             }
         }
