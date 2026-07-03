@@ -17,8 +17,13 @@ export function disambiguate(value, displayNames) {
     return hasSomeString && hasSomethingElse;
 }
 
+// uuid: a record id is now either a legacy positive int or a uuid string
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function isId(value) {
-    return Number.isInteger(value) && value >= 1;
+    return (
+        (Number.isInteger(value) && value >= 1) ||
+        (typeof value === "string" && UUID_RE.test(value))
+    );
 }
 
 export function getResModel(fieldDef) {
