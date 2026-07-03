@@ -10,6 +10,7 @@ from odoo import http
 from odoo.http import content_disposition, request
 from odoo.tools.misc import html_escape
 from odoo.tools.safe_eval import safe_eval, time
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 _logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class ReportController(http.Controller):
         context = dict(request.env.context)
 
         if docids:
-            docids = [int(i) for i in docids.split(',') if i.isdigit()]
+            docids = [to_uuid(i) if is_uuid(i) else int(i) for i in docids.split(',') if is_uuid(i) or i.isdigit()]
         if data.get('options'):
             data.update(json.loads(data.pop('options')))
         if data.get('context'):
@@ -130,7 +131,7 @@ class ReportController(http.Controller):
                 filename = "%s.%s" % (report.name, extension)
 
                 if docids:
-                    ids = [int(x) for x in docids.split(",") if x.isdigit()]
+                    ids = [to_uuid(x) if is_uuid(x) else int(x) for x in docids.split(",") if is_uuid(x) or x.isdigit()]
                     obj = request.env[report.model].browse(ids)
                     if report.print_report_name and not len(obj) > 1:
                         report_name = safe_eval(report.print_report_name, {'object': obj, 'time': time})
