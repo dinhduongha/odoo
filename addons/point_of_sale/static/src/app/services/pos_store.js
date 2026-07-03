@@ -10,7 +10,6 @@ import {
     random5Chars,
     uuidv4,
     uuidv7,
-    isServerId,
     Counter,
     orderUsageUTCtoLocalUtil,
 } from "@point_of_sale/utils";
@@ -649,7 +648,9 @@ export class PosStore extends WithLazyGetterTrap {
 
             if (serverIds.length > 0) {
                 await actionPosOrderCancelCall([
-                    ...new Set(serverIds.filter((id) => isServerId(id))),
+                    ...new Set(
+                        serverIds.filter((id) => this.models["pos.order"].get(id)?.isSynced)
+                    ),
                 ]);
             }
         } finally {
@@ -1447,7 +1448,7 @@ export class PosStore extends WithLazyGetterTrap {
         }
 
         for (const id of orderIds) {
-            if (isServerId(id)) {
+            if (this.models["pos.order"].get(id)?.isSynced) {
                 this.pendingOrder["write"].add(id);
             } else {
                 this.pendingOrder["create"].add(id);

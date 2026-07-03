@@ -19,7 +19,6 @@ import {
     random5Chars,
     isValidPhone,
     isValidEmail,
-    isServerId,
     orderUsageUTCtoLocalUtil,
 } from "@point_of_sale/utils";
 import { getOrderLineValues } from "./card_utils";
@@ -661,7 +660,7 @@ export class SelfOrder extends Reactive {
         if (
             this.config.self_ordering_mode === "kiosk" &&
             this.hasPaymentMethod() &&
-            isServerId(this.currentOrder.id)
+this.currentOrder.isSynced
         ) {
             this.cancelBackendOrder();
             return;

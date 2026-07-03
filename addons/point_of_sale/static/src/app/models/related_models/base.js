@@ -1,6 +1,5 @@
 import { WithLazyGetterTrap } from "@point_of_sale/lazy_getter";
 import { deepImmutable, RAW_SYMBOL } from "./utils";
-import { isServerId } from "@point_of_sale/utils";
 import { toRaw } from "@odoo/owl";
 const { DateTime } = luxon;
 
@@ -30,7 +29,9 @@ export class Base extends WithLazyGetterTrap {
     }
 
     get isSynced() {
-        return isServerId(this.id);
+        // uuid: local and server ids are both uuidv7, so synced state is a
+        // persisted flag stamped at load/create time, not derived from the id.
+        return this[RAW_SYMBOL].__synced__ === true;
     }
 
     get raw() {

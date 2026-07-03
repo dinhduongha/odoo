@@ -8,7 +8,6 @@ import { makeAwaitable } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { NumberPopup } from "@point_of_sale/app/components/popups/number_popup/number_popup";
 import { parseFloat } from "@web/views/fields/parsers";
 import { OrderDisplay } from "@point_of_sale/app/components/order_display/order_display";
-import { isServerId } from "@point_of_sale/utils";
 
 export class OrderSummary extends Component {
     static template = "point_of_sale.OrderSummary";
@@ -69,7 +68,7 @@ export class OrderSummary extends Component {
         }
 
         // Prevent if already sent to kitchen
-        if (isServerId(order.id)) {
+        if (order.isSynced) {
             const preparation_data = await this.pos.data.call(
                 "pos.order",
                 "get_preparation_change",

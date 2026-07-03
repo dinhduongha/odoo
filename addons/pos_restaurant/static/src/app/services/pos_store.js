@@ -8,7 +8,6 @@ import { NumberPopup } from "@point_of_sale/app/components/popups/number_popup/n
 import { SelectionPopup } from "@point_of_sale/app/components/popups/selection_popup/selection_popup";
 import { makeAwaitable, ask } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { logPosMessage } from "@point_of_sale/app/utils/pretty_console_log";
-import { isServerId } from "@point_of_sale/utils";
 
 patch(PosStore.prototype, {
     /**
@@ -281,10 +280,10 @@ patch(PosStore.prototype, {
     },
     async mergeOrders(sourceOrder, destOrder) {
         await this._mergeOrders(sourceOrder, destOrder);
-        if (isServerId(destOrder.id)) {
+        if (destOrder.isSynced) {
             await this.syncAllOrders({ orders: [destOrder] });
         }
-        await this.deleteOrders([sourceOrder], [], isServerId(sourceOrder.id));
+        await this.deleteOrders([sourceOrder], [], sourceOrder.isSynced);
         return destOrder;
     },
     mergeCourses(sourceOrder, destOrder) {

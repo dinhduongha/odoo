@@ -1,4 +1,4 @@
-import { uuidv4, uuidv7 } from "@point_of_sale/utils";
+import { uuidv7 } from "@point_of_sale/utils";
 import { TrapDisabler } from "@point_of_sale/proxy_trap";
 import { RecordStore } from "./record_store";
 import {
@@ -315,9 +315,9 @@ export function createRelatedModels(modelDefs, modelClasses = {}, opts = {}) {
             const { connectRecords = true, serverData = false, existingRecord = false } = options;
             let dataToConnect;
             if (!vals.uuid && database[this.name]?.key === "uuid") {
-                vals.uuid = uuidv4();
+                vals.uuid = uuidv7();
             }
-            vals.id = vals["id"] ?? (vals.uuid || uuidv4());
+            vals.id = vals["id"] ?? (vals.uuid || uuidv7());
             const rawData = {
                 id: vals.id,
             };
@@ -400,6 +400,17 @@ export function createRelatedModels(modelDefs, modelClasses = {}, opts = {}) {
                     extraFields.push(key);
                 }
             }
+            // uuid: local ids are uuidv7 like server ids, so track synced state
+            // explicitly (persists via serializeForIndexedDB, restored from vals).
+            // Only the load/restore path (serverData) may carry a synced flag; a
+            // local create is never synced even if vals were copied from a synced
+            // record's raw (e.g. merge cloning `{...line.raw}`).
+            rawData.__synced__ =
+                serverData === true
+                    ? vals.__synced__ !== undefined
+                        ? vals.__synced__
+                        : true
+                    : false;
             return { rawData, uiState, extraFields, dataToConnect };
         }
 
