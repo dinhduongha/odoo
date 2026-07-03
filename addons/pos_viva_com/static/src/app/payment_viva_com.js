@@ -2,7 +2,7 @@ import { _t } from "@web/core/l10n/translation";
 import { PaymentInterface } from "@point_of_sale/app/utils/payment/payment_interface";
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { roundPrecision } from "@web/core/utils/numbers";
-import { uuidv4 } from "@point_of_sale/utils";
+import { uuidv7 } from "@point_of_sale/utils";
 import { register_payment_method } from "@point_of_sale/app/services/pos_store";
 
 // Due to consistency issues with the webhook, we also poll
@@ -74,7 +74,7 @@ export class PaymentVivaCom extends PaymentInterface {
             customerTrns = order.partner.name + " - " + order.partner.email;
         }
 
-        line.viva_com_session_id = order.uuid + " - " + uuidv4();
+        line.viva_com_session_id = order.uuid + " - " + uuidv7();
         const cashRegisterId = this.getCashRegisterId();
         var data = {
             sessionId: line.viva_com_session_id,

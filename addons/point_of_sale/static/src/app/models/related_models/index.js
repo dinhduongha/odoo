@@ -1,4 +1,4 @@
-import { uuidv4 } from "@point_of_sale/utils";
+import { uuidv4, uuidv7 } from "@point_of_sale/utils";
 import { TrapDisabler } from "@point_of_sale/proxy_trap";
 import { RecordStore } from "./record_store";
 import {
@@ -292,7 +292,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, opts = {}) {
                 callbacks[this.name][event] = new Map();
             }
 
-            const key = uuidv4();
+            const key = uuidv7();
             callbacks[this.name][event].set(key, callback);
             return () => callbacks[this.name][event].delete(key);
         }
