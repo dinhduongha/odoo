@@ -155,7 +155,7 @@ class SaleReport(models.Model):
                 * {self._case_value_or_one('account_currency_table.rate')}
                 ) ELSE 0
             END AS discount_amount,
-            {self.env.company.currency_id.id} AS currency_id,
+            '{self.env.company.currency_id.id}'::uuid AS currency_id,
             concat('sale.order', ',', s.id) AS order_reference"""
 
         additional_fields_info = self._select_additional_fields()
