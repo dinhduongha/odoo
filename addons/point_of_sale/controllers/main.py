@@ -93,7 +93,8 @@ class PosController(PortalAccount):
         company = pos_session.company_id
         session_info = request.env['ir.http'].session_info()
         session_info['user_context']['allowed_company_ids'] = company.ids
-        session_info['user_companies'] = {'current_company': company.id, 'allowed_companies': {company.id: session_info['user_companies']['allowed_companies'][company.id]}}
+        company_key = str(company.id)
+        session_info['user_companies'] = {'current_company': company.id, 'allowed_companies': {company_key: session_info['user_companies']['allowed_companies'][company_key]}}
         session_info['nomenclature_id'] = pos_session.company_id.nomenclature_id.id
         session_info['fallback_nomenclature_id'] = pos_session.config_id.fallback_nomenclature_id.id
         use_lna = bool(pos_session.env["ir.config_parameter"].get_param("point_of_sale.use_lna"))
