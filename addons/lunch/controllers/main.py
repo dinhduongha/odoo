@@ -98,7 +98,11 @@ class LunchController(http.Controller):
 
         company_ids = request.env.context.get('allowed_company_ids', request.env.company.ids)
         user_location = user.last_lunch_location_id
-        has_multi_company_access = not user_location.company_id or user_location.company_id.id in company_ids
+        # allowed_company_ids arrives from the web client as uuid strings while
+        # company_id.id is a UUID object, so compare on str to avoid a type mismatch
+        # that would wrongly deny access and return no location (empty lunch views).
+        allowed_company_ids = {str(cid) for cid in company_ids}
+        has_multi_company_access = not user_location.company_id or str(user_location.company_id.id) in allowed_company_ids
 
         if not user_location or not has_multi_company_access:
             return request.env['lunch.location'].search([('company_id', 'in', [False] + company_ids)], limit=1).id
