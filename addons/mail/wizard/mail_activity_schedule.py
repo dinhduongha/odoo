@@ -31,9 +31,10 @@ class MailActivitySchedule(models.TransientModel):
                 res['res_ids'] = json.dumps([str(i) for i in context['active_ids']])
             elif not active_res_ids and context.get('active_id'):
                 res['res_ids'] = json.dumps([str(context['active_id'])])
-        # a 'default_res_ids' caller may seed res_ids as a raw list -> normalise to JSON too
-        if isinstance(res.get('res_ids'), (list, tuple)):
-            res['res_ids'] = json.dumps([str(i) for i in res['res_ids']])
+        # a 'default_res_ids' caller may seed res_ids as a raw list or a Python-repr
+        # string ("[UUID('019f…')]") -> normalise every form to JSON via parse_res_ids
+        if res.get('res_ids'):
+            res['res_ids'] = json.dumps([str(i) for i in parse_res_ids(res['res_ids'], self.env)])
         res_model = context.get('active_model') or context.get('params', {}).get('active_model', False)
         if 'res_model' in fields:
             res['res_model'] = res_model

@@ -77,12 +77,13 @@ class MailComposeMessage(models.TransientModel):
         result = super(MailComposeMessage, composer).default_get(fields)
 
         # uuid PKs: 'default_res_ids' callers pass a list of ids (e.g. calendar
-        # action_open_composer -> default_res_ids=self.ids). Stored verbatim on the
-        # res_ids Text field it becomes a Python repr ("['019f…']" / "[UUID('019f…')]")
-        # which the JS composer's JSON.parse cannot read. Serialise as JSON so it is
-        # valid for both JSON.parse (client) and ast.literal_eval (server).
-        if isinstance(result.get('res_ids'), (list, tuple)):
-            result['res_ids'] = json.dumps([str(i) for i in result['res_ids']])
+        # action_open_composer -> default_res_ids=self.ids). Assigned to the res_ids
+        # Text field it is coerced to a Python repr string ("['019f…']" /
+        # "[UUID('019f…')]") which the JS composer's JSON.parse cannot read. Re-serialise
+        # to JSON (valid for both JSON.parse client-side and ast.literal_eval server-side).
+        # parse_res_ids normalises every incoming form: list, json string, or UUID-repr string.
+        if result.get('res_ids'):
+            result['res_ids'] = json.dumps([str(i) for i in parse_res_ids(result['res_ids'], self.env)])
 
         # when being in new mode, create_uid is not granted -> ACLs issue may arise
         if 'create_uid' in fields and 'create_uid' not in result:
