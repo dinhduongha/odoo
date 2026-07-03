@@ -5,6 +5,7 @@ from odoo import http, _
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
 from odoo.http import request
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 from odoo.tools.json import scriptsafe as json_safe
 from odoo.tools.translate import LazyTranslate
 
@@ -28,7 +29,8 @@ class PaymentPortal(payment_portal.PaymentPortal):
         :raise: werkzeug.exceptions.NotFound if the access token is invalid
         """
         kwargs['is_donation'] = True
-        kwargs['currency_id'] = self._cast_as_int(kwargs.get('currency_id')) or request.env.company.currency_id.id
+        _cid = kwargs.get('currency_id')
+        kwargs['currency_id'] = (to_uuid(_cid) if is_uuid(_cid) else self._cast_as_int(_cid)) or request.env.company.currency_id.id
         kwargs['amount'] = self._cast_as_float(kwargs.get('amount')) or 25.0
         kwargs['donation_options'] = kwargs.get('donation_options', json_safe.dumps(dict(customAmount="freeAmount")))
 

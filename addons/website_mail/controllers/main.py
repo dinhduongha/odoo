@@ -3,6 +3,7 @@
 from collections import defaultdict
 from odoo import http
 from odoo.http import request
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class WebsiteMail(http.Controller):
@@ -10,7 +11,7 @@ class WebsiteMail(http.Controller):
     @http.route(['/website_mail/follow'], type='jsonrpc', auth="public", website=True)
     def website_message_subscribe(self, id=0, object=None, message_is_follower="on", email=False, **post):
         # TDE FIXME: check this method with new followers
-        res_id = int(id)
+        res_id = to_uuid(id) if is_uuid(id) else int(id)
         is_follower = message_is_follower == 'on'
         record = request.env[object].browse(res_id).exists()
         if not record:

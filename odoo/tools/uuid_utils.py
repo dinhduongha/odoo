@@ -54,6 +54,13 @@ def uuid7() -> uuid.UUID:
 
 def is_uuid(value: str) -> bool:
     """Kiểm tra chuỗi có phải UUID hợp lệ không."""
+    # Non-string inputs (int route default of 0, missing kwarg -> None, or an
+    # already-parsed UUID) are not uuid strings; guard so callers can pass raw
+    # params without pre-checking (uuid.UUID(0) would raise AttributeError).
+    if isinstance(value, uuid.UUID):
+        return True
+    if not isinstance(value, str):
+        return False
     try:
         uuid.UUID(value)
         return True

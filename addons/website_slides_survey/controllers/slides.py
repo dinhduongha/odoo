@@ -9,6 +9,7 @@ from odoo import http
 from odoo.exceptions import AccessError
 from odoo.fields import Domain
 from odoo.http import request
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 from odoo.addons.website_slides.controllers.main import WebsiteSlides
 
@@ -43,7 +44,8 @@ class WebsiteSlidesSurvey(WebsiteSlides):
     @http.route()
     def create_slide(self, *args, **post):
         create_new_survey = post['slide_category'] == "certification" and post.get('survey') and not post['survey']['id']
-        linked_survey_id = int(post.get('survey', {}).get('id') or 0)
+        _survey_id = post.get('survey', {}).get('id')
+        linked_survey_id = (to_uuid(_survey_id) if is_uuid(_survey_id) else int(_survey_id)) if _survey_id else False
 
         if create_new_survey:
             # If user cannot create a new survey, no need to create the slide either.
