@@ -12,13 +12,15 @@ const websiteSystrayRegistry = registry.category("website_systray");
 
 // TODO this is duplicated in website_root at least, it should be a shared util
 export const unslugHtmlDataObject = (repr) => {
-    const match = repr && repr.match(/(.+)\((-?\d+),(.*)\)/);
+    // repr(recordset) forms: legacy int "model(5,)" or uuid PK "model(UUID('019f..'),)".
+    // Anchor the model to before the first "(" so the greedy group doesn't eat "UUID(".
+    const match = repr && repr.match(/^([^(]+)\((?:UUID\(['"]([^'"]+)['"]\)|(-?\d+))/);
     if (!match) {
         return null;
     }
     return {
         model: match[1],
-        id: match[2] | 0,
+        id: match[2] !== undefined ? match[2] : match[3] | 0,
     };
 };
 

@@ -154,13 +154,14 @@ export const WebsiteRoot = publicRootData.PublicRoot.extend({
      */
     _unslugHtmlDataObject: function (dataAttr) {
         var repr = $("html").data(dataAttr);
-        var match = repr && repr.match(/(.+)\((-?\d+),(.*)\)/);
+        // uuid: repr(recordset) is "model(5,)" (int) or "model(UUID('019f..'),)" (uuid PK)
+        var match = repr && String(repr).match(/^([^(]+)\((?:UUID\(['"]([^'"]+)['"]\)|(-?\d+))/);
         if (!match) {
             return null;
         }
         return {
             model: match[1],
-            id: match[2] | 0,
+            id: match[2] !== undefined ? match[2] : match[3] | 0,
         };
     },
     /**

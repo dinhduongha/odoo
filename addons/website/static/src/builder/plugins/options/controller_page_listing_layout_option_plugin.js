@@ -5,7 +5,9 @@ import { rpc } from "@web/core/network/rpc";
 import { BuilderAction } from "@html_builder/core/builder_action";
 import { BaseOptionComponent } from "@html_builder/core/utils";
 
-const mainObjectRe = /website\.controller\.page\(((\d+,?)*)\)/;
+// uuid: ids inside the repr are "UUID('019f..')" (or legacy digits), so capture
+// everything between the parens and pull each id out below.
+const mainObjectRe = /website\.controller\.page\((.*)\)/;
 
 export class ControllerPageListingLayoutOption extends BaseOptionComponent {
     static template = "website.ControllerPageListingLayoutOption";
@@ -39,11 +41,13 @@ export class ListingLayoutAction extends BuilderAction {
         const match = mainObjectRe.exec(mainObjectRepr);
         if (match && match[1]) {
             this.resIds = match[1].split(",").flatMap((e) => {
+                e = e.trim();
                 if (!e) {
                     return [];
                 }
-                // uuid record id: keep as string
-                return e ? [e] : [];
+                // uuid: unwrap "UUID('019f..')" to the uuid string; else keep digits/string as-is
+                const m = e.match(/UUID\(['"]([^'"]+)['"]\)/);
+                return [m ? m[1] : e];
             });
         }
         const results = await this.services.orm.read("website.controller.page", this.resIds, [
