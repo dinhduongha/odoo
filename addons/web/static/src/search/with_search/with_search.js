@@ -27,7 +27,7 @@ export class WithSearch extends Component {
         // search view description
         searchViewArch: { type: String, optional: true },
         searchViewFields: { type: Object, optional: true },
-        searchViewId: { type: [Number, Boolean], optional: true },
+        searchViewId: { type: [Number, String, Boolean], optional: true },
 
         irFilters: { type: Array, element: Object, optional: true },
         loadIrFilters: { type: Boolean, optional: true },
