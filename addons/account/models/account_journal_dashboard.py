@@ -712,6 +712,9 @@ class AccountJournal(models.Model):
                 }
                 for step in ob_vals['steps']
             ]
+            # uuid: 'state' is {step.id(UUID): state}; JSON keys can't be UUID and
+            # the kanban only reads 'steps' (built above) -> drop the raw dict.
+            onboarding_data[progress.company_id][ob.route_name].pop('state', None)
         for journal in self:
             dashboard_data[journal.id]['onboarding'] = onboarding_data[journal.company_id].get(journal_onboarding_map.get(journal.type))
 
