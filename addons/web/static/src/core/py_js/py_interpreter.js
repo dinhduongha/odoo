@@ -336,6 +336,7 @@ const allowedFns = new Set([
     BUILTINS.time.strftime,
     BUILTINS.set,
     BUILTINS.bool,
+    BUILTINS.UUID,
     BUILTINS.min,
     BUILTINS.max,
     BUILTINS.context_today,

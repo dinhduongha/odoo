@@ -66,6 +66,12 @@ export const BUILTINS = {
         });
     },
 
+    // uuid: a server-side context/domain reprs a record id as `UUID('019f..')`;
+    // in JS a record id is just its uuid string, so UUID() is the identity.
+    UUID(value) {
+        return value;
+    },
+
     max(...args) {
         // kwargs are not supported by Math.max.
         return Math.max(...args.slice(0, -1));
