@@ -12,4 +12,10 @@ export class IdShortField extends Component {
         return id ? String(id).split("-")[0] : "";
     }
 }
-registry.category("fields").add("id_short", IdShortField);
+
+// The fields registry validates entries as a field descriptor { component, ... },
+// not the component class directly (fails debug-mode validation otherwise).
+export const idShortField = {
+    component: IdShortField,
+};
+registry.category("fields").add("id_short", idShortField);
