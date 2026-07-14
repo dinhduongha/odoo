@@ -96,7 +96,7 @@
             <field name="display_mode">boolean</field>
             <field name="model_id" ref="mail.model_mail_message"/>
             <field name="condition">higher</field>
-            <field name="domain" eval="[('model', '=', 'forum.post'), ('subtype_id', 'in', [ref('website_forum.mt_answer_edit'), ref('website_forum.mt_question_edit')])]"/>
+            <field name="domain" eval="str([('model', '=', 'forum.post'), ('subtype_id', 'in', [str(ref('website_forum.mt_answer_edit')), str(ref('website_forum.mt_question_edit'))])])"/>
             <field name="batch_mode">True</field>
             <field name="batch_distinctive_field" ref="mail.field_mail_message__author_id"/>
             <field name="batch_user_expression">user.partner_id.id</field>

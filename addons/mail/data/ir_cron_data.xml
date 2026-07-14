@@ -25,7 +25,7 @@
         </record>
 
         <record id="base.ir_cron_act" model="ir.actions.act_window">
-            <field name="domain" eval="[('id','!=', ref('mail.ir_cron_module_update_notification'))]"/>
+            <field name="domain" eval="str([('id','!=', str(ref('mail.ir_cron_module_update_notification')))])"/>
         </record>
 
         <record id="ir_cron_delete_notification" model="ir.cron">
