@@ -133,9 +133,9 @@ class ProjectProject(models.Model):
             groupby=['analytic_distribution'],
             aggregates=['__count'],
         )
-        data = {int(account_id): move_count for account_id, move_count in data}
+        data = {account_id: move_count for account_id, move_count in data}
         for project in self:
-            project.invoice_count = data.get(project.account_id.id, 0)
+            project.invoice_count = data.get(str(project.account_id.id), 0)
 
     @api.depends('allow_billable', 'partner_id')
     def _compute_display_sales_stat_buttons(self):

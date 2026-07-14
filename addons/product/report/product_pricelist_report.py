@@ -18,8 +18,7 @@ class ReportProductReport_Pricelist(models.AbstractModel):
 
     def _get_report_data(self, data, report_type='html'):
         quantities = data.get('quantities', [1])
-        data_pricelist_id = data.get('pricelist_id')
-        pricelist_id = data_pricelist_id and int(data_pricelist_id)
+        pricelist_id = data.get('pricelist_id')
         pricelist = self.env['product.pricelist'].browse(pricelist_id).exists()
         if not pricelist:
             pricelist = self.env['product.pricelist'].search([], limit=1)

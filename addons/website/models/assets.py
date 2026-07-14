@@ -225,7 +225,6 @@ class WebsiteAssets(models.AbstractModel):
 
         delete_attachment_id = values.pop('delete-font-attachment-id', None)
         if delete_attachment_id:
-            delete_attachment_id = int(delete_attachment_id)
             IrAttachment.search([
                 '|', ('id', '=', delete_attachment_id),
                 ('original_id', '=', delete_attachment_id),

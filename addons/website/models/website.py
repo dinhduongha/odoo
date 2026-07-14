@@ -1322,7 +1322,7 @@ class Website(models.Model):
         # Prepare what's needed to later generate the URL search domain for the
         # given records
         search_criteria = []
-        for record in self.env[res_model].browse([int(res_id) for res_id in res_ids]):
+        for record in self.env[res_model].browse(res_ids):
             website = 'website_id' in record and record.website_id or current_website
             url = 'website_url' in record and record.website_url or record.url
             search_criteria.append((url, website.website_domain()))
