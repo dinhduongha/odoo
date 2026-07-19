@@ -38,4 +38,4 @@ nt_service_name = "odoo-server-" + series.replace('~','-')
 
 MIN_PY_VERSION = (3, 10)
 MAX_PY_VERSION = (3, 14)
-MIN_PG_VERSION = 13
+MIN_PG_VERSION = 18  # uuidv7 PKs: `id UUID DEFAULT uuidv7()` needs the native PG18+ function
