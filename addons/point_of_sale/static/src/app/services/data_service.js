@@ -722,7 +722,7 @@ export class PosData {
 
                 const values = records.map((record) => record[rel.name]).flat();
                 const missing = values.filter((value) => {
-                    if (!value || typeof value !== "number" || idsMap[rel.relation]?.has(value)) {
+                    if (!value || idsMap[rel.relation]?.has(value)) {
                         return false;
                     }
 
