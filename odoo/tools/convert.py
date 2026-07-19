@@ -29,7 +29,7 @@ from .misc import file_open, file_path, SKIPPED_ELEMENT_TYPES
 from odoo.exceptions import ValidationError
 from odoo.models import BaseModel
 from .safe_eval import safe_eval, pytz, time
-from .uuid_utils import to_uuid
+from .uuid_utils import to_uuid, is_uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -470,7 +470,13 @@ form: module.record_id""" % (xml_id,)
                 if f_name in model._fields:
                     field_type = model._fields[f_name].type
                     if field_type == 'many2one':
-                        f_val = to_uuid(f_val) if f_val else False
+                        if f_val:
+                            parsed = to_uuid(f_val)
+                            if not is_uuid(str(parsed)):
+                                raise ValueError(f"Invalid many2one value {f_val!r} for field {f_name!r}")
+                            f_val = parsed
+                        else:
+                            f_val = False
                     elif field_type == 'integer':
                         f_val = int(f_val)
                     elif field_type in ('float', 'monetary'):
