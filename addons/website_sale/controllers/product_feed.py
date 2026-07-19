@@ -4,6 +4,7 @@ from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from odoo.http import Controller, request, route
 from odoo.tools import consteq
+from odoo.tools.uuid_utils import to_uuid, is_uuid
 
 
 class ProductFeed(Controller):
@@ -55,17 +56,15 @@ class ProductFeed(Controller):
 
         :param str feed_id: The ID of the feed to validate.
         :param str access_token: The access token associated with the feed.
-        :raises BadRequest: If the feed ID cannot be converted to an integer.
+        :raises BadRequest: If the feed ID is not a valid uuid.
         :raises NotFound: If the feed ID does not match any existing feed.
         :raises Forbidden: If the provided access token does not match the feed's access token.
         :return: The feed record if access is successfully validated, in sudo mode.
         :rtype: product.feed
         """
-        try:
-            feed_id = feed_id
-        except ValueError:
+        if not is_uuid(feed_id):
             raise BadRequest()
-        feed_sudo = request.env['product.feed'].sudo().browse(feed_id).exists()
+        feed_sudo = request.env['product.feed'].sudo().browse(to_uuid(feed_id)).exists()
         if not feed_sudo:
             raise NotFound()
 
