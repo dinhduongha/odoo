@@ -237,8 +237,7 @@ class IrModuleModule(models.Model):
                 # as this method is called before the module update, some xmlid
                 # may be invalid at this stage; explictly filter records before
                 # reading them
-                #return self.env[model].browse(imd_models[model]).exists()
-                return self.env[model].browse(imd_models[model])
+                return self.env[model].browse(imd_models[model]).exists()
 
             def format_view(v):
                 return '%s%s (%s)' % (v.inherit_id and '* INHERIT ' or '', v.name, v.type)
