@@ -216,10 +216,6 @@ class TestTestCursor(common.TransactionCase):
             SAVEPOINT B
             RELEASE SAVEPOINT A
             RELEASE SAVEPOINT B -- "savepoint b does not exist"
-
-        Savepoints are now named with uuids and ``Savepoint._close`` tolerates a
-        missing savepoint (an interleaved ``RELEASE A`` having already destroyed
-        ``B``), so closing ``b`` after ``a`` no longer raises.
         """
         a = self.registry.cursor()
         b = self.registry.cursor()
@@ -231,9 +227,11 @@ class TestTestCursor(common.TransactionCase):
             a.close()
         [msg] = cm.output
         self.assertIn('WARNING:odoo.sql_db:Found different un-closed cursor', msg)
-        # closing `b` afterwards must not raise even though its savepoint was
-        # implicitly released by closing `a` first
-        b.close()
+        # avoid a warning on teardown (when self.cr finds a still on the stack)
+        # as well as ensure the stack matches our expectations
+        with self.assertRaises(psycopg2.errors.InvalidSavepointSpecification):
+            with self.assertLogs('odoo.sql_db', level=logging.WARNING) as cm:
+                b.close()
 
     def test_borrow_connection(self):
         """Tests the behavior of the postgresql connection pool recycling/borrowing"""
