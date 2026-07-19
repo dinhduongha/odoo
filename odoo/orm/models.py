@@ -6208,7 +6208,7 @@ class BaseModel(metaclass=MetaModel):
         #     _logger.warning("[UUID DEBUG] browse called: model=%s, input_ids=%s", self._name, ids)
 
         raw_ids = ids  # lưu lại ids gốc
-        if ids is None or ids is False:
+        if not ids:
             ids = ()
         elif isinstance(ids, (uuid.UUID)):  # single id
             ids = (ids,)
