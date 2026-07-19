@@ -4,6 +4,7 @@ import re
 
 from odoo import api, models
 from odoo.http import request
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class IrHttp(models.AbstractModel):
@@ -34,8 +35,8 @@ class IrHttp(models.AbstractModel):
 
         if path_with_config:
             config_id_match = re.search(r'/pos-self(?:/data)?/([^/?#]+)', path_with_config)
-            if config_id_match:
-                pos_config = request.env['pos.config'].sudo().browse(config_id_match[1])
+            if config_id_match and is_uuid(config_id_match[1]):
+                pos_config = request.env['pos.config'].sudo().browse(to_uuid(config_id_match[1]))
                 if pos_config.self_ordering_available_language_ids:
                     self_order_langs = pos_config.self_ordering_available_language_ids.mapped('code')
                     if lang_code in self_order_langs:

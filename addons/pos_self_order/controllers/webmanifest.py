@@ -7,13 +7,16 @@ from urllib.parse import unquote
 from odoo import http
 from odoo.http import request
 from odoo.addons.web.controllers import webmanifest
+from odoo.tools.uuid_utils import is_uuid, to_uuid
 
 
 class WebManifest(webmanifest.WebManifest):
     def _get_scoped_app_name(self, app_id):
         if app_id == "pos_self_order":
             if match := re.findall(r'pos-self/([^/?#]+)', unquote(request.params['path'])):
-                if record := request.env['pos.config'].search([('id', '=', match[0])]):
+                if is_uuid(match[0]) and (
+                    record := request.env['pos.config'].search([('id', '=', to_uuid(match[0]))])
+                ):
                     return record.name
         return super()._get_scoped_app_name(app_id)
 
