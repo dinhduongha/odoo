@@ -118,9 +118,7 @@ export class ProductPage extends Component {
         if (!selection) {
             return false;
         }
-        const variantAttributeValueIds = selection
-            .getAllSelectedAttributeValuesIds()
-            .map((attr) => Number(attr));
+        const variantAttributeValueIds = selection.getAllSelectedAttributeValuesIds();
         return this.props.productTemplate._isArchivedCombination(variantAttributeValueIds);
     }
 
