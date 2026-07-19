@@ -4,10 +4,14 @@ import { compareUrls, objectToUrlEncodedString } from "../utils/urls";
 import { browser } from "./browser";
 import { isDisplayStandalone } from "@web/core/browser/feature_detection";
 import { slidingWindow } from "@web/core/utils/arrays";
-import { isNumeric } from "@web/core/utils/strings";
 
 // Keys that are serialized in the URL as path segments instead of query string
 export const PATH_KEYS = ["resId", "action", "active_id", "model"];
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUuid(str) {
+    return typeof str === "string" && UUID_RE.test(str);
+}
 
 export const routerBus = new EventBus();
 
@@ -187,19 +191,19 @@ function urlToState(urlObj) {
 
     if (["odoo", "scoped_app"].includes(prefix)) {
         const actionParts = [...splitPath.entries()].filter(
-            ([_, part]) => !isNumeric(part) && part !== "new"
+            ([_, part]) => !isUuid(part) && part !== "new"
         );
         const actions = [];
         for (const [i, part] of actionParts) {
             const action = {};
             const [left, right] = [splitPath[i - 1], splitPath[i + 1]];
-            if (isNumeric(left)) {
+            if (isUuid(left)) {
                 action.active_id = left; // uuid record id: keep as string
             }
 
             if (right === "new") {
                 action.resId = "new";
-            } else if (isNumeric(right)) {
+            } else if (isUuid(right)) {
                 action.resId = right; // uuid record id: keep as string
             }
 
