@@ -2038,5 +2038,5 @@ class ResUsersApikeysShow(models.AbstractModel):
     _description = 'Show API Key'
 
     # the field 'id' is necessary for the onchange that returns the value of 'key'
-    # id = fields.Id()
+    id = fields.Id()
     key = fields.Char(readonly=True)
