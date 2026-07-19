@@ -164,12 +164,18 @@ class Properties(Field):
             raise TypeError(f"Wrong property type {type(value)!r}")
 
         # uuid PKs: many2one/many2many ids are stored in jsonb as strings; coerce
-        # any uuid-looking string back to uuid.UUID so the cache holds the native
-        # id type. to_uuid leaves non-uuid strings (char/selection/tags) untouched.
+        # them back to uuid.UUID so the cache holds the native id type. Gate on the
+        # declared property type (like convert_to_record does below) so a char/
+        # selection/tags property that happens to look like a uuid isn't coerced.
+        types_by_name = {
+            d.get('name'): d.get('type')
+            for d in (self._get_properties_definition(record) or ())
+        }
         for property_name, property_value in value.items():
-            if isinstance(property_value, str):
+            prop_type = types_by_name.get(property_name)
+            if prop_type == 'many2one' and isinstance(property_value, str):
                 value[property_name] = to_uuid(property_value)
-            elif isinstance(property_value, list):
+            elif prop_type == 'many2many' and isinstance(property_value, list):
                 value[property_name] = [
                     to_uuid(v) if isinstance(v, str) else v
                     for v in property_value
