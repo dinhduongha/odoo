@@ -32,10 +32,11 @@ class Reference(Selection):
             if not validate or res_model in self.get_values(record.env):
                 try:
                     val_uuid = uuid.UUID(res_id)
-                    if record.env[res_model].browse(val_uuid).exists():
-                        return value
                 except Exception:
                     return None
+                if record.env[res_model].browse(val_uuid).exists():
+                    return value
+                return None
         elif not value:
             return None
         raise ValueError("Wrong value for %s: %r" % (self, value))
