@@ -208,7 +208,7 @@ class Binary(http.Controller):
         # uuid is never a valid xmlid ("module.name"), so treat it as the record id.
         if xmlid and id is None and is_uuid(xmlid):
             id, xmlid = to_uuid(xmlid), None
-        if isinstance(id, int) and id and model not in ('ir.attachment',):
+        if isinstance(id, int) and id:
             # uuid PKs: a numeric id for a uuid-keyed model is a stale/wrong
             # reference (no such record) -> serve the placeholder, not a 404/500
             placeholder = request.env[model]._get_placeholder_filename(field) if model in request.env else 'web/static/img/placeholder.png'
