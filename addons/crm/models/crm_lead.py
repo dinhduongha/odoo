@@ -1959,12 +1959,18 @@ class CrmLead(models.Model):
           * ID: the higher the better when all other parameters are equal. We
             consider newer leads to be more reliable;
         """
+        def _id_sort_key(rec):
+            rid = rec._origin.id
+            if isinstance(rid, uuid.UUID):
+                return rid.int
+            return 0  # unsaved record (NewId): no reliable ordering value, neutral tiebreak
+
         def opps_key(opportunity):
             return opportunity.type == 'opportunity' or opportunity.active,  \
                 opportunity.type == 'opportunity', \
                 opportunity.stage_id.sequence, \
                 opportunity.probability, \
-                -(opportunity._origin.id.int if isinstance(opportunity._origin.id, uuid.UUID) else opportunity._origin.id)
+                -_id_sort_key(opportunity)
 
         return self.sorted(key=opps_key, reverse=reverse)
 
