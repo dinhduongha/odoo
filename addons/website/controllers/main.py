@@ -27,7 +27,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 from odoo.http import request, SessionExpiredException
 from odoo.tools import OrderedSet, escape_psql, html_escape as escape, py_to_js_locale
-from odoo.tools.uuid_utils import to_uuid
+from odoo.tools.uuid_utils import to_uuid, is_uuid
 from odoo.tools.translate import LazyTranslate
 from odoo.addons.base.models.ir_http import EXTENSION_TO_WEB_MIMETYPES
 from odoo.addons.portal.controllers.portal import pager as portal_pager
@@ -1209,12 +1209,9 @@ class Website(Home):
         if not action:
             action = ServerActions.sudo().search(
                 [('website_path', '=', path_or_xml_id_or_id), ('website_published', '=', True)], limit=1)
-        if not action:
-            try:
-                action_id = path_or_xml_id_or_id
-                action = ServerActions.sudo().browse(action_id).exists()
-            except ValueError:
-                pass
+        if not action and is_uuid(path_or_xml_id_or_id):
+            action_id = to_uuid(path_or_xml_id_or_id)
+            action = ServerActions.sudo().browse(action_id).exists()
 
         # run it, return only if we got a Response object
         if action:
