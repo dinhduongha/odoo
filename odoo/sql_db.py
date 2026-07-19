@@ -125,18 +125,9 @@ class Savepoint:
 
     def _close(self, rollback: bool):
         if rollback:
-            try:
-                self.rollback()
-            except Exception:
-                pass        
-        try:
-            self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
-        except Exception:
-            # UUIDv7 SAVEPOINT PATCH: Savepoint đã mất → bỏ qua, không lỗi
-            pass
-        #self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
-        finally:
-            self.closed = True
+            self.rollback()
+        self._cr.execute('RELEASE SAVEPOINT "%s"' % self.name)
+        self.closed = True
 
 
 class _FlushingSavepoint(Savepoint):
