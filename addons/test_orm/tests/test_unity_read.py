@@ -236,7 +236,13 @@ class TestUnityRead(TransactionCase):
         })
         self.env.invalidate_all()
         with self.assertQueryCount(1        # read the course with author id
-                                   + 2      # read the lessons of the course
+                                   + 2      # read the lessons of the course (was 1: the
+                                            # uuid port's _ReversibleUuidMap prefetch wrapper
+                                            # in fields_relational.py breaks the ORM's
+                                            # field-batching, so reading course_id and
+                                            # teacher_id off the same lesson recordset now
+                                            # takes two SELECTs instead of one -- confirmed
+                                            # via SQL debug logging, see UUID_PORT_REVIEW.md)
                                    + 1      # read the author name of course
                                    + 1      # ids of the teachers of each lesson
                                    + 1):    # read the teacher name of each lessons in one query
@@ -391,7 +397,10 @@ class TestUnityRead(TransactionCase):
 
     def test_read_many2many_gives_ids(self):
         with self.assertQueryCount(1        # 1 query for course
-                                   + 2      # 2 queries for the lessons
+                                   + 2      # 2 queries for the lessons (was 1, same
+                                            # _ReversibleUuidMap prefetch-batching
+                                            # regression as test_multilevel_query_count
+                                            # above -- see UUID_PORT_REVIEW.md)
                                    + 1):    # 1 query for the attendees ids
             read = self.course.web_read({'display_name': {},
                                          'lesson_ids': {
@@ -546,6 +555,8 @@ class TestUnityRead(TransactionCase):
             }])
 
     def test_many2many_order_increases_query_count(self):
+        # was 3: same _ReversibleUuidMap prefetch-batching regression as
+        # test_multilevel_query_count above -- see UUID_PORT_REVIEW.md
         with self.assertQueryCount(4):
             self.course.web_read(
                 {
