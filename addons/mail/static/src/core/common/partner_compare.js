@@ -1,4 +1,5 @@
 import { cleanTerm } from "@mail/utils/common/format";
+import { compareId } from "@mail/utils/common/misc";
 import { registry } from "@web/core/registry";
 
 /**
