@@ -7039,9 +7039,6 @@ class BaseModel(metaclass=MetaModel):
             pass
         return NotImplemented
 
-    def __int__(self) -> uuid.UUID:
-        return self.id or uuid.UUID()
-
     def __repr__(self):
         return f"{self._name}{self._ids!r}"
 
