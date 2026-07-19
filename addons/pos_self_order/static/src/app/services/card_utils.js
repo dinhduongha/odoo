@@ -52,7 +52,7 @@ export function getAttributeValues(selectedValues, models) {
         ).filter(([, isSelected]) => isSelected); // Only true values
 
         optionEntries.forEach(([optionId]) => {
-            const attrVal = models["product.template.attribute.value"].get(Number(optionId));
+            const attrVal = models["product.template.attribute.value"].get(optionId);
             acc.push(attrVal);
         });
         return acc;
